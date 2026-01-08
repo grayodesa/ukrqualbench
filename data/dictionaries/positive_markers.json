@@ -1,0 +1,238 @@
+{
+  "version": "1.0.0",
+  "description": "Positive markers of native Ukrainian language usage",
+  "categories": {
+    "vocative": {
+      "description": "Кличний відмінок - Vocative case usage",
+      "weight": 2.0,
+      "patterns": [
+        {
+          "pattern": "\\b(Пане|Пані|Добродію|Добродійко)\\s+[А-ЯІЇЄҐ][а-яіїєґ']+[юєіи]\\b",
+          "description": "Formal address with vocative",
+          "example": "Пане Андрію, чи могли б ви допомогти?"
+        },
+        {
+          "pattern": "\\b(Друже|Брате|Сестро|Товаришу|Колего)\\b",
+          "description": "Informal vocative address",
+          "example": "Друже, як справи?"
+        },
+        {
+          "pattern": "\\b[А-ЯІЇЄҐ][а-яіїєґ']+[юєіи]!",
+          "description": "Name in vocative with exclamation",
+          "example": "Марію! Іване!"
+        },
+        {
+          "pattern": "\\b(мамо|тату|бабусю|дідусю|сину|доню)\\b",
+          "description": "Family vocatives",
+          "example": "Мамо, де ти?"
+        }
+      ]
+    },
+    "particles": {
+      "description": "Ukrainian particles adding expressiveness",
+      "weight": 1.0,
+      "patterns": [
+        {
+          "pattern": "\\b(же|ж)\\b",
+          "description": "Emphatic particle же/ж",
+          "example": "Він же прийшов! / Вона ж казала."
+        },
+        {
+          "pattern": "\\b(бо)\\b(?!\\s+так)",
+          "description": "Causal/emphatic particle бо",
+          "example": "Бо треба було раніше подумати."
+        },
+        {
+          "pattern": "\\b(адже)\\b",
+          "description": "Emphatic conjunction адже",
+          "example": "Адже ми домовлялися інакше."
+        },
+        {
+          "pattern": "\\b(хіба)\\b",
+          "description": "Question particle хіба",
+          "example": "Хіба це можливо?"
+        },
+        {
+          "pattern": "\\b(невже)\\b",
+          "description": "Surprise particle невже",
+          "example": "Невже він не знав?"
+        },
+        {
+          "pattern": "\\b(таки)\\b",
+          "description": "Emphatic particle таки",
+          "example": "Він таки зробив це."
+        },
+        {
+          "pattern": "\\b(от|ото)\\b",
+          "description": "Demonstrative particles",
+          "example": "От і все. Ото так!"
+        },
+        {
+          "pattern": "\\b(ось)\\b",
+          "description": "Demonstrative particle ось",
+          "example": "Ось тут воно лежить."
+        }
+      ]
+    },
+    "conjunctions": {
+      "description": "Native Ukrainian conjunctions",
+      "weight": 1.0,
+      "patterns": [
+        {
+          "pattern": "\\b(проте)\\b",
+          "description": "Adversative conjunction проте",
+          "example": "Проте це не означає поразки."
+        },
+        {
+          "pattern": "\\b(однак)\\b",
+          "description": "Adversative conjunction однак",
+          "example": "Однак ми маємо продовжувати."
+        },
+        {
+          "pattern": "\\b(утім)\\b",
+          "description": "Adversative conjunction утім",
+          "example": "Утім, справа не в цьому."
+        },
+        {
+          "pattern": "\\b(зате)\\b",
+          "description": "Compensatory conjunction зате",
+          "example": "Дорого, зате якісно."
+        },
+        {
+          "pattern": "\\b(отже)\\b",
+          "description": "Conclusive conjunction отже",
+          "example": "Отже, можемо підсумувати."
+        },
+        {
+          "pattern": "\\b(відтак)\\b",
+          "description": "Consequential conjunction відтак",
+          "example": "Відтак ми маємо діяти."
+        },
+        {
+          "pattern": "\\b(позаяк)\\b",
+          "description": "Causal conjunction позаяк",
+          "example": "Позаяк це важливо, треба зробити."
+        },
+        {
+          "pattern": "\\b(ба)\\b",
+          "description": "Emphatic interjection ба",
+          "example": "Ба більше, це навіть краще."
+        }
+      ]
+    },
+    "diminutives": {
+      "description": "Diminutive and affectionate forms",
+      "weight": 1.5,
+      "patterns": [
+        {
+          "pattern": "\\w+(очк|ечк)[аоиіує]\\w*",
+          "description": "Diminutive suffix -очк/-ечк",
+          "example": "сонечко, віконечко"
+        },
+        {
+          "pattern": "\\w+(оньк|еньк)[аоиіує]\\w*",
+          "description": "Diminutive suffix -оньк/-еньк",
+          "example": "матінонька, серденько"
+        },
+        {
+          "pattern": "\\w+(усіньк|есеньк|ісіньк)[аоиіує]\\w*",
+          "description": "Intensive diminutive suffixes",
+          "example": "малюсінький, тихесенько"
+        },
+        {
+          "pattern": "\\w+(ик|ичок)[аи]?\\b",
+          "description": "Diminutive suffix -ик/-ичок",
+          "example": "хлопчик, будиночок"
+        }
+      ]
+    },
+    "impersonal": {
+      "description": "Ukrainian impersonal constructions",
+      "weight": 1.0,
+      "patterns": [
+        {
+          "pattern": "\\b[А-Яа-яІіЇїЄєҐґ]+[ео]ся\\b",
+          "description": "Impersonal reflexive verbs",
+          "example": "Працюється добре. Спиться солодко."
+        },
+        {
+          "pattern": "\\b(треба|слід|варто|годі|шкода)\\b",
+          "description": "Modal impersonal words",
+          "example": "Треба подумати. Варто спробувати."
+        },
+        {
+          "pattern": "\\b(можна|не можна)\\b",
+          "description": "Modal possibility",
+          "example": "Можна увійти?"
+        }
+      ]
+    },
+    "phraseology": {
+      "description": "Native Ukrainian idioms and set expressions",
+      "weight": 1.5,
+      "patterns": [
+        {
+          "pattern": "\\bяк\\s+(кіт|собака|риба|птах)\\s+[а-яіїє]+",
+          "description": "Animal similes",
+          "example": "як кіт наплакав, як собака втомився"
+        },
+        {
+          "pattern": "\\b(ні пуху ні пера)",
+          "description": "Good luck expression",
+          "example": "Ні пуху ні пера на іспиті!"
+        },
+        {
+          "pattern": "\\b(аби|абощо|абияк)\\b",
+          "description": "Ukrainian indefinite words",
+          "example": "Аби як зробили."
+        },
+        {
+          "pattern": "\\b(де-не-де|коли-не-коли|хто-не-хто)\\b",
+          "description": "Indefinite expressions with не",
+          "example": "Де-не-де ще зустрічається."
+        }
+      ]
+    },
+    "interjections": {
+      "description": "Ukrainian interjections and exclamations",
+      "weight": 0.5,
+      "patterns": [
+        {
+          "pattern": "\\b(ой|ох|ех|ах|ух|овва|отож)\\b",
+          "description": "Emotional interjections",
+          "example": "Ой, як гарно! Овва, яка новина!"
+        },
+        {
+          "pattern": "\\b(еге|агов|гей|ану)\\b",
+          "description": "Attention interjections",
+          "example": "Еге, я так і думав!"
+        },
+        {
+          "pattern": "\\b(га|гм|ну)\\b",
+          "description": "Conversational interjections",
+          "example": "Ну, що скажеш? Га?"
+        }
+      ]
+    }
+  },
+  "scoring": {
+    "normalization_base": 1000,
+    "unit": "per 1K tokens",
+    "thresholds": {
+      "excellent": 15.0,
+      "good": 10.0,
+      "acceptable": 5.0,
+      "poor": 2.0
+    }
+  },
+  "metadata": {
+    "created": "2026-01-08",
+    "source": "UkrQualBench linguistic analysis",
+    "references": [
+      "Пономарів О. Д. Культура слова: Мовностилістичні поради",
+      "Антоненко-Давидович Б. Як ми говоримо",
+      "Караванський С. Пошук українського слова"
+    ],
+    "license": "CC BY 4.0"
+  }
+}

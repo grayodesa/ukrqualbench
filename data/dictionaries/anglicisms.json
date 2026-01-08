@@ -1,0 +1,182 @@
+{
+  "version": "1.0.0",
+  "description": "Anglicism patterns for Ukrainian text analysis",
+  "note": "Anglicisms are less critical than russisms for Ukrainian quality assessment, but excessive use indicates non-native style",
+  "categories": {
+    "lexical": {
+      "description": "English word borrowings and calques",
+      "patterns": [
+        {
+          "pattern": "\\bреально\\b(?=\\s+[а-яіїє]+)",
+          "correction": "справді / насправді",
+          "severity": "low",
+          "example_wrong": "Це реально круто.",
+          "example_correct": "Це справді чудово."
+        },
+        {
+          "pattern": "\\bімплементувати\\b",
+          "correction": "впроваджувати / запроваджувати",
+          "severity": "medium",
+          "example_wrong": "Треба імплементувати цю функцію.",
+          "example_correct": "Треба впровадити цю функцію."
+        },
+        {
+          "pattern": "\\bфінал[іи]зувати\\b",
+          "correction": "завершувати / доопрацьовувати",
+          "severity": "medium",
+          "example_wrong": "Потрібно фіналізувати документ.",
+          "example_correct": "Потрібно завершити документ."
+        },
+        {
+          "pattern": "\\bапрувати\\b",
+          "correction": "схвалювати / затверджувати",
+          "severity": "medium",
+          "example_wrong": "Директор має апрувати бюджет.",
+          "example_correct": "Директор має затвердити бюджет."
+        },
+        {
+          "pattern": "\\bмітинг\\b(?!\\s+протесту)",
+          "correction": "нарада / зустріч",
+          "severity": "low",
+          "example_wrong": "О 10:00 маємо мітинг.",
+          "example_correct": "О 10:00 маємо нараду."
+        },
+        {
+          "pattern": "\\bдедлайн\\b",
+          "correction": "кінцевий термін / крайній строк",
+          "severity": "low",
+          "example_wrong": "Дедлайн завтра.",
+          "example_correct": "Кінцевий термін — завтра."
+        },
+        {
+          "pattern": "\\bфідбек\\b",
+          "correction": "відгук / зворотний зв'язок",
+          "severity": "medium",
+          "example_wrong": "Чекаю на ваш фідбек.",
+          "example_correct": "Чекаю на ваш відгук."
+        },
+        {
+          "pattern": "\\bворкшоп\\b",
+          "correction": "майстер-клас / семінар",
+          "severity": "low",
+          "example_wrong": "Завтра буде воркшоп.",
+          "example_correct": "Завтра буде майстер-клас."
+        }
+      ]
+    },
+    "syntactic": {
+      "description": "English syntactic patterns in Ukrainian",
+      "patterns": [
+        {
+          "pattern": "\\bмати\\s+сенс\\b",
+          "correction": "мати рацію / бути слушним",
+          "severity": "medium",
+          "example_wrong": "Це не має сенсу.",
+          "example_correct": "Це нерозумно. / У цьому немає рації.",
+          "note": "Direct calque from 'make sense'"
+        },
+        {
+          "pattern": "\\bвзяти\\s+місце\\b",
+          "correction": "відбутися / статися",
+          "severity": "high",
+          "example_wrong": "Зустріч візьме місце о 15:00.",
+          "example_correct": "Зустріч відбудеться о 15:00.",
+          "note": "Direct calque from 'take place'"
+        },
+        {
+          "pattern": "\\bбути\\s+в\\s+змозі\\b",
+          "correction": "могти / бути спроможним",
+          "severity": "low",
+          "example_wrong": "Я буду в змозі це зробити.",
+          "example_correct": "Я зможу це зробити."
+        },
+        {
+          "pattern": "\\bне\\s+турбуйся\\b",
+          "correction": "не хвилюйся / не переймайся",
+          "severity": "low",
+          "example_wrong": "Не турбуйся про це.",
+          "example_correct": "Не хвилюйся про це.",
+          "note": "Calque from 'don't worry'"
+        }
+      ]
+    },
+    "it_jargon": {
+      "description": "IT-related anglicisms (more acceptable in technical contexts)",
+      "patterns": [
+        {
+          "pattern": "\\bкоміт(и)?\\b",
+          "correction": "фіксація змін",
+          "severity": "low",
+          "context": "acceptable in technical writing"
+        },
+        {
+          "pattern": "\\bмержити\\b",
+          "correction": "зливати / об'єднувати",
+          "severity": "low",
+          "context": "acceptable in technical writing"
+        },
+        {
+          "pattern": "\\bдеплоїти\\b",
+          "correction": "розгортати",
+          "severity": "low",
+          "context": "acceptable in technical writing"
+        },
+        {
+          "pattern": "\\bфіча\\b",
+          "correction": "функція / можливість",
+          "severity": "medium",
+          "context": "acceptable in informal technical writing"
+        },
+        {
+          "pattern": "\\bбаг\\b",
+          "correction": "помилка / хиба",
+          "severity": "low",
+          "context": "widely accepted in technical writing"
+        }
+      ]
+    },
+    "business_jargon": {
+      "description": "Business-related anglicisms",
+      "patterns": [
+        {
+          "pattern": "\\bфокус(увати)?\\s+на\\b",
+          "correction": "зосереджуватися на",
+          "severity": "low",
+          "example_wrong": "Фокусуємось на продажах.",
+          "example_correct": "Зосереджуємося на продажах."
+        },
+        {
+          "pattern": "\\bтаргет\\b",
+          "correction": "ціль / показник",
+          "severity": "medium",
+          "example_wrong": "Наш таргет — 100 продажів.",
+          "example_correct": "Наша ціль — 100 продажів."
+        },
+        {
+          "pattern": "\\bKPI\\b",
+          "correction": "ключові показники ефективності",
+          "severity": "low",
+          "note": "Abbreviation often kept as is"
+        },
+        {
+          "pattern": "\\bінсайт\\b",
+          "correction": "розуміння / висновок",
+          "severity": "medium",
+          "example_wrong": "Отримали цікавий інсайт.",
+          "example_correct": "Отримали цікаве розуміння."
+        }
+      ]
+    }
+  },
+  "scoring": {
+    "weight_vs_russisms": 0.5,
+    "context_awareness": true,
+    "technical_context_penalty_reduction": 0.5
+  },
+  "metadata": {
+    "created": "2026-01-08",
+    "source": "UkrQualBench linguistic analysis",
+    "note": "Anglicisms are treated more leniently than russisms in Ukrainian quality assessment",
+    "license": "CC BY 4.0"
+  }
+}

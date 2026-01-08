@@ -1,0 +1,199 @@
+{
+  "version": "1.0.0",
+  "description": "Gold standard dataset for positive markers detection",
+  "tasks": [
+    {
+      "id": "pm_001",
+      "type": "positive_marker",
+      "category": "vocative",
+      "context": "Formal address to a male colleague named Андрій",
+      "native_form": "Пане Андрію, чи могли б ви допомогти з цим проектом?",
+      "non_native_forms": [
+        "Пан Андрій, чи могли б ви допомогти з цим проектом?",
+        "Андрій, чи могли б ви допомогти з цим проектом?"
+      ],
+      "marker_regex": "\\bПане\\s+\\w+[юєі]\\b"
+    },
+    {
+      "id": "pm_002",
+      "type": "positive_marker",
+      "category": "vocative",
+      "context": "Formal address to a female colleague named Марія",
+      "native_form": "Пані Маріє, ваша пропозиція дуже цікава.",
+      "non_native_forms": [
+        "Пані Марія, ваша пропозиція дуже цікава.",
+        "Марія, ваша пропозиція дуже цікава."
+      ],
+      "marker_regex": "\\bПані\\s+\\w+[єі]\\b"
+    },
+    {
+      "id": "pm_003",
+      "type": "positive_marker",
+      "category": "vocative",
+      "context": "Informal address to a friend",
+      "native_form": "Друже, я давно хотів тобі розповісти про це.",
+      "non_native_forms": [
+        "Друг, я давно хотів тобі розповісти про це.",
+        "Ей, друже, я давно хотів тобі розповісти."
+      ],
+      "marker_regex": "\\bДруже\\b"
+    },
+    {
+      "id": "pm_004",
+      "type": "positive_marker",
+      "category": "particles",
+      "context": "Emphatic statement about someone's arrival",
+      "native_form": "Він же прийшов учора! Ти хіба не бачив?",
+      "non_native_forms": [
+        "Він прийшов учора! Ти не бачив?",
+        "Він вчора прийшов. Ти не бачив?"
+      ],
+      "marker_regex": "\\b(же|ж)\\b"
+    },
+    {
+      "id": "pm_005",
+      "type": "positive_marker",
+      "category": "particles",
+      "context": "Expressing cause or explanation",
+      "native_form": "Бо треба було раніше подумати!",
+      "non_native_forms": [
+        "Тому що треба було раніше подумати!",
+        "Адже треба було раніше подумати."
+      ],
+      "marker_regex": "\\bБо\\b"
+    },
+    {
+      "id": "pm_006",
+      "type": "positive_marker",
+      "category": "particles",
+      "context": "Expressing surprise with a rhetorical question",
+      "native_form": "Невже він цього не знав?",
+      "non_native_forms": [
+        "Він що, цього не знав?",
+        "Як так, він цього не знав?"
+      ],
+      "marker_regex": "\\bНевже\\b"
+    },
+    {
+      "id": "pm_007",
+      "type": "positive_marker",
+      "category": "particles",
+      "context": "Asking a rhetorical question",
+      "native_form": "Хіба це можливо зробити за один день?",
+      "non_native_forms": [
+        "Чи це можливо зробити за один день?",
+        "Це можливо зробити за один день?"
+      ],
+      "marker_regex": "\\bХіба\\b"
+    },
+    {
+      "id": "pm_008",
+      "type": "positive_marker",
+      "category": "conjunctions",
+      "context": "Contrasting two ideas",
+      "native_form": "Дорого, зате якісно зроблено.",
+      "non_native_forms": [
+        "Дорого, але якісно зроблено.",
+        "Дорого, однак якісно зроблено."
+      ],
+      "marker_regex": "\\bзате\\b"
+    },
+    {
+      "id": "pm_009",
+      "type": "positive_marker",
+      "category": "conjunctions",
+      "context": "Making a conclusion",
+      "native_form": "Отже, можемо підсумувати результати нашої роботи.",
+      "non_native_forms": [
+        "Таким чином, можемо підсумувати результати.",
+        "Тому можемо підсумувати результати."
+      ],
+      "marker_regex": "\\bОтже\\b"
+    },
+    {
+      "id": "pm_010",
+      "type": "positive_marker",
+      "category": "conjunctions",
+      "context": "Expressing contrast",
+      "native_form": "Проте це не означає поразки.",
+      "non_native_forms": [
+        "Але це не означає поразки.",
+        "Однак це не означає поразки."
+      ],
+      "marker_regex": "\\bПроте\\b"
+    },
+    {
+      "id": "pm_011",
+      "type": "positive_marker",
+      "category": "diminutives",
+      "context": "Affectionate reference to the sun",
+      "native_form": "Сонечко вже встало, пора й нам прокидатися.",
+      "non_native_forms": [
+        "Сонце вже встало, пора й нам прокидатися.",
+        "Соняшко вже встало, пора й нам."
+      ],
+      "marker_regex": "\\w+ечк[оа]\\b"
+    },
+    {
+      "id": "pm_012",
+      "type": "positive_marker",
+      "category": "diminutives",
+      "context": "Speaking affectionately to/about a child",
+      "native_form": "Ця дитинонька така мила!",
+      "non_native_forms": [
+        "Ця дитина така мила!",
+        "Ця дитя така мила!"
+      ],
+      "marker_regex": "\\w+оньк[аоу]\\b"
+    },
+    {
+      "id": "pm_013",
+      "type": "positive_marker",
+      "category": "impersonal",
+      "context": "Expressing necessity",
+      "native_form": "Треба добре подумати перед тим, як приймати рішення.",
+      "non_native_forms": [
+        "Потрібно добре подумати перед рішенням.",
+        "Необхідно добре подумати."
+      ],
+      "marker_regex": "\\bТреба\\b"
+    },
+    {
+      "id": "pm_014",
+      "type": "positive_marker",
+      "category": "impersonal",
+      "context": "Recommending action",
+      "native_form": "Варто спробувати цей новий підхід.",
+      "non_native_forms": [
+        "Потрібно спробувати цей новий підхід.",
+        "Треба спробувати цей підхід."
+      ],
+      "marker_regex": "\\bВарто\\b"
+    },
+    {
+      "id": "pm_015",
+      "type": "positive_marker",
+      "category": "phraseology",
+      "context": "Describing a small quantity",
+      "native_form": "Грошей залишилося як кіт наплакав.",
+      "non_native_forms": [
+        "Грошей залишилося дуже мало.",
+        "Грошей майже не залишилося."
+      ],
+      "marker_regex": "як\\s+кіт\\s+наплакав"
+    }
+  ],
+  "metadata": {
+    "total_tasks": 15,
+    "categories": {
+      "vocative": 3,
+      "particles": 4,
+      "conjunctions": 3,
+      "diminutives": 2,
+      "impersonal": 2,
+      "phraseology": 1
+    },
+    "created": "2026-01-08",
+    "source": "UkrQualBench positive markers calibration"
+  }
+}

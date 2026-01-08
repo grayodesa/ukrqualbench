@@ -85,6 +85,8 @@ select = [
 ]
 ignore = [
     "E501",   # line length handled by formatter
+    "RUF001", # Cyrillic characters in strings (expected for Ukrainian)
+    "RUF002", # Cyrillic characters in docstrings (expected for Ukrainian)
 ]
 
 [tool.ruff.lint.isort]

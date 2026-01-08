@@ -1,0 +1,258 @@
+{
+  "version": "1.0.0",
+  "description": "Free generation prompts for Block B evaluation",
+  "tasks": [
+    {
+      "id": "gen_001",
+      "type": "free_generation",
+      "category": "explanation",
+      "prompt": "Поясни простими словами, що таке штучний інтелект.",
+      "min_tokens": 50,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_002",
+      "type": "free_generation",
+      "category": "explanation",
+      "prompt": "Поясни, як працює фотосинтез.",
+      "min_tokens": 50,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_003",
+      "type": "free_generation",
+      "category": "explanation",
+      "prompt": "Розкажи про причини Першої світової війни.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_004",
+      "type": "free_generation",
+      "category": "explanation",
+      "prompt": "Що таке демократія і які її основні принципи?",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_005",
+      "type": "free_generation",
+      "category": "explanation",
+      "prompt": "Поясни різницю між процесором та оперативною пам'яттю комп'ютера.",
+      "min_tokens": 50,
+      "max_tokens": 250
+    },
+    {
+      "id": "gen_006",
+      "type": "free_generation",
+      "category": "advice",
+      "prompt": "Дай поради щодо ефективного вивчення іноземних мов.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_007",
+      "type": "free_generation",
+      "category": "advice",
+      "prompt": "Які поради ти б дав людині, яка хоче почати бігати?",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_008",
+      "type": "free_generation",
+      "category": "advice",
+      "prompt": "Порадь, як краще організувати свій робочий час.",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_009",
+      "type": "free_generation",
+      "category": "advice",
+      "prompt": "Що порадиш людині, яка хоче навчитися готувати?",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_010",
+      "type": "free_generation",
+      "category": "advice",
+      "prompt": "Дай поради щодо підготовки до співбесіди на роботу.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_011",
+      "type": "free_generation",
+      "category": "creative",
+      "prompt": "Напиши короткий вірш про весну.",
+      "min_tokens": 30,
+      "max_tokens": 150
+    },
+    {
+      "id": "gen_012",
+      "type": "free_generation",
+      "category": "creative",
+      "prompt": "Напиши початок оповідання про пригоди кота.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_013",
+      "type": "free_generation",
+      "category": "creative",
+      "prompt": "Склади казку для дітей про дружбу.",
+      "min_tokens": 150,
+      "max_tokens": 500
+    },
+    {
+      "id": "gen_014",
+      "type": "free_generation",
+      "category": "creative",
+      "prompt": "Напиши короткий монолог літньої людини про зміни в житті.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_015",
+      "type": "free_generation",
+      "category": "creative",
+      "prompt": "Опиши захід сонця над морем.",
+      "min_tokens": 50,
+      "max_tokens": 200
+    },
+    {
+      "id": "gen_016",
+      "type": "free_generation",
+      "category": "business",
+      "prompt": "Напиши лист-подяку клієнту за співпрацю.",
+      "min_tokens": 80,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_017",
+      "type": "free_generation",
+      "category": "business",
+      "prompt": "Склади короткий звіт про результати роботи за місяць.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_018",
+      "type": "free_generation",
+      "category": "business",
+      "prompt": "Напиши запрошення на корпоративний захід.",
+      "min_tokens": 60,
+      "max_tokens": 250
+    },
+    {
+      "id": "gen_019",
+      "type": "free_generation",
+      "category": "business",
+      "prompt": "Склади коротку презентацію нового продукту.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_020",
+      "type": "free_generation",
+      "category": "business",
+      "prompt": "Напиши відповідь на скаргу клієнта.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_021",
+      "type": "free_generation",
+      "category": "technical",
+      "prompt": "Поясни, як працює Git для початківця.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_022",
+      "type": "free_generation",
+      "category": "technical",
+      "prompt": "Опиши процес створення веб-сайту.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_023",
+      "type": "free_generation",
+      "category": "technical",
+      "prompt": "Поясни, що таке база даних і для чого вона потрібна.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_024",
+      "type": "free_generation",
+      "category": "technical",
+      "prompt": "Розкажи про основні принципи кібербезпеки.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_025",
+      "type": "free_generation",
+      "category": "technical",
+      "prompt": "Поясни різницю між фронтендом та бекендом.",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_026",
+      "type": "free_generation",
+      "category": "everyday",
+      "prompt": "Розкажи рецепт українського борщу.",
+      "min_tokens": 100,
+      "max_tokens": 400
+    },
+    {
+      "id": "gen_027",
+      "type": "free_generation",
+      "category": "everyday",
+      "prompt": "Опиши, як правильно прати речі.",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_028",
+      "type": "free_generation",
+      "category": "everyday",
+      "prompt": "Дай поради щодо догляду за кімнатними рослинами.",
+      "min_tokens": 60,
+      "max_tokens": 300
+    },
+    {
+      "id": "gen_029",
+      "type": "free_generation",
+      "category": "everyday",
+      "prompt": "Розкажи, як підготуватися до подорожі.",
+      "min_tokens": 80,
+      "max_tokens": 350
+    },
+    {
+      "id": "gen_030",
+      "type": "free_generation",
+      "category": "everyday",
+      "prompt": "Опиши типовий ранок українця.",
+      "min_tokens": 60,
+      "max_tokens": 300
+    }
+  ],
+  "metadata": {
+    "total_tasks": 30,
+    "categories": {
+      "explanation": 5,
+      "advice": 5,
+      "creative": 5,
+      "business": 5,
+      "technical": 5,
+      "everyday": 5
+    },
+    "created": "2026-01-08"
+  }
+}

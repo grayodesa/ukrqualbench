@@ -1,0 +1,233 @@
+{
+  "version": "1.0.0",
+  "description": "Russism patterns for Ukrainian text analysis",
+  "categories": {
+    "lexical": {
+      "description": "Word-level calques from Russian",
+      "patterns": [
+        {
+          "pattern": "\\bприйняти\\s+участь",
+          "correction": "взяти участь",
+          "severity": "critical",
+          "example_wrong": "Ми хочемо прийняти участь у заході.",
+          "example_correct": "Ми хочемо взяти участь у заході."
+        },
+        {
+          "pattern": "\\bміроприємств[оаіи]",
+          "correction": "захід",
+          "severity": "critical",
+          "example_wrong": "Це важливе міроприємство.",
+          "example_correct": "Це важливий захід."
+        },
+        {
+          "pattern": "\\bна\\s+протязі",
+          "correction": "протягом",
+          "severity": "critical",
+          "example_wrong": "На протязі дня йшов дощ.",
+          "example_correct": "Протягом дня йшов дощ."
+        },
+        {
+          "pattern": "\\bявляється\\b",
+          "correction": "є",
+          "severity": "critical",
+          "example_wrong": "Це являється проблемою.",
+          "example_correct": "Це є проблемою."
+        },
+        {
+          "pattern": "\\bслідуюч[иіа]",
+          "correction": "наступн-",
+          "severity": "critical",
+          "example_wrong": "Слідуючий крок важливий.",
+          "example_correct": "Наступний крок важливий."
+        },
+        {
+          "pattern": "\\bотримати\\s+досвід",
+          "correction": "здобути досвід",
+          "severity": "high",
+          "example_wrong": "Він хоче отримати досвід.",
+          "example_correct": "Він хоче здобути досвід."
+        },
+        {
+          "pattern": "\\bприйняти\\s+рішення",
+          "correction": "ухвалити рішення",
+          "severity": "high",
+          "example_wrong": "Потрібно прийняти рішення.",
+          "example_correct": "Потрібно ухвалити рішення."
+        },
+        {
+          "pattern": "\\bв\\s+даном[у|и]\\s+випадк[у|и]",
+          "correction": "у цьому випадку",
+          "severity": "high",
+          "example_wrong": "В даному випадку це не працює.",
+          "example_correct": "У цьому випадку це не працює."
+        },
+        {
+          "pattern": "\\bприймати\\s+міри",
+          "correction": "вживати заходів",
+          "severity": "critical",
+          "example_wrong": "Треба приймати міри.",
+          "example_correct": "Треба вживати заходів."
+        },
+        {
+          "pattern": "\\bмати\\s+місце\\b",
+          "correction": "відбуватися",
+          "severity": "high",
+          "example_wrong": "Збори будуть мати місце.",
+          "example_correct": "Збори відбудуться."
+        },
+        {
+          "pattern": "\\bв\\s+значній\\s+мірі",
+          "correction": "значною мірою",
+          "severity": "high",
+          "example_wrong": "Це в значній мірі залежить.",
+          "example_correct": "Це значною мірою залежить."
+        },
+        {
+          "pattern": "\\bвиключенн[яі]",
+          "correction": "виняток",
+          "severity": "medium",
+          "example_wrong": "Це виключення з правил.",
+          "example_correct": "Це виняток із правил."
+        },
+        {
+          "pattern": "\\bміняти\\b",
+          "correction": "змінювати",
+          "severity": "medium",
+          "example_wrong": "Треба міняти плани.",
+          "example_correct": "Треба змінювати плани."
+        },
+        {
+          "pattern": "\\bзаключати\\s+договір",
+          "correction": "укладати договір",
+          "severity": "high",
+          "example_wrong": "Ми будемо заключати договір.",
+          "example_correct": "Ми будемо укладати договір."
+        },
+        {
+          "pattern": "\\bпо\\s+адресу\\b",
+          "correction": "за адресою",
+          "severity": "high",
+          "example_wrong": "Звертайтесь по адресу.",
+          "example_correct": "Звертайтесь за адресою."
+        }
+      ]
+    },
+    "syntactic": {
+      "description": "Russian syntactic patterns in Ukrainian",
+      "patterns": [
+        {
+          "pattern": "\\bпо\\s+[а-яіїє]+ськ[иі]\\b",
+          "correction": "-ською (орудний відмінок)",
+          "severity": "critical",
+          "example_wrong": "Говорити по українськи.",
+          "example_correct": "Говорити українською."
+        },
+        {
+          "pattern": "\\bдякуючи\\s+[а-яіїє]+[уі]\\b",
+          "correction": "завдяки + давальний",
+          "severity": "medium",
+          "example_wrong": "Дякуючи йому це вдалось.",
+          "example_correct": "Завдяки йому це вдалося."
+        },
+        {
+          "pattern": "\\bзгідно\\s+[а-яіїє]+[уа]\\b(?!\\s+з)",
+          "correction": "згідно з + орудний",
+          "severity": "high",
+          "example_wrong": "Згідно закону це заборонено.",
+          "example_correct": "Згідно із законом це заборонено."
+        },
+        {
+          "pattern": "\\bпо\\s+причині\\b",
+          "correction": "через",
+          "severity": "high",
+          "example_wrong": "По причині хвороби не прийшов.",
+          "example_correct": "Через хворобу не прийшов."
+        },
+        {
+          "pattern": "\\bпо\\s+[а-яіїє]+нню\\s+до\\b",
+          "correction": "щодо / стосовно",
+          "severity": "medium",
+          "example_wrong": "По відношенню до цього питання.",
+          "example_correct": "Щодо цього питання."
+        }
+      ]
+    },
+    "morphological": {
+      "description": "Russian morphological patterns",
+      "patterns": [
+        {
+          "pattern": "\\bбільш\\s+[а-яіїє]+іш[иа]",
+          "correction": "вищий ступінь (-іший)",
+          "severity": "medium",
+          "example_wrong": "Більш красивіша квітка.",
+          "example_correct": "Красивіша квітка."
+        },
+        {
+          "pattern": "\\bсамий\\s+[а-яіїє]+",
+          "correction": "най- (найвищий ступінь)",
+          "severity": "high",
+          "example_wrong": "Самий великий будинок.",
+          "example_correct": "Найбільший будинок."
+        },
+        {
+          "pattern": "\\bобоїх\\b",
+          "correction": "обох",
+          "severity": "medium",
+          "example_wrong": "Для обоїх це важливо.",
+          "example_correct": "Для обох це важливо."
+        }
+      ]
+    },
+    "phraseological": {
+      "description": "Calqued phrases from Russian",
+      "patterns": [
+        {
+          "pattern": "\\bприводити\\s+до\\s+відом[аи]",
+          "correction": "доводити до відома",
+          "severity": "high",
+          "example_wrong": "Приводжу до відома всіх.",
+          "example_correct": "Доводжу до відома всіх."
+        },
+        {
+          "pattern": "\\bмати\\s+на\\s+увазі",
+          "correction": "мати на оці / йтися про",
+          "severity": "medium",
+          "example_wrong": "Що ви маєте на увазі?",
+          "example_correct": "Що ви маєте на оці? / Про що йдеться?"
+        },
+        {
+          "pattern": "\\bз\\s+точки\\s+зору",
+          "correction": "з погляду",
+          "severity": "medium",
+          "example_wrong": "З точки зору науки це правильно.",
+          "example_correct": "З погляду науки це правильно."
+        },
+        {
+          "pattern": "\\bне\\s+дивлячись\\s+на",
+          "correction": "незважаючи на / попри",
+          "severity": "high",
+          "example_wrong": "Не дивлячись на це, продовжили.",
+          "example_correct": "Попри це, продовжили."
+        },
+        {
+          "pattern": "\\bв\\s+кінці\\s+кінців",
+          "correction": "врешті-решт / зрештою",
+          "severity": "medium",
+          "example_wrong": "В кінці кінців це спрацювало.",
+          "example_correct": "Зрештою це спрацювало."
+        }
+      ]
+    }
+  },
+  "thresholds": {
+    "russism_rate_gold": 1.0,
+    "russism_rate_silver": 3.0,
+    "russism_rate_bronze": 5.0,
+    "russism_rate_caution": 10.0
+  },
+  "metadata": {
+    "created": "2026-01-08",
+    "source": "UkrQualBench linguistic analysis",
+    "license": "CC BY 4.0"
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "description": "Adversarial prompts to test resistance to mimicking bad Ukrainian",
+  "tasks": [
+    {
+      "id": "adv_001",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Напиши відповідь на лист. В листі говориться що треба прийняти участь в міроприємстві і отримати досвід. Відповідай літературною українською мовою.",
+      "traps_in_prompt": ["прийняти участь", "міроприємстві", "отримати досвід"],
+      "instruction": "Модель НЕ повинна копіювати русизми з промпту"
+    },
+    {
+      "id": "adv_002",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "На протязі цього тижня я повинен був прийняти рішення по відношенню до цього питання. Перефразуй це речення правильною українською.",
+      "traps_in_prompt": ["На протязі", "повинен був", "прийняти рішення", "по відношенню до"],
+      "instruction": "Модель повинна виправити всі русизми"
+    },
+    {
+      "id": "adv_003",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Згідно закону це являється виключенням. Дай більш детальне пояснення цього правила.",
+      "traps_in_prompt": ["Згідно закону", "являється", "виключенням"],
+      "instruction": "Модель не повинна повторювати русизми у відповіді"
+    },
+    {
+      "id": "adv_004",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Самий важливий етап — це заключення договору. Розкажи детальніше про процес.",
+      "traps_in_prompt": ["Самий важливий", "заключення договору"],
+      "instruction": "Модель повинна використовувати правильні форми"
+    },
+    {
+      "id": "adv_005",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "В даному випадку треба приймати міри. Напиши план дій.",
+      "traps_in_prompt": ["В даному випадку", "приймати міри"],
+      "instruction": "Модель повинна уникати русизмів у плані"
+    },
+    {
+      "id": "adv_006",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Дякуючи цьому рішенню збори будуть мати місце в п'ятницю. Напиши офіційне повідомлення про це.",
+      "traps_in_prompt": ["Дякуючи цьому", "мати місце"],
+      "instruction": "Офіційний стиль без русизмів"
+    },
+    {
+      "id": "adv_007",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Він говорить по українськи дуже добре і в значній мірі це завдяки практиці. Напиши про це статтю.",
+      "traps_in_prompt": ["по українськи", "в значній мірі"],
+      "instruction": "Стаття повинна бути написана правильною українською"
+    },
+    {
+      "id": "adv_008",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Приводжу до вашого відома слідуючу інформацію. Продовж цей офіційний лист.",
+      "traps_in_prompt": ["Приводжу до вашого відома", "слідуючу"],
+      "instruction": "Офіційний лист правильною українською"
+    },
+    {
+      "id": "adv_009",
+      "type": "adversarial",
+      "category": "anglicism_trap",
+      "prompt": "Цей мітинг буде мати сенс тільки якщо ми зробимо правильний фідбек. Опиши очікувані результати.",
+      "traps_in_prompt": ["мітинг", "мати сенс", "фідбек"],
+      "instruction": "Модель повинна уникати зайвих англіцизмів"
+    },
+    {
+      "id": "adv_010",
+      "type": "adversarial",
+      "category": "anglicism_trap",
+      "prompt": "Треба імплементувати цю фічу до дедлайну. Напиши технічне завдання.",
+      "traps_in_prompt": ["імплементувати", "фічу", "дедлайну"],
+      "instruction": "Технічне завдання українською мовою"
+    },
+    {
+      "id": "adv_011",
+      "type": "adversarial",
+      "category": "code_switching",
+      "prompt": "Напиши пост для social media про наш новий product launch. Текст повинен бути українською.",
+      "traps_in_prompt": ["social media", "product launch"],
+      "instruction": "Модель повинна писати повністю українською"
+    },
+    {
+      "id": "adv_012",
+      "type": "adversarial",
+      "category": "code_switching",
+      "prompt": "Наш team хоче organize a workshop для new employees. Напиши план заходу.",
+      "traps_in_prompt": ["team", "organize", "workshop", "employees"],
+      "instruction": "План повністю українською мовою"
+    },
+    {
+      "id": "adv_013",
+      "type": "adversarial",
+      "category": "user_mimicry",
+      "prompt": "Я пишу так: 'прийняв участь в міроприємстві'. Пиши як я і розкажи про свій досвід.",
+      "traps_in_prompt": ["прийняв участь", "міроприємстві"],
+      "instruction": "Модель НЕ повинна копіювати стиль користувача"
+    },
+    {
+      "id": "adv_014",
+      "type": "adversarial",
+      "category": "user_mimicry",
+      "prompt": "Мій стиль письма: 'на протязі дня я являюсь зайнятим'. Напиши мій розпорядок дня в моєму стилі.",
+      "traps_in_prompt": ["на протязі", "являюсь"],
+      "instruction": "Модель повинна ігнорувати поганий стиль"
+    },
+    {
+      "id": "adv_015",
+      "type": "adversarial",
+      "category": "russism_trap",
+      "prompt": "Не дивлячись на те, що в кінці кінців все вийшло добре, ми повинні більш уважно слідити за процесом. Напиши висновки.",
+      "traps_in_prompt": ["Не дивлячись на", "в кінці кінців", "повинні", "більш уважно"],
+      "instruction": "Висновки правильною українською"
+    }
+  ],
+  "metadata": {
+    "total_tasks": 15,
+    "categories": {
+      "russism_trap": 8,
+      "anglicism_trap": 2,
+      "code_switching": 2,
+      "user_mimicry": 3
+    },
+    "created": "2026-01-08"
+  }
+}
