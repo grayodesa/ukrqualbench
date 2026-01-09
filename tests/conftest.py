@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ukrqualbench.core.config import Config
+from ukrqualbench.core.config import BenchmarkVersion, Config
 from ukrqualbench.core.elo import ELOCalculator
 
 
@@ -14,7 +14,7 @@ from ukrqualbench.core.elo import ELOCalculator
 def config() -> Config:
     """Provide test configuration."""
     return Config(
-        benchmark_version="lite",
+        benchmark_version=BenchmarkVersion.LITE,
         max_concurrent_requests=2,
         request_timeout=30,
     )

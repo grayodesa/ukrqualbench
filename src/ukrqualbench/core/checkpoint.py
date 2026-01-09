@@ -23,9 +23,7 @@ from pathlib import Path
 from typing import Any
 
 
-def generate_comparison_key(
-    prompt_id: str, model_a: str, model_b: str
-) -> str:
+def generate_comparison_key(prompt_id: str, model_a: str, model_b: str) -> str:
     """Generate deterministic idempotency key for a comparison.
 
     The key is the same regardless of model order (A,B vs B,A)
@@ -52,9 +50,7 @@ def generate_run_id() -> str:
         Run ID in format: eval-YYYYMMDD-HHMMSS-XXXX
     """
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    random_suffix = hashlib.sha256(
-        str(datetime.now().timestamp()).encode()
-    ).hexdigest()[:4]
+    random_suffix = hashlib.sha256(str(datetime.now().timestamp()).encode()).hexdigest()[:4]
     return f"eval-{timestamp}-{random_suffix}"
 
 
@@ -123,9 +119,7 @@ class CheckpointData:
     def from_dict(cls, data: dict[str, Any]) -> CheckpointData:
         """Create from dictionary."""
         # Handle pending_pairs which might be list of lists from JSON
-        pending_pairs = [
-            tuple(pair) for pair in data.get("pending_pairs", [])
-        ]
+        pending_pairs = [tuple(pair) for pair in data.get("pending_pairs", [])]
         data["pending_pairs"] = pending_pairs
         return cls(**data)
 
@@ -195,9 +189,61 @@ class CheckpointManager:
 
         return checkpoint_path
 
-    def save_round(
-        self, checkpoint: CheckpointData, round_num: int
-    ) -> Path:
+    def save_raw(self, name: str, data: dict[str, Any]) -> Path:
+        """Save raw dictionary data as checkpoint.
+
+        Args:
+            name: Checkpoint filename (without extension).
+            data: Dictionary data to save.
+
+        Returns:
+            Path to saved checkpoint file.
+        """
+        checkpoint_path = self.results_dir / f"{name}.json"
+        temp_path = self.results_dir / f"{name}.json.tmp"
+
+        with open(temp_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        temp_path.rename(checkpoint_path)
+        return checkpoint_path
+
+    def load_raw(self, name: str) -> dict[str, Any] | None:
+        """Load raw dictionary checkpoint.
+
+        Args:
+            name: Checkpoint filename (without extension).
+
+        Returns:
+            Loaded dictionary or None if not found/invalid.
+        """
+        checkpoint_path = self.results_dir / f"{name}.json"
+        if not checkpoint_path.exists():
+            return None
+
+        try:
+            with open(checkpoint_path, encoding="utf-8") as f:
+                data: dict[str, Any] = json.load(f)
+                return data
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    def list_checkpoints(self) -> list[str]:
+        """List available checkpoint names.
+
+        Returns:
+            List of checkpoint names (without extensions), sorted by modification time.
+        """
+        checkpoints = []
+        for path in self.results_dir.glob("*.json"):
+            if path.name.endswith(".tmp"):
+                continue
+            checkpoints.append((path.stat().st_mtime, path.stem))
+
+        checkpoints.sort(key=lambda x: x[0])
+        return [name for _, name in checkpoints]
+
+    def save_round(self, checkpoint: CheckpointData, round_num: int) -> Path:
         """Save round-specific checkpoint.
 
         Args:
@@ -329,9 +375,7 @@ class CheckpointManager:
 
         return removed
 
-    def get_completed_comparisons(
-        self, checkpoint: CheckpointData
-    ) -> set[str]:
+    def get_completed_comparisons(self, checkpoint: CheckpointData) -> set[str]:
         """Get set of completed comparison IDs for deduplication.
 
         Args:
@@ -340,10 +384,7 @@ class CheckpointManager:
         Returns:
             Set of comparison_id strings.
         """
-        return {
-            result["comparison_id"]
-            for result in checkpoint.comparison_results
-        }
+        return {result["comparison_id"] for result in checkpoint.comparison_results}
 
 
 def create_initial_checkpoint(

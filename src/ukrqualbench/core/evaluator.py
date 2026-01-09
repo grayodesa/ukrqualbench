@@ -158,9 +158,7 @@ class Evaluator:
         self._circuit_breakers: dict[str, CircuitBreaker] = {}
 
         # Checkpoint manager
-        self._checkpoint_manager = CheckpointManager(
-            results_dir=self._output_dir / "checkpoints"
-        )
+        self._checkpoint_manager = CheckpointManager(results_dir=self._output_dir / "checkpoints")
 
         # Metrics
         self._metrics: MetricsCollector = get_metrics()
@@ -254,9 +252,7 @@ class Evaluator:
 
         self.load_tasks(tasks)
 
-    def set_progress_callback(
-        self, callback: Callable[[EvaluationProgress], None]
-    ) -> None:
+    def set_progress_callback(self, callback: Callable[[EvaluationProgress], None]) -> None:
         """Set callback for progress updates.
 
         Args:
@@ -309,7 +305,9 @@ class Evaluator:
 
         # Calculate total comparisons
         num_rounds = self._pairwise_engine.get_recommended_rounds(len(model_ids))
-        generation_tasks = [t for t in self._tasks if t.type in ("generation", "free_generation", "adversarial")]
+        generation_tasks = [
+            t for t in self._tasks if t.type in ("generation", "free_generation", "adversarial")
+        ]
         self._progress.total_rounds = num_rounds
         self._progress.total_comparisons = (
             len(model_ids) * (len(model_ids) - 1) // 2 * len(generation_tasks) // num_rounds
@@ -351,8 +349,10 @@ class Evaluator:
     async def _run_block_a(self) -> None:
         """Run Block A calibration tests."""
         block_a_tasks = [
-            t for t in self._tasks
-            if t.type in ("multiple_choice", "gec", "translation", "false_positive", "positive_marker")
+            t
+            for t in self._tasks
+            if t.type
+            in ("multiple_choice", "gec", "translation", "false_positive", "positive_marker")
         ]
 
         if not block_a_tasks:
@@ -436,8 +436,12 @@ class Evaluator:
         return {
             "mc_accuracy": mc_correct / mc_total if mc_total > 0 else 0.0,
             "gec_f1": gec_correct / gec_total if gec_total > 0 else 0.0,
-            "translation_comet": sum(translation_scores) / len(translation_scores) if translation_scores else 0.0,
-            "false_positive_rate": false_positives / false_positive_total if false_positive_total > 0 else 0.0,
+            "translation_comet": sum(translation_scores) / len(translation_scores)
+            if translation_scores
+            else 0.0,
+            "false_positive_rate": false_positives / false_positive_total
+            if false_positive_total > 0
+            else 0.0,
         }
 
     def _simple_translation_score(self, hypothesis: str, reference: str) -> float:
@@ -465,7 +469,8 @@ class Evaluator:
             num_rounds: Number of tournament rounds.
         """
         generation_tasks = [
-            t for t in self._tasks
+            t
+            for t in self._tasks
             if t.type in ("generation", "free_generation", "adversarial", "long_context")
         ]
 
@@ -492,10 +497,12 @@ class Evaluator:
                     await self._execute_single_comparison(scheduled, prompt_texts)
 
             # Run comparisons concurrently
-            await asyncio.gather(*[
-                run_comparison(scheduled, semaphore)
-                for scheduled in tournament_round.comparisons
-            ])
+            await asyncio.gather(
+                *[
+                    run_comparison(scheduled, semaphore)
+                    for scheduled in tournament_round.comparisons
+                ]
+            )
 
             # Checkpoint after each round
             if self._progress.completed_comparisons % self._eval_config.checkpoint_interval == 0:
@@ -589,36 +596,29 @@ class Evaluator:
 
             if "fertility" in self._detectors:
                 try:
-                    fertility_result = await self._detectors["fertility"].detect(combined_text)
-                    results["fertility_rate"] = fertility_result.get("fertility_rate", 1.5)
+                    fertility_result = self._detectors["fertility"].detect(combined_text)
+                    results["fertility_rate"] = fertility_result.metadata.get("fertility_rate", 1.5)
                 except Exception:
                     pass
 
             if "russism" in self._detectors:
                 try:
-                    russism_result = await self._detectors["russism"].detect(combined_text)
-                    # Convert to per 1K tokens
-                    count = len(russism_result.get("matches", []))
-                    tokens = len(combined_text.split()) * 1.5  # Approximate
-                    results["russism_rate"] = (count / tokens) * 1000 if tokens > 0 else 0.0
+                    russism_result = self._detectors["russism"].detect(combined_text)
+                    results["russism_rate"] = russism_result.rate_per_1k
                 except Exception:
                     pass
 
             if "anglicism" in self._detectors:
                 try:
-                    anglicism_result = await self._detectors["anglicism"].detect(combined_text)
-                    count = len(anglicism_result.get("matches", []))
-                    tokens = len(combined_text.split()) * 1.5
-                    results["anglicism_rate"] = (count / tokens) * 1000 if tokens > 0 else 0.0
+                    anglicism_result = self._detectors["anglicism"].detect(combined_text)
+                    results["anglicism_rate"] = anglicism_result.rate_per_1k
                 except Exception:
                     pass
 
             if "markers" in self._detectors:
                 try:
-                    markers_result = await self._detectors["markers"].detect(combined_text)
-                    count = len(markers_result.get("matches", []))
-                    tokens = len(combined_text.split()) * 1.5
-                    results["positive_markers"] = (count / tokens) * 1000 if tokens > 0 else 0.0
+                    markers_result = self._detectors["markers"].detect(combined_text)
+                    results["positive_markers"] = markers_result.rate_per_1k
                 except Exception:
                     pass
 
@@ -641,6 +641,7 @@ class Evaluator:
                 gec_f1=block_a.get("gec_f1", 0.0),
                 translation_comet=block_a.get("translation_comet", 0.0),
                 false_positive_rate=block_a.get("false_positive_rate", 0.0),
+                positive_markers_score=block_a.get("positive_markers_score", 0.0),
             )
 
             # Get Block B ELO scores (use overall for all for now)
@@ -739,7 +740,7 @@ class Evaluator:
         }
 
         suffix = "final" if final else f"round_{self._progress.current_round}"
-        self._checkpoint_manager.save(f"{self._run_id}_{suffix}", checkpoint_data)
+        self._checkpoint_manager.save_raw(f"{self._run_id}_{suffix}", checkpoint_data)
 
     async def _try_resume(self) -> bool:
         """Try to resume from a previous checkpoint.
@@ -751,10 +752,9 @@ class Evaluator:
         if not checkpoints:
             return False
 
-        # Find latest non-final checkpoint for this benchmark
         for cp_name in reversed(checkpoints):
             if "final" not in cp_name:
-                checkpoint_data = self._checkpoint_manager.load(cp_name)
+                checkpoint_data = self._checkpoint_manager.load_raw(cp_name)
                 if checkpoint_data:
                     self._restore_from_checkpoint(checkpoint_data)
                     return True
@@ -872,7 +872,10 @@ def create_evaluator(
     Returns:
         Configured Evaluator instance.
     """
-    config = Config(benchmark_version=benchmark_version)
+    from ukrqualbench.core.config import BenchmarkVersion
+
+    version = BenchmarkVersion(benchmark_version)
+    config = Config(benchmark_version=version)
     eval_config = EvaluationConfig(
         benchmark_version=benchmark_version,
         max_concurrent=max_concurrent,

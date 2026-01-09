@@ -283,7 +283,7 @@ class PairwiseEngine:
                     continue
 
                 # Check if this pair has been compared too many times
-                pair_key = tuple(sorted([model_a, model_b]))
+                pair_key: tuple[str, str] = (min(model_a, model_b), max(model_a, model_b))
                 pair_count = self._model_pair_counts.get(pair_key, 0)
 
                 # Allow up to 3 comparisons per pair in Swiss
@@ -384,17 +384,14 @@ class PairwiseEngine:
             first_response = response_b_data.text
             second_response = response_a_data.text
 
-        # Get judge verdict
-        verdict = await judge.compare(
+        verdict = await judge.evaluate(
             prompt=prompt_text,
             response_a=first_response,
             response_b=second_response,
         )
 
         # Adjust verdict for position order
-        adjusted_winner = self._adjust_winner_for_position(
-            verdict.winner, scheduled.position_order
-        )
+        adjusted_winner = self._adjust_winner_for_position(verdict.winner, scheduled.position_order)
 
         verdict_data = JudgeVerdictData(
             winner=adjusted_winner,
@@ -465,7 +462,10 @@ class PairwiseEngine:
         self._comparison_history.append(result)
 
         # Update pair count
-        pair_key = tuple(sorted([result.scheduled.model_a, result.scheduled.model_b]))
+        pair_key: tuple[str, str] = (
+            min(result.scheduled.model_a, result.scheduled.model_b),
+            max(result.scheduled.model_a, result.scheduled.model_b),
+        )
         self._model_pair_counts[pair_key] = self._model_pair_counts.get(pair_key, 0) + 1
 
         # Update current round if applicable
@@ -493,15 +493,17 @@ class PairwiseEngine:
         leaderboard = []
         for rank, (model_id, rating) in enumerate(self.get_rankings(), start=1):
             stats = self.elo_calculator.get_model_statistics(model_id)
-            leaderboard.append({
-                "rank": rank,
-                "model_id": model_id,
-                "rating": round(rating, 1),
-                "wins": stats.wins,
-                "losses": stats.losses,
-                "ties": stats.ties,
-                "win_rate": round(stats.win_rate, 3),
-            })
+            leaderboard.append(
+                {
+                    "rank": rank,
+                    "model_id": model_id,
+                    "rating": round(rating, 1),
+                    "wins": stats.wins,
+                    "losses": stats.losses,
+                    "ties": stats.ties,
+                    "win_rate": round(stats.win_rate, 3),
+                }
+            )
         return leaderboard
 
     def get_comparison_history(self) -> list[ComparisonRecordData]:
@@ -521,15 +523,9 @@ class PairwiseEngine:
         if not self._comparison_history:
             return {"total": 0, "a_wins": 0, "b_wins": 0, "ties": 0, "bias": 0.0}
 
-        a_wins = sum(
-            1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.A
-        )
-        b_wins = sum(
-            1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.B
-        )
-        ties = sum(
-            1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.TIE
-        )
+        a_wins = sum(1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.A)
+        b_wins = sum(1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.B)
+        ties = sum(1 for r in self._comparison_history if r.verdict.winner == WinnerChoice.TIE)
         total = len(self._comparison_history)
 
         # Bias is deviation from 50% A-wins (excluding ties)

@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -29,7 +27,6 @@ from ukrqualbench.reports import (
     generate_leaderboard_html,
 )
 from ukrqualbench.reports.analysis import analyze_results, generate_full_report
-
 
 # ============================================================================
 # Fixtures
