@@ -134,24 +134,15 @@ def calibrate(
 
     calibration_tasks: list[CalibrationTask] = []
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
-        load_task = progress.add_task("[cyan]Loading calibration data...", total=5)
+    task_files = {
+        "multiple_choice": data_dir / "mc_calibration.json",
+        "gec": data_dir / "gec_calibration.json",
+        "russism": data_dir / "russism_calibration.json",
+        "false_positive": data_dir / "false_positive_calibration.json",
+        "pairwise": data_dir / "pairwise_calibration.json",
+    }
 
-        task_files = {
-            "multiple_choice": data_dir / "mc_calibration.json",
-            "gec": data_dir / "gec_calibration.json",
-            "russism": data_dir / "russism_calibration.json",
-            "false_positive": data_dir / "false_positive_calibration.json",
-            "pairwise": data_dir / "pairwise_calibration.json",
-        }
-
+    with console.status("[cyan]Loading calibration data..."):
         for task_type, filepath in task_files.items():
             if filepath.exists():
                 with open(filepath) as f:
@@ -166,40 +157,34 @@ def calibrate(
                                 metadata=item.get("metadata", {}),
                             )
                         )
-            progress.advance(load_task)
 
-        if not calibration_tasks:
-            rprint("[yellow]Warning: No calibration data found. Using synthetic tests.[/yellow]")
-            calibration_tasks = _create_synthetic_calibration_data()
+    if not calibration_tasks:
+        rprint("[yellow]Warning: No calibration data found. Using synthetic tests.[/yellow]")
+        calibration_tasks = _create_synthetic_calibration_data()
 
-        rprint(f"[green]Loaded {len(calibration_tasks)} calibration tasks[/green]")
+    rprint(f"[green]Loaded {len(calibration_tasks)} calibration tasks[/green]")
 
-        progress.add_task("[cyan]Initializing judge model...", total=None)
-        judge_client = create_model_client(judge, config)
+    judge_client = create_model_client(judge, config)
 
-        calib_task = progress.add_task(
-            f"[cyan]Running calibration on {judge}...", total=len(calibration_tasks)
-        )
+    calibrator = JudgeCalibrator(
+        model=judge_client,
+        thresholds={
+            "mc_accuracy": 0.85,
+            "gec_f1": 0.80,
+            "russism_f1": 0.85,
+            "false_positive": 0.15,
+            "pairwise_consistency": 0.90,
+            "position_bias": 0.05,
+            "length_bias": 0.30,
+            "final_score": 0.80,
+        },
+    )
 
-        calibrator = JudgeCalibrator(
-            model=judge_client,
-            thresholds={
-                "mc_accuracy": 0.85,
-                "gec_f1": 0.80,
-                "russism_f1": 0.85,
-                "false_positive": 0.15,
-                "pairwise_consistency": 0.90,
-                "position_bias": 0.05,
-                "length_bias": 0.30,
-                "final_score": 0.80,
-            },
-        )
+    async def run_calibration() -> Any:
+        return await calibrator.calibrate(calibration_tasks)
 
-        async def run_calibration() -> Any:
-            return await calibrator.calibrate(calibration_tasks)
-
-        result = asyncio.run(run_calibration())
-        progress.advance(calib_task, len(calibration_tasks))
+    rprint(f"[cyan]Running calibration on {judge}... (this may take several minutes)[/cyan]")
+    result = asyncio.run(run_calibration())
 
     _display_calibration_results(result, verbose)
 

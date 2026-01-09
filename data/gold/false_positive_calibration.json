@@ -1,0 +1,96 @@
+{
+  "version": "1.0.0",
+  "description": "Judge calibration data for false positive testing - correct texts that should NOT be flagged",
+  "tasks": [
+    {
+      "id": "fp_001",
+      "input": {"text": "Реве та стогне Дніпр широкий, сердитий вітер завива."},
+      "expected": true,
+      "metadata": {"author": "Тарас Шевченко", "notes": "Classic poetry"}
+    },
+    {
+      "id": "fp_002",
+      "input": {"text": "Сонце низько, вечір близько, стану я край долиною."},
+      "expected": true,
+      "metadata": {"author": "Тарас Шевченко"}
+    },
+    {
+      "id": "fp_003",
+      "input": {"text": "Хто може випити Дніпро, хто владен виссати море."},
+      "expected": true,
+      "metadata": {"author": "Іван Франко"}
+    },
+    {
+      "id": "fp_004",
+      "input": {"text": "І все йде, і все минає — і краю немає."},
+      "expected": true,
+      "metadata": {"author": "Тарас Шевченко"}
+    },
+    {
+      "id": "fp_005",
+      "input": {"text": "Мене завжди дивувала одна риса українського народу."},
+      "expected": true,
+      "metadata": {"author": "Михайло Коцюбинський"}
+    },
+    {
+      "id": "fp_006",
+      "input": {"text": "А надворі синя весна, і зозуля кує над водою."},
+      "expected": true,
+      "metadata": {"author": "Михайло Коцюбинський"}
+    },
+    {
+      "id": "fp_007",
+      "input": {"text": "Хотіла б я піснею стати у сюю хвилину ясну."},
+      "expected": true,
+      "metadata": {"author": "Леся Українка"}
+    },
+    {
+      "id": "fp_008",
+      "input": {"text": "Без надії сподіваюсь, прокляну свої страждання."},
+      "expected": true,
+      "metadata": {"author": "Леся Українка"}
+    },
+    {
+      "id": "fp_009",
+      "input": {"text": "Ото, куме, біда. Кажуть, на селі чумаки прийшли."},
+      "expected": true,
+      "metadata": {"author": "Григорій Квітка-Основ'яненко", "notes": "Dialectal prose"}
+    },
+    {
+      "id": "fp_010",
+      "input": {"text": "Та нехай і так. Бува і гірше. А ми ще поборемось."},
+      "expected": true,
+      "metadata": {"notes": "Folk saying"}
+    },
+    {
+      "id": "fp_011",
+      "input": {"text": "Десь у світі є любов, десь у світі є добро."},
+      "expected": true,
+      "metadata": {"author": "Василь Симоненко"}
+    },
+    {
+      "id": "fp_012",
+      "input": {"text": "Україно, нене моя, як умру — поховайте мене край села."},
+      "expected": true,
+      "metadata": {"author": "Василь Стус"}
+    },
+    {
+      "id": "fp_013",
+      "input": {"text": "Ніхто тобі не скаже правди, бо кожен бачить свою власну правду."},
+      "expected": true,
+      "metadata": {"author": "Юрій Андрухович"}
+    },
+    {
+      "id": "fp_014",
+      "input": {"text": "І коли вже здавалося, що все втрачено, раптом щось торкнулося серця."},
+      "expected": true,
+      "metadata": {"author": "Сергій Жадан"}
+    },
+    {
+      "id": "fp_015",
+      "input": {"text": "То була та сама ніч, коли місяць не світив, а зорі мерехтіли."},
+      "expected": true,
+      "metadata": {"author": "Ліна Костенко"}
+    }
+  ]
+}

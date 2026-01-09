@@ -18,7 +18,6 @@ from ukrqualbench.judges.base import (
     PairwiseJudgeBase,
     RussismJudgeBase,
 )
-from ukrqualbench.models.base import ModelResponse
 from ukrqualbench.judges.calibrator import (
     FALSE_POSITIVE_THRESHOLD,
     FINAL_SCORE_THRESHOLD,
@@ -65,6 +64,7 @@ from ukrqualbench.judges.prompts import (
     format_russism_prompt,
     get_template,
 )
+from ukrqualbench.models.base import ModelResponse
 
 __all__ = [
     # Prompts

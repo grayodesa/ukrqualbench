@@ -12,8 +12,7 @@ from __future__ import annotations
 import json
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from ukrqualbench.core.schemas import (
@@ -48,7 +47,7 @@ class ModelClient(Protocol):
         temperature: float | None = None,
         max_tokens: int | None = None,
         json_mode: bool = False,
-    ) -> "ModelResponse":
+    ) -> ModelResponse:
         """Generate a response from the model.
 
         Args:
@@ -150,7 +149,7 @@ class BaseJudge(ABC):
         self,
         system_prompt: str,
         user_prompt: str,
-    ) -> "ModelResponse":
+    ) -> ModelResponse:
         """Call the model with given prompts.
 
         Args:

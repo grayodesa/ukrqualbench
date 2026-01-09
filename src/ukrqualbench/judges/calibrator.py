@@ -247,17 +247,20 @@ class JudgeCalibrator:
                 self._metrics.mc_total += 1  # Count as wrong
 
     async def _calibrate_gec(self, tasks: list[CalibrationTask]) -> None:
-        """Calibrate on GEC tasks."""
+        """Calibrate on GEC tasks.
+
+        Tests whether the judge can correctly identify what corrections
+        are needed between original (with errors) and reference (correct).
+        """
         for task in tasks:
             original = task.input_data.get("original", "")
             reference = task.input_data.get("reference", "")
             expected_errors = task.expected_output or []
 
-            # Model would correct, but for calibration we check if judge
-            # correctly identifies errors
+            # Ask judge to evaluate the difference between original and reference
             system_prompt, user_prompt = format_gec_prompt(
                 original=original,
-                corrected=original,  # Judge evaluates uncorrected
+                corrected=reference,  # Reference is the "corrected" version
                 reference=reference,
             )
 
@@ -265,16 +268,31 @@ class JudgeCalibrator:
                 response = await self._call_model(system_prompt, user_prompt)
                 parsed = self._parse_json_response(response.text)
 
-                found_errors = set(parsed.get("correct_fixes", []))
-                expected_set = set(expected_errors)
+                found_errors = parsed.get("correct_fixes", [])
 
-                # Calculate TP, FP, FN
-                tp = len(found_errors & expected_set)
-                fp = len(found_errors - expected_set)
-                fn = len(expected_set - found_errors)
+                # Extract error terms from expected format: "X → Y" -> "X"
+                expected_terms = set()
+                for err in expected_errors:
+                    if "→" in err:
+                        expected_terms.add(err.split("→")[0].strip().lower())
+                    else:
+                        expected_terms.add(err.strip().lower())
+
+                # Count matches: a found fix matches if it contains an expected term
+                matched_expected = set()
+                for found in found_errors:
+                    found_lower = found.lower()
+                    for exp in expected_terms:
+                        if exp in found_lower:
+                            matched_expected.add(exp)
+                            break
+
+                tp = len(matched_expected)
+                fn = len(expected_terms) - tp
+                fp = len(found_errors) - tp
 
                 self._metrics.gec_tp += tp
-                self._metrics.gec_fp += fp
+                self._metrics.gec_fp += max(0, fp)
                 self._metrics.gec_fn += fn
 
             except Exception:

@@ -12,7 +12,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -46,17 +46,31 @@ class Config(BaseSettings):
     )
 
     # API Keys - Primary providers
-    openai_api_key: str | None = Field(
+    # Use AliasChoices to accept both prefixed (UKRQUALBENCH_*) and standard env vars
+    openai_api_key: str | None = Field(  # type: ignore[pydantic-alias]
         default=None,
         description="OpenAI API key for GPT models",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_OPENAI_API_KEY",
+            "OPENAI_API_KEY",
+        ),
     )
-    anthropic_api_key: str | None = Field(
+    anthropic_api_key: str | None = Field(  # type: ignore[pydantic-alias]
         default=None,
         description="Anthropic API key for Claude models",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_ANTHROPIC_API_KEY",
+            "ANTHROPIC_API_KEY",
+        ),
     )
-    google_api_key: str | None = Field(
+    google_api_key: str | None = Field(  # type: ignore[pydantic-alias]
         default=None,
         description="Google AI API key for Gemini models",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_GOOGLE_API_KEY",
+            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
+        ),
     )
 
     # Azure OpenAI (optional)
@@ -76,9 +90,13 @@ class Config(BaseSettings):
     )
 
     # Nebius Token Factory (optional)
-    nebius_api_key: str | None = Field(
+    nebius_api_key: str | None = Field(  # type: ignore[pydantic-alias]
         default=None,
         description="Nebius API key for Token Factory models",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_NEBIUS_API_KEY",
+            "NEBIUS_API_KEY",
+        ),
     )
 
     # Local models
