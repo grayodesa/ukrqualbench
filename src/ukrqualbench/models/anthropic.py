@@ -56,8 +56,8 @@ class AnthropicClient(BaseModelClient):
         self._api_key = api_key or self._config.api_key or os.getenv("ANTHROPIC_API_KEY")
         if not self._api_key:
             raise ValueError(
-                "Anthropic API key required. Set ANTHROPIC_API_KEY environment variable "
-                "or pass api_key parameter."
+                "Anthropic API key required. Set UKRQUALBENCH_ANTHROPIC_API_KEY (or ANTHROPIC_API_KEY) "
+                "environment variable or pass api_key parameter."
             )
 
         # Resolve base URL

@@ -66,11 +66,18 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     # Anthropic legacy
     "claude-3-5-sonnet-20241022": (3.00, 15.00),
     "claude-3-5-haiku-20241022": (0.80, 4.00),
-    # Google Gemini 3 family
-    "gemini-3-pro-preview": (2.50, 10.00),
+    # Google Gemini 3 family (latest)
+    "gemini-3-pro-preview": (2.00, 12.00),
     "gemini-3-flash-preview": (0.15, 0.60),
-    # Google legacy
+    # Google Gemini 2.5 family
+    "gemini-2.5-pro": (1.25, 10.00),
+    "gemini-2.5-pro-preview": (1.25, 10.00),
+    "gemini-2.5-flash": (0.15, 0.60),
+    "gemini-2.5-flash-preview": (0.15, 0.60),
+    # Google Gemini 2.0 family
     "gemini-2.0-flash": (0.10, 0.40),
+    "gemini-2.0-flash-exp": (0.10, 0.40),
+    # Google legacy
     "gemini-1.5-pro": (1.25, 5.00),
     "gemini-1.5-flash": (0.075, 0.30),
     # Nebius Token Factory - DeepSeek models

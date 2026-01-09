@@ -55,10 +55,11 @@ class OllamaClient(BaseModelClient):
         super().__init__(f"ollama/{model_id}", config)
         self._ollama_model = model_id
 
-        # Resolve base URL
+        # Resolve base URL (check both OLLAMA_BASE_URL and legacy OLLAMA_HOST)
         self._base_url = (
             base_url
             or self._config.base_url
+            or os.getenv("OLLAMA_BASE_URL")
             or os.getenv("OLLAMA_HOST", "http://localhost:11434")
         )
 
@@ -183,9 +184,11 @@ class OllamaChatClient(BaseModelClient):
         super().__init__(f"ollama/{model_id}", config)
         self._ollama_model = model_id
 
+        # Resolve base URL (check both OLLAMA_BASE_URL and legacy OLLAMA_HOST)
         self._base_url = (
             base_url
             or self._config.base_url
+            or os.getenv("OLLAMA_BASE_URL")
             or os.getenv("OLLAMA_HOST", "http://localhost:11434")
         )
 
@@ -434,8 +437,9 @@ class NebiusClient(BaseModelClient):
         self._api_key = api_key or self._config.api_key or os.getenv("NEBIUS_API_KEY")
         if not self._api_key:
             raise ValueError(
-                "Nebius API key required. Set NEBIUS_API_KEY environment variable "
-                "or pass api_key parameter. Get your key at https://tokenfactory.nebius.com/"
+                "Nebius API key required. Set UKRQUALBENCH_NEBIUS_API_KEY (or NEBIUS_API_KEY) "
+                "environment variable or pass api_key parameter. "
+                "Get your key at https://tokenfactory.nebius.com/"
             )
 
         # Resolve base URL

@@ -55,8 +55,8 @@ class OpenAIClient(BaseModelClient):
         self._api_key = api_key or self._config.api_key or os.getenv("OPENAI_API_KEY")
         if not self._api_key:
             raise ValueError(
-                "OpenAI API key required. Set OPENAI_API_KEY environment variable "
-                "or pass api_key parameter."
+                "OpenAI API key required. Set UKRQUALBENCH_OPENAI_API_KEY (or OPENAI_API_KEY) "
+                "environment variable or pass api_key parameter."
             )
 
         # Resolve base URL
@@ -186,16 +186,16 @@ class AzureOpenAIClient(BaseModelClient):
         self._api_key = api_key or self._config.api_key or os.getenv("AZURE_OPENAI_API_KEY")
         if not self._api_key:
             raise ValueError(
-                "Azure OpenAI API key required. Set AZURE_OPENAI_API_KEY environment variable "
-                "or pass api_key parameter."
+                "Azure OpenAI API key required. Set UKRQUALBENCH_AZURE_OPENAI_API_KEY "
+                "(or AZURE_OPENAI_API_KEY) environment variable or pass api_key parameter."
             )
 
         # Resolve endpoint
         self._azure_endpoint = azure_endpoint or os.getenv("AZURE_OPENAI_ENDPOINT")
         if not self._azure_endpoint:
             raise ValueError(
-                "Azure OpenAI endpoint required. Set AZURE_OPENAI_ENDPOINT environment variable "
-                "or pass azure_endpoint parameter."
+                "Azure OpenAI endpoint required. Set UKRQUALBENCH_AZURE_OPENAI_ENDPOINT "
+                "(or AZURE_OPENAI_ENDPOINT) environment variable or pass azure_endpoint parameter."
             )
 
         self._client: openai.AsyncAzureOpenAI | None = None

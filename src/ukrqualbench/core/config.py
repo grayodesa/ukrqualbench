@@ -45,7 +45,7 @@ class Config(BaseSettings):
         extra="ignore",
     )
 
-    # API Keys
+    # API Keys - Primary providers
     openai_api_key: str | None = Field(
         default=None,
         description="OpenAI API key for GPT models",
@@ -58,9 +58,41 @@ class Config(BaseSettings):
         default=None,
         description="Google AI API key for Gemini models",
     )
+
+    # Azure OpenAI (optional)
+    azure_openai_api_key: str | None = Field(
+        default=None,
+        description="Azure OpenAI API key",
+    )
+    azure_openai_endpoint: str | None = Field(
+        default=None,
+        description="Azure OpenAI endpoint URL",
+    )
+
+    # Google Cloud / Vertex AI (optional)
+    google_cloud_project: str | None = Field(
+        default=None,
+        description="Google Cloud project ID for Vertex AI",
+    )
+
+    # Nebius Token Factory (optional)
+    nebius_api_key: str | None = Field(
+        default=None,
+        description="Nebius API key for Token Factory models",
+    )
+
+    # Local models
     ollama_base_url: str = Field(
         default="http://localhost:11434",
         description="Ollama API base URL for local models",
+    )
+    vllm_api_key: str | None = Field(
+        default=None,
+        description="vLLM API key (if authentication required)",
+    )
+    vllm_base_url: str = Field(
+        default="http://localhost:8000",
+        description="vLLM API base URL",
     )
 
     # Benchmark settings

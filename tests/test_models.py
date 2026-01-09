@@ -166,11 +166,11 @@ class TestCalculateCost:
 
     def test_gemini3_cost(self) -> None:
         """Test Gemini 3 Pro cost calculation."""
-        # Gemini 3 Pro: $2.50/1M input, $10.00/1M output
+        # Gemini 3 Pro: $2.00/1M input, $12.00/1M output
         cost = calculate_cost("gemini-3-pro-preview", input_tokens=5000, output_tokens=2000)
 
-        expected_input = (5000 / 1_000_000) * 2.50
-        expected_output = (2000 / 1_000_000) * 10.00
+        expected_input = (5000 / 1_000_000) * 2.00
+        expected_output = (2000 / 1_000_000) * 12.00
         expected_total = expected_input + expected_output
 
         assert cost == pytest.approx(expected_total)
@@ -457,10 +457,22 @@ class TestGoogleClient:
         assert client._api_key == "test-key"
 
     def test_accepts_api_key_from_env(self) -> None:
-        """Test API key from environment."""
-        with patch.dict("os.environ", {"GOOGLE_API_KEY": "env-key"}):
+        """Test API key from environment (legacy GOOGLE_API_KEY)."""
+        with patch.dict("os.environ", {"GOOGLE_API_KEY": "env-key"}, clear=True):
             client = GoogleClient()
             assert client._api_key == "env-key"
+
+    def test_accepts_gemini_api_key_from_env(self) -> None:
+        """Test API key from GEMINI_API_KEY (preferred by new SDK)."""
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-key"}, clear=True):
+            client = GoogleClient()
+            assert client._api_key == "gemini-key"
+
+    def test_gemini_api_key_takes_precedence(self) -> None:
+        """Test GEMINI_API_KEY takes precedence over GOOGLE_API_KEY."""
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-key", "GOOGLE_API_KEY": "google-key"}, clear=True):
+            client = GoogleClient()
+            assert client._api_key == "gemini-key"
 
     def test_model_id_property(self) -> None:
         """Test model_id property."""

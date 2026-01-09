@@ -1,12 +1,13 @@
 """Google Gemini model client.
 
-Supports Gemini 3 Pro, Gemini 3 Flash, and legacy Gemini 2.0/1.5 models.
+Supports Gemini 2.5/2.0 models via both AI Studio and Vertex AI.
+Uses the unified google-genai SDK (replaces deprecated google-generativeai).
 """
 
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ukrqualbench.models.base import (
     BaseModelClient,
@@ -15,25 +16,27 @@ from ukrqualbench.models.base import (
     calculate_cost,
 )
 
+if TYPE_CHECKING:
+    from google import genai
+
 
 class GoogleClient(BaseModelClient):
-    """Google Gemini API client.
+    """Google Gemini API client using AI Studio.
 
     Supports Gemini models including:
-    - gemini-3-pro-preview (flagship reasoning model)
-    - gemini-3-flash-preview (fast reasoning model)
-    - gemini-2.0-flash (legacy)
-    - gemini-1.5-pro (legacy)
+    - gemini-2.5-pro, gemini-3-flash-preview (latest)
+    - gemini-2.0-flash (stable)
+    - gemini-1.5-pro, gemini-1.5-flash (legacy)
 
     Example:
-        >>> client = GoogleClient("gemini-3-pro-preview")
+        >>> client = GoogleClient("gemini-3-flash-preview")
         >>> response = await client.generate("Поясніть фотосинтез")
         >>> print(response.text)
     """
 
     def __init__(
         self,
-        model_id: str = "gemini-3-pro-preview",
+        model_id: str = "gemini-3-flash-preview",
         config: ModelConfig | None = None,
         api_key: str | None = None,
     ) -> None:
@@ -42,51 +45,44 @@ class GoogleClient(BaseModelClient):
         Args:
             model_id: Gemini model identifier.
             config: Optional configuration.
-            api_key: API key (defaults to GOOGLE_API_KEY env var).
+            api_key: API key (defaults to GEMINI_API_KEY or GOOGLE_API_KEY env var).
         """
         super().__init__(model_id, config)
 
-        # Resolve API key
-        self._api_key = api_key or self._config.api_key or os.getenv("GOOGLE_API_KEY")
+        # Resolve API key (check both GEMINI_API_KEY and legacy GOOGLE_API_KEY)
+        self._api_key = (
+            api_key
+            or self._config.api_key
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("GOOGLE_API_KEY")
+        )
         if not self._api_key:
             raise ValueError(
-                "Google API key required. Set GOOGLE_API_KEY environment variable "
-                "or pass api_key parameter."
+                "Google API key required. Set UKRQUALBENCH_GOOGLE_API_KEY, GEMINI_API_KEY, "
+                "or GOOGLE_API_KEY environment variable, or pass api_key parameter."
             )
 
-        # Model will be created lazily
-        self._model: Any = None
-        self._initialized = False
+        # Client will be created lazily
+        self._client: genai.Client | None = None
 
-    def _initialize(self) -> None:
-        """Initialize the Google GenAI library."""
-        if self._initialized:
-            return
-
-        try:
-            import google.generativeai as genai
-        except ImportError as e:
-            raise ImportError(
-                "google-generativeai package required. "
-                "Install with: pip install google-generativeai"
-            ) from e
-
-        genai.configure(api_key=self._api_key)  # type: ignore[attr-defined]
-        self._initialized = True
-
-    def _get_model(self) -> Any:
-        """Get or create the Gemini model.
+    def _get_client(self) -> genai.Client:
+        """Get or create the Gemini client.
 
         Returns:
-            GenerativeModel instance.
+            genai.Client instance.
         """
-        if self._model is None:
-            self._initialize()
-            import google.generativeai as genai
+        if self._client is None:
+            try:
+                from google import genai
+            except ImportError as e:
+                raise ImportError(
+                    "google-genai package required. "
+                    "Install with: pip install google-genai"
+                ) from e
 
-            self._model = genai.GenerativeModel(self._model_id)  # type: ignore[attr-defined]
+            self._client = genai.Client(api_key=self._api_key)
 
-        return self._model
+        return self._client
 
     async def _call_api(
         self,
@@ -111,39 +107,32 @@ class GoogleClient(BaseModelClient):
         Raises:
             google.api_core.exceptions.GoogleAPIError: If API call fails.
         """
-        import google.generativeai as genai
+        from google.genai import types
 
-        self._initialize()
+        client = self._get_client()
 
         # Build generation config
-        generation_config = genai.GenerationConfig(  # type: ignore[attr-defined]
-            temperature=temperature,
-            max_output_tokens=max_tokens,
-        )
+        config_kwargs: dict[str, Any] = {
+            "temperature": temperature,
+            "max_output_tokens": max_tokens,
+        }
+
+        # Add system instruction if provided
+        if system_prompt:
+            config_kwargs["system_instruction"] = system_prompt
 
         # Add JSON response format if requested
         if json_mode:
-            generation_config = genai.GenerationConfig(  # type: ignore[attr-defined]
-                temperature=temperature,
-                max_output_tokens=max_tokens,
-                response_mime_type="application/json",
-            )
+            config_kwargs["response_mime_type"] = "application/json"
 
-        # Create model with system instruction if provided
-        if system_prompt:
-            model = genai.GenerativeModel(  # type: ignore[attr-defined]
-                self._model_id,
-                system_instruction=system_prompt,
-                generation_config=generation_config,
-            )
-        else:
-            model = genai.GenerativeModel(  # type: ignore[attr-defined]
-                self._model_id,
-                generation_config=generation_config,
-            )
+        generation_config = types.GenerateContentConfig(**config_kwargs)
 
-        # Generate response
-        response = await model.generate_content_async(prompt)
+        # Generate response using async client
+        response = await client.aio.models.generate_content(
+            model=self._model_id,
+            contents=prompt,
+            config=generation_config,
+        )
 
         # Extract response content
         text = response.text if response.text else ""
@@ -152,8 +141,8 @@ class GoogleClient(BaseModelClient):
         input_tokens = 0
         output_tokens = 0
         if hasattr(response, "usage_metadata") and response.usage_metadata:
-            input_tokens = getattr(response.usage_metadata, "prompt_token_count", 0)
-            output_tokens = getattr(response.usage_metadata, "candidates_token_count", 0)
+            input_tokens = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
+            output_tokens = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
 
         total_tokens = input_tokens + output_tokens
 
@@ -173,10 +162,11 @@ class VertexAIClient(BaseModelClient):
     """Google Vertex AI client.
 
     Supports Gemini models via Vertex AI for enterprise use.
+    Uses the unified google-genai SDK with vertexai=True.
 
     Example:
         >>> client = VertexAIClient(
-        ...     model_id="gemini-3-pro-preview",
+        ...     model_id="gemini-3-flash-preview",
         ...     project_id="my-project",
         ...     location="us-central1",
         ... )
@@ -185,7 +175,7 @@ class VertexAIClient(BaseModelClient):
 
     def __init__(
         self,
-        model_id: str = "gemini-3-pro-preview",
+        model_id: str = "gemini-3-flash-preview",
         project_id: str | None = None,
         location: str = "us-central1",
         config: ModelConfig | None = None,
@@ -195,7 +185,7 @@ class VertexAIClient(BaseModelClient):
         Args:
             model_id: Gemini model identifier.
             project_id: GCP project ID (defaults to GOOGLE_CLOUD_PROJECT env var).
-            location: GCP region.
+            location: GCP region (defaults to us-central1).
             config: Optional configuration.
         """
         super().__init__(model_id, config)
@@ -203,43 +193,35 @@ class VertexAIClient(BaseModelClient):
         self._project_id = project_id or os.getenv("GOOGLE_CLOUD_PROJECT")
         if not self._project_id:
             raise ValueError(
-                "Google Cloud project ID required. Set GOOGLE_CLOUD_PROJECT "
-                "environment variable or pass project_id parameter."
+                "Google Cloud project ID required. Set UKRQUALBENCH_GOOGLE_CLOUD_PROJECT "
+                "(or GOOGLE_CLOUD_PROJECT) environment variable or pass project_id parameter."
             )
 
         self._location = location
-        self._model: Any = None
-        self._initialized = False
+        self._client: genai.Client | None = None
 
-    def _initialize(self) -> None:
-        """Initialize Vertex AI."""
-        if self._initialized:
-            return
-
-        try:
-            import vertexai  # type: ignore[import-not-found]
-        except ImportError as e:
-            raise ImportError(
-                "google-cloud-aiplatform package required. "
-                "Install with: pip install google-cloud-aiplatform"
-            ) from e
-
-        vertexai.init(project=self._project_id, location=self._location)
-        self._initialized = True
-
-    def _get_model(self) -> Any:
-        """Get or create the Vertex AI model.
+    def _get_client(self) -> genai.Client:
+        """Get or create the Vertex AI client.
 
         Returns:
-            GenerativeModel instance.
+            genai.Client instance configured for Vertex AI.
         """
-        if self._model is None:
-            self._initialize()
-            from vertexai.generative_models import GenerativeModel  # type: ignore[import-not-found]
+        if self._client is None:
+            try:
+                from google import genai
+            except ImportError as e:
+                raise ImportError(
+                    "google-genai package required. "
+                    "Install with: pip install google-genai"
+                ) from e
 
-            self._model = GenerativeModel(self._model_id)
+            self._client = genai.Client(
+                vertexai=True,
+                project=self._project_id,
+                location=self._location,
+            )
 
-        return self._model
+        return self._client
 
     async def _call_api(
         self,
@@ -261,36 +243,31 @@ class VertexAIClient(BaseModelClient):
         Returns:
             Model response.
         """
-        self._initialize()
-        from vertexai.generative_models import GenerationConfig, GenerativeModel
+        from google.genai import types
+
+        client = self._get_client()
 
         # Build generation config
-        gen_config_kwargs: dict[str, Any] = {
+        config_kwargs: dict[str, Any] = {
             "temperature": temperature,
             "max_output_tokens": max_tokens,
         }
 
-        if json_mode:
-            gen_config_kwargs["response_mime_type"] = "application/json"
-
-        generation_config = GenerationConfig(**gen_config_kwargs)
-
-        # Create model with system instruction if provided
+        # Add system instruction if provided
         if system_prompt:
-            model = GenerativeModel(
-                self._model_id,
-                system_instruction=system_prompt,
-            )
-        else:
-            model = self._get_model()
+            config_kwargs["system_instruction"] = system_prompt
 
-        # Generate response (Vertex AI doesn't have native async, run in executor)
-        import asyncio
+        # Add JSON response format if requested
+        if json_mode:
+            config_kwargs["response_mime_type"] = "application/json"
 
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None,
-            lambda: model.generate_content(prompt, generation_config=generation_config),
+        generation_config = types.GenerateContentConfig(**config_kwargs)
+
+        # Generate response using async client
+        response = await client.aio.models.generate_content(
+            model=self._model_id,
+            contents=prompt,
+            config=generation_config,
         )
 
         # Extract response content
@@ -300,8 +277,8 @@ class VertexAIClient(BaseModelClient):
         input_tokens = 0
         output_tokens = 0
         if hasattr(response, "usage_metadata") and response.usage_metadata:
-            input_tokens = getattr(response.usage_metadata, "prompt_token_count", 0)
-            output_tokens = getattr(response.usage_metadata, "candidates_token_count", 0)
+            input_tokens = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
+            output_tokens = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
 
         total_tokens = input_tokens + output_tokens
 
@@ -318,7 +295,7 @@ class VertexAIClient(BaseModelClient):
 
 
 def create_google_client(
-    model_id: str = "gemini-3-pro-preview",
+    model_id: str = "gemini-3-flash-preview",
     api_key: str | None = None,
     temperature: float = 0.0,
     max_retries: int = 3,
@@ -326,7 +303,7 @@ def create_google_client(
     """Factory function to create a Google Gemini client.
 
     Args:
-        model_id: Gemini model identifier (default: gemini-3-pro-preview).
+        model_id: Gemini model identifier (default: gemini-3-flash-preview).
         api_key: Optional API key.
         temperature: Default sampling temperature.
         max_retries: Maximum retry attempts.
@@ -340,3 +317,34 @@ def create_google_client(
         max_retries=max_retries,
     )
     return GoogleClient(model_id=model_id, config=config)
+
+
+def create_vertex_client(
+    model_id: str = "gemini-3-flash-preview",
+    project_id: str | None = None,
+    location: str = "us-central1",
+    temperature: float = 0.0,
+    max_retries: int = 3,
+) -> VertexAIClient:
+    """Factory function to create a Vertex AI client.
+
+    Args:
+        model_id: Gemini model identifier (default: gemini-3-flash-preview).
+        project_id: GCP project ID.
+        location: GCP region.
+        temperature: Default sampling temperature.
+        max_retries: Maximum retry attempts.
+
+    Returns:
+        Configured VertexAIClient instance.
+    """
+    config = ModelConfig(
+        default_temperature=temperature,
+        max_retries=max_retries,
+    )
+    return VertexAIClient(
+        model_id=model_id,
+        project_id=project_id,
+        location=location,
+        config=config,
+    )
