@@ -33,21 +33,23 @@ uv sync --extra local
 
 ## Quick Start
 
+All commands should be run with `uv run` prefix:
+
 ```bash
 # Show configuration and API key status
-ukrqualbench info
+uv run ukrqualbench info
 
 # Calibrate a judge model
-ukrqualbench calibrate --judge claude-3-5-haiku-latest
+uv run ukrqualbench calibrate --judge claude-3-5-haiku-latest
 
 # Evaluate a single model (lite benchmark ~30min)
-ukrqualbench evaluate --model gpt-5.2 --benchmark lite
+uv run ukrqualbench evaluate --model gpt-5.2 --benchmark lite
 
 # Compare multiple models
-ukrqualbench compare --models gpt-5.2,claude-opus-4-5-20251101 --benchmark base
+uv run ukrqualbench compare --models gpt-5.2,claude-opus-4-5-20251101 --benchmark base
 
 # Generate leaderboard
-ukrqualbench leaderboard --results-dir results/ --format html
+uv run ukrqualbench leaderboard --results-dir results/ --format html
 ```
 
 ## CLI Commands
@@ -64,16 +66,16 @@ ukrqualbench leaderboard --results-dir results/ --format html
 
 ```bash
 # Calibrate with custom output
-ukrqualbench calibrate --judge claude-3-5-haiku-latest --output results/calibration --verbose
+uv run ukrqualbench calibrate --judge claude-3-5-haiku-latest --output results/calibration --verbose
 
 # Evaluate with budget limit
-ukrqualbench evaluate --model gpt-5.2 --benchmark lite --max-cost 10.0 --resume
+uv run ukrqualbench evaluate --model gpt-5.2 --benchmark lite --max-cost 10.0 --resume
 
 # Compare with specific round count
-ukrqualbench compare --models gpt-5.2,gemini-3-flash-preview --rounds 5 --judge claude-3-5-haiku-latest
+uv run ukrqualbench compare --models gpt-5.2,gemini-3-flash-preview --rounds 5 --judge claude-3-5-haiku-latest
 
 # Leaderboard in different formats
-ukrqualbench leaderboard --results-dir results/ --format json  # or csv, markdown, html
+uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, markdown, html
 ```
 
 ## Benchmark Architecture
