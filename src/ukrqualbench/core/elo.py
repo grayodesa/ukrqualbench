@@ -93,9 +93,7 @@ class ELOCalculator:
         exponent = (rating_b - rating_a) / 400.0
         return 1.0 / (1.0 + math.pow(10, exponent))
 
-    def update_rating(
-        self, current_rating: float, expected: float, actual: float
-    ) -> float:
+    def update_rating(self, current_rating: float, expected: float, actual: float) -> float:
         """Calculate new rating after a game.
 
         Args:

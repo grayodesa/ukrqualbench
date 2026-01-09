@@ -165,9 +165,7 @@ class UAGECLoader:
 
         return documents
 
-    def _load_from_parallel(
-        self, source_path: Path, target_path: Path
-    ) -> list[UAGECDocument]:
+    def _load_from_parallel(self, source_path: Path, target_path: Path) -> list[UAGECDocument]:
         """Load from parallel source/target files."""
         with open(source_path, encoding="utf-8") as f:
             sources = f.readlines()
@@ -175,9 +173,7 @@ class UAGECLoader:
             targets = f.readlines()
 
         if len(sources) != len(targets):
-            raise ValueError(
-                f"Source/target mismatch: {len(sources)} vs {len(targets)}"
-            )
+            raise ValueError(f"Source/target mismatch: {len(sources)} vs {len(targets)}")
 
         documents: list[UAGECDocument] = []
         for i, (source, target) in enumerate(zip(sources, targets, strict=True)):
@@ -270,9 +266,7 @@ class UAGECLoader:
         target_lower = target.lower()
 
         for rus_pattern, ukr_pattern in russism_patterns:
-            if re.search(rus_pattern, source_lower) and re.search(
-                ukr_pattern, target_lower
-            ):
+            if re.search(rus_pattern, source_lower) and re.search(ukr_pattern, target_lower):
                 return True
         return False
 
@@ -301,9 +295,7 @@ class UAGECLoader:
             return TaskDifficulty.MEDIUM
 
         # Multiple critical errors = hard
-        critical_count = sum(
-            1 for e in errors if e.severity == ErrorSeverity.CRITICAL
-        )
+        critical_count = sum(1 for e in errors if e.severity == ErrorSeverity.CRITICAL)
         if critical_count >= 2:
             return TaskDifficulty.HARD
 

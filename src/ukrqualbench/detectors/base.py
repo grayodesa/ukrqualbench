@@ -214,9 +214,7 @@ class BaseDetector(ABC):
         if token_counts is None:
             token_counts = [None] * len(texts)  # type: ignore[list-item]
 
-        return [
-            self.detect(text, count) for text, count in zip(texts, token_counts, strict=True)
-        ]
+        return [self.detect(text, count) for text, count in zip(texts, token_counts, strict=True)]
 
     def iter_matches(self, text: str) -> Iterator[DetectionMatch]:
         """Iterate over matches in text.
@@ -230,17 +228,13 @@ class BaseDetector(ABC):
         result = self.detect(text)
         yield from result.matches
 
-    def _remove_overlaps(
-        self, matches: list[DetectionMatch]
-    ) -> list[DetectionMatch]:
+    def _remove_overlaps(self, matches: list[DetectionMatch]) -> list[DetectionMatch]:
         """Remove overlapping matches, keeping the first/longest."""
         if not matches:
             return []
 
         # Sort by start position, then by length (descending)
-        sorted_matches = sorted(
-            matches, key=lambda m: (m.start, -(m.end - m.start))
-        )
+        sorted_matches = sorted(matches, key=lambda m: (m.start, -(m.end - m.start)))
 
         result: list[DetectionMatch] = []
         last_end = -1

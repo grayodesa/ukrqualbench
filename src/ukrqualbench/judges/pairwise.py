@@ -248,10 +248,7 @@ class PairwiseJudge(PairwiseJudgeBase):
         consistency = majority_count / rounds
 
         # Use the verdict that matches majority
-        final_verdict = next(
-            v.verdict for v in verdicts
-            if v.verdict.winner == majority_winner
-        )
+        final_verdict = next(v.verdict for v in verdicts if v.verdict.winner == majority_winner)
 
         # Adjust confidence based on consistency
         if consistency < 0.6:

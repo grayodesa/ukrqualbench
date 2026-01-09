@@ -210,7 +210,7 @@ class Evaluator:
         """
         self._judge = judge
 
-    def add_detector(self, name: str, detector: BaseDetector) -> None:
+    def add_detector(self, name: str, detector: Any) -> None:
         """Add a detector for Block V metrics.
 
         Args:
@@ -853,6 +853,228 @@ class Evaluator:
             "cost_usd": round(self._total_cost_usd, 4),
             "position_bias": self._pairwise_engine.get_position_bias_stats(),
         }
+
+    async def evaluate_model(
+        self,
+        model_id: str,
+        judge_id: str = "claude-3-5-haiku-latest",
+        resume: bool = True,
+    ) -> EvaluationResultData:
+        """Evaluate a single model (convenience method).
+
+        Args:
+            model_id: Model to evaluate.
+            judge_id: Judge model ID.
+            resume: Whether to resume from checkpoint.
+
+        Returns:
+            Evaluation result for the model.
+        """
+        from ukrqualbench.judges import PairwiseJudge
+
+        # Create model client
+        model_client = self._create_model_client(model_id)
+        self.add_model(model_id, model_client)
+
+        # Create judge
+        judge_client = self._create_model_client(judge_id)
+        judge = PairwiseJudge(judge_client)
+        self.set_judge(judge)
+
+        # Load benchmark tasks
+        benchmark_file = (
+            self._config.data_dir / "benchmarks" / f"{self._eval_config.benchmark_version}.json"
+        )
+        if benchmark_file.exists():
+            self.load_tasks_from_file(benchmark_file)
+        else:
+            self._load_default_tasks()
+
+        # Setup detectors
+        self._setup_detectors()
+
+        # Configure resume
+        self._eval_config.auto_resume = resume
+
+        # Run evaluation
+        results = await self.run()
+        return results[0] if results else self._create_empty_result(model_id)
+
+    async def compare_models(
+        self,
+        model_ids: list[str],
+        judge_id: str = "claude-3-5-haiku-latest",
+        rounds: int | None = None,
+    ) -> list[EvaluationResultData]:
+        """Compare multiple models (convenience method).
+
+        Args:
+            model_ids: List of model IDs to compare.
+            judge_id: Judge model ID.
+            rounds: Number of tournament rounds (auto if None).
+
+        Returns:
+            List of evaluation results for all models.
+        """
+
+        from ukrqualbench.judges import PairwiseJudge
+
+        # Create model clients
+        for model_id in model_ids:
+            client = self._create_model_client(model_id)
+            self.add_model(model_id, client)
+
+        # Create judge
+        judge_client = self._create_model_client(judge_id)
+        judge = PairwiseJudge(judge_client)
+        self.set_judge(judge)
+
+        # Load benchmark tasks
+        benchmark_file = (
+            self._config.data_dir / "benchmarks" / f"{self._eval_config.benchmark_version}.json"
+        )
+        if benchmark_file.exists():
+            self.load_tasks_from_file(benchmark_file)
+        else:
+            self._load_default_tasks()
+
+        # Setup detectors
+        self._setup_detectors()
+
+        # Override rounds if specified
+        if rounds is not None:
+            self._progress.total_rounds = rounds
+
+        # Run evaluation
+        return await self.run()
+
+    def _create_model_client(self, model_id: str) -> BaseModelClient:
+        """Create model client from model ID."""
+        from ukrqualbench.models import (
+            create_anthropic_client,
+            create_google_client,
+            create_nebius_client,
+            create_ollama_client,
+            create_openai_client,
+        )
+
+        model_lower = model_id.lower()
+
+        if (
+            model_lower.startswith("gpt-")
+            or model_lower.startswith("o1")
+            or model_lower.startswith("o3")
+        ):
+            return create_openai_client(
+                model_id=model_id,
+                api_key=self._config.openai_api_key,
+                temperature=self._config.temperature,
+            )
+        elif model_lower.startswith("claude-"):
+            return create_anthropic_client(
+                model_id=model_id,
+                api_key=self._config.anthropic_api_key,
+                temperature=self._config.temperature,
+            )
+        elif model_lower.startswith("gemini-"):
+            return create_google_client(
+                model_id=model_id,
+                api_key=self._config.google_api_key,
+                temperature=self._config.temperature,
+            )
+        elif "/" in model_id:
+            return create_nebius_client(
+                model_id=model_id,
+                api_key=self._config.nebius_api_key,
+                temperature=self._config.temperature,
+            )
+        else:
+            return create_ollama_client(
+                model_id=model_id,
+                base_url=self._config.ollama_base_url,
+                temperature=self._config.temperature,
+            )
+
+    def _setup_detectors(self) -> None:
+        """Setup default detectors for Block V."""
+        from ukrqualbench.detectors import (
+            AnglicismDetector,
+            FertilityCalculator,
+            PositiveMarkerDetector,
+            RussismDetector,
+        )
+
+        if "russism" not in self._detectors:
+            self.add_detector("russism", RussismDetector())
+        if "anglicism" not in self._detectors:
+            self.add_detector("anglicism", AnglicismDetector())
+        if "markers" not in self._detectors:
+            self.add_detector("markers", PositiveMarkerDetector())
+        if "fertility" not in self._detectors:
+            self.add_detector("fertility", FertilityCalculator())
+
+    def _load_default_tasks(self) -> None:
+        """Load default synthetic tasks for testing."""
+        tasks = [
+            BenchmarkTask(
+                id="gen_1",
+                type="generation",
+                category="explanation",
+                prompt="Поясніть, що таке машинне навчання.",
+            ),
+            BenchmarkTask(
+                id="gen_2",
+                type="generation",
+                category="advice",
+                prompt="Дайте поради щодо здорового харчування.",
+            ),
+            BenchmarkTask(
+                id="gen_3",
+                type="generation",
+                category="creative",
+                prompt="Напишіть короткий вірш про весну.",
+            ),
+        ]
+        self.load_tasks(tasks)
+
+    def _create_empty_result(self, model_id: str) -> EvaluationResultData:
+        """Create empty result for error cases."""
+        return EvaluationResultData(
+            model_id=model_id,
+            scores=ModelScoreData(
+                elo_rating=1500.0,
+                block_a=BlockAScores(
+                    mc_accuracy=0.0,
+                    gec_f1=0.0,
+                    translation_comet=0.0,
+                    false_positive_rate=0.0,
+                    positive_markers_score=0.0,
+                ),
+                block_b=BlockBScores(
+                    generation_elo=1500.0,
+                    adversarial_elo=1500.0,
+                    long_context_elo=1500.0,
+                ),
+                block_v=BlockVScores(
+                    fertility_rate=1.5,
+                    positive_markers=0.0,
+                    russism_rate=0.0,
+                    anglicism_rate=0.0,
+                ),
+                badge=Badge.NONE,
+            ),
+            metadata=EvaluationMetadataData(
+                benchmark_version=self._eval_config.benchmark_version,
+                dataset_hash="",
+                judge_id="",
+                judge_calibration_score=0.0,
+                total_prompts=0,
+                total_comparisons=0,
+                runtime_minutes=0.0,
+                total_cost_usd=0.0,
+            ),
+            comparisons_count=0,
+        )
 
 
 def create_evaluator(

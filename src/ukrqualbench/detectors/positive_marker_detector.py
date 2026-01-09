@@ -28,7 +28,7 @@ from ukrqualbench.detectors.base import (
 
 # Default weights for positive marker categories
 DEFAULT_CATEGORY_WEIGHTS: dict[str, float] = {
-    "vocative": 2.0,      # Most distinctive Ukrainian feature
+    "vocative": 2.0,  # Most distinctive Ukrainian feature
     "particles": 1.0,
     "conjunctions": 1.0,
     "diminutives": 1.5,
@@ -63,7 +63,12 @@ class PositiveMarkerDetector(BaseDetector):
 
     def _get_default_dictionary_path(self) -> Path:
         """Return default path to positive markers dictionary."""
-        return Path(__file__).parent.parent.parent.parent / "data" / "dictionaries" / "positive_markers.json"
+        return (
+            Path(__file__).parent.parent.parent.parent
+            / "data"
+            / "dictionaries"
+            / "positive_markers.json"
+        )
 
     def _load_patterns(self, data: dict[str, Any]) -> list[CompiledPattern]:
         """Load and compile positive marker patterns.
@@ -83,8 +88,7 @@ class PositiveMarkerDetector(BaseDetector):
 
             # Get category weight
             category_weight = category_data.get(
-                "weight",
-                DEFAULT_CATEGORY_WEIGHTS.get(category_name, 1.0)
+                "weight", DEFAULT_CATEGORY_WEIGHTS.get(category_name, 1.0)
             )
 
             category_patterns = category_data.get("patterns", [])
@@ -131,9 +135,7 @@ class PositiveMarkerDetector(BaseDetector):
 
         return result
 
-    def calculate_nativeness_score(
-        self, result: DetectionResult
-    ) -> float:
+    def calculate_nativeness_score(self, result: DetectionResult) -> float:
         """Calculate nativeness score based on positive marker density.
 
         Higher weighted rate = more native-sounding text.
@@ -169,9 +171,7 @@ class PositiveMarkerDetector(BaseDetector):
         # Very poor
         return weighted_rate * 15  # 0-30
 
-    def get_category_breakdown(
-        self, result: DetectionResult
-    ) -> dict[str, dict[str, Any]]:
+    def get_category_breakdown(self, result: DetectionResult) -> dict[str, dict[str, Any]]:
         """Get breakdown of positive markers by category.
 
         Args:
@@ -199,9 +199,7 @@ class PositiveMarkerDetector(BaseDetector):
 
         return breakdown
 
-    def get_missing_categories(
-        self, result: DetectionResult
-    ) -> list[str]:
+    def get_missing_categories(self, result: DetectionResult) -> list[str]:
         """Get categories with no detected markers.
 
         Useful for identifying areas to improve Ukrainian nativeness.
@@ -220,9 +218,7 @@ class PositiveMarkerDetector(BaseDetector):
 
         return list(all_categories - found_categories)
 
-    def get_improvement_suggestions(
-        self, result: DetectionResult
-    ) -> list[dict[str, str]]:
+    def get_improvement_suggestions(self, result: DetectionResult) -> list[dict[str, str]]:
         """Get suggestions for improving Ukrainian nativeness.
 
         Args:
@@ -246,20 +242,20 @@ class PositiveMarkerDetector(BaseDetector):
 
         for category in missing:
             if category in category_suggestions:
-                suggestions.append({
-                    "category": category,
-                    "suggestion": category_suggestions[category],
-                    "priority": "high" if category in ("vocative", "particles") else "medium",
-                })
+                suggestions.append(
+                    {
+                        "category": category,
+                        "suggestion": category_suggestions[category],
+                        "priority": "high" if category in ("vocative", "particles") else "medium",
+                    }
+                )
 
         # Sort by priority (high first)
         suggestions.sort(key=lambda x: 0 if x["priority"] == "high" else 1)
 
         return suggestions
 
-    def analyze_balance(
-        self, result: DetectionResult
-    ) -> dict[str, Any]:
+    def analyze_balance(self, result: DetectionResult) -> dict[str, Any]:
         """Analyze the balance of positive markers across categories.
 
         Args:

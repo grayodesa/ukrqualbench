@@ -166,9 +166,7 @@ class FertilityCalculator:
             for text, tokens in zip(texts, precomputed_tokens, strict=True)
         ]
 
-    def calculate_aggregate(
-        self, texts: list[str]
-    ) -> dict[str, float]:
+    def calculate_aggregate(self, texts: list[str]) -> dict[str, float]:
         """Calculate aggregate fertility statistics.
 
         Args:

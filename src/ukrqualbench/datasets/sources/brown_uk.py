@@ -252,8 +252,8 @@ class BrownUKLoader:
                 if split_pos < min_length:
                     split_pos = max_length
 
-                passages.append(text[:split_pos + 1].strip())
-                text = text[split_pos + 1:].strip()
+                passages.append(text[: split_pos + 1].strip())
+                text = text[split_pos + 1 :].strip()
 
         return passages
 
@@ -295,9 +295,18 @@ class BrownUKLoader:
 
             # Check for known classic authors
             classic_authors = {
-                "шевченко", "франко", "леся українка", "коцюбинський",
-                "стефаник", "кобилянська", "тичина", "рильський",
-                "малишко", "сосюра", "костенко", "стус",
+                "шевченко",
+                "франко",
+                "леся українка",
+                "коцюбинський",
+                "стефаник",
+                "кобилянська",
+                "тичина",
+                "рильський",
+                "малишко",
+                "сосюра",
+                "костенко",
+                "стус",
             }
             if doc.author:
                 author_lower = doc.author.lower()

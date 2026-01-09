@@ -720,7 +720,9 @@ class HTMLReportGenerator:
             autoescape=select_autoescape(["html", "xml"]),
         )
         # Add custom filters
-        self._env.filters["badge_config"] = lambda badge: BADGE_CONFIG.get(badge, BADGE_CONFIG[Badge.NONE])
+        self._env.filters["badge_config"] = lambda badge: BADGE_CONFIG.get(
+            badge, BADGE_CONFIG[Badge.NONE]
+        )
 
     def render_leaderboard(
         self,
@@ -749,12 +751,14 @@ class HTMLReportGenerator:
         }
 
         if leaderboard.metadata:
-            metadata_dict.update({
-                "benchmark_version": leaderboard.metadata.benchmark_version,
-                "judge_id": leaderboard.metadata.judge_id,
-                "total_models": leaderboard.metadata.total_models,
-                "generated_at": leaderboard.metadata.generated_at.strftime("%Y-%m-%d %H:%M"),
-            })
+            metadata_dict.update(
+                {
+                    "benchmark_version": leaderboard.metadata.benchmark_version,
+                    "judge_id": leaderboard.metadata.judge_id,
+                    "total_models": leaderboard.metadata.total_models,
+                    "generated_at": leaderboard.metadata.generated_at.strftime("%Y-%m-%d %H:%M"),
+                }
+            )
 
         return template.render(
             title=title,
@@ -855,17 +859,21 @@ class HTMLReportGenerator:
             type: 'radar',
             data: {{
                 labels: ['Low Russisms', 'High Markers', 'Low Fertility'],
-                datasets: {json.dumps([
+                datasets: {
+            json.dumps(
+                [
                     {
-                        'label': model,
-                        'data': [
+                        "label": model,
+                        "data": [
                             10 - min(result.scores.block_v.russism_rate, 10),
                             result.scores.block_v.positive_markers,
                             3 - min(result.scores.block_v.fertility_rate, 3),
                         ],
                     }
                     for model, result in zip(models, results, strict=True)
-                ])}
+                ]
+            )
+        }
             }},
             options: {{
                 responsive: true,

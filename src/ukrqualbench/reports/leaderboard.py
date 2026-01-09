@@ -138,30 +138,32 @@ class LeaderboardEntry:
         }
 
         if include_details:
-            result.update({
-                "block_a": {
-                    "mc_accuracy": self.mc_accuracy,
-                    "gec_f1": self.gec_f1,
-                    "translation_comet": self.translation_comet,
-                },
-                "block_b": {
-                    "generation_elo": self.generation_elo,
-                    "adversarial_elo": self.adversarial_elo,
-                    "long_context_elo": self.long_context_elo,
-                },
-                "block_v": {
-                    "fertility_rate": self.fertility_rate,
-                    "positive_markers": self.positive_markers,
-                    "russism_rate": self.russism_rate,
-                    "anglicism_rate": self.anglicism_rate,
-                },
-                "statistics": {
-                    "wins": self.wins,
-                    "losses": self.losses,
-                    "ties": self.ties,
-                    "total_comparisons": self.total_comparisons,
-                },
-            })
+            result.update(
+                {
+                    "block_a": {
+                        "mc_accuracy": self.mc_accuracy,
+                        "gec_f1": self.gec_f1,
+                        "translation_comet": self.translation_comet,
+                    },
+                    "block_b": {
+                        "generation_elo": self.generation_elo,
+                        "adversarial_elo": self.adversarial_elo,
+                        "long_context_elo": self.long_context_elo,
+                    },
+                    "block_v": {
+                        "fertility_rate": self.fertility_rate,
+                        "positive_markers": self.positive_markers,
+                        "russism_rate": self.russism_rate,
+                        "anglicism_rate": self.anglicism_rate,
+                    },
+                    "statistics": {
+                        "wins": self.wins,
+                        "losses": self.losses,
+                        "ties": self.ties,
+                        "total_comparisons": self.total_comparisons,
+                    },
+                }
+            )
 
             if self.elo_ci_low is not None and self.elo_ci_high is not None:
                 result["confidence_interval"] = {
@@ -319,8 +321,7 @@ class LeaderboardGenerator:
         """
         data: dict[str, Any] = {
             "leaderboard": [
-                entry.to_dict(include_details=include_details)
-                for entry in self.entries
+                entry.to_dict(include_details=include_details) for entry in self.entries
             ],
         }
 
@@ -345,11 +346,23 @@ class LeaderboardGenerator:
 
         if include_details:
             fieldnames = [
-                "rank", "model_id", "elo_rating", "badge",
-                "mc_accuracy", "gec_f1", "translation_comet",
-                "generation_elo", "adversarial_elo", "long_context_elo",
-                "fertility_rate", "positive_markers", "russism_rate", "anglicism_rate",
-                "wins", "losses", "ties",
+                "rank",
+                "model_id",
+                "elo_rating",
+                "badge",
+                "mc_accuracy",
+                "gec_f1",
+                "translation_comet",
+                "generation_elo",
+                "adversarial_elo",
+                "long_context_elo",
+                "fertility_rate",
+                "positive_markers",
+                "russism_rate",
+                "anglicism_rate",
+                "wins",
+                "losses",
+                "ties",
             ]
         else:
             fieldnames = ["rank", "model_id", "elo_rating", "badge"]
@@ -366,21 +379,23 @@ class LeaderboardGenerator:
             }
 
             if include_details:
-                row.update({
-                    "mc_accuracy": entry.mc_accuracy,
-                    "gec_f1": entry.gec_f1,
-                    "translation_comet": entry.translation_comet,
-                    "generation_elo": entry.generation_elo,
-                    "adversarial_elo": entry.adversarial_elo,
-                    "long_context_elo": entry.long_context_elo,
-                    "fertility_rate": entry.fertility_rate,
-                    "positive_markers": entry.positive_markers,
-                    "russism_rate": entry.russism_rate,
-                    "anglicism_rate": entry.anglicism_rate,
-                    "wins": entry.wins,
-                    "losses": entry.losses,
-                    "ties": entry.ties,
-                })
+                row.update(
+                    {
+                        "mc_accuracy": entry.mc_accuracy,
+                        "gec_f1": entry.gec_f1,
+                        "translation_comet": entry.translation_comet,
+                        "generation_elo": entry.generation_elo,
+                        "adversarial_elo": entry.adversarial_elo,
+                        "long_context_elo": entry.long_context_elo,
+                        "fertility_rate": entry.fertility_rate,
+                        "positive_markers": entry.positive_markers,
+                        "russism_rate": entry.russism_rate,
+                        "anglicism_rate": entry.anglicism_rate,
+                        "wins": entry.wins,
+                        "losses": entry.losses,
+                        "ties": entry.ties,
+                    }
+                )
 
             writer.writerow(row)
 
@@ -445,12 +460,12 @@ class LeaderboardGenerator:
             }
         else:
             symbols = {
-                Badge.GOLD: "\u2b50",       # Star
-                Badge.SILVER: "\u2b24",      # Circle
-                Badge.BRONZE: "\u2b25",      # Diamond
-                Badge.CAUTION: "\u26a0",     # Warning
+                Badge.GOLD: "\u2b50",  # Star
+                Badge.SILVER: "\u2b24",  # Circle
+                Badge.BRONZE: "\u2b25",  # Diamond
+                Badge.CAUTION: "\u26a0",  # Warning
                 Badge.NOT_RECOMMENDED: "\u274c",  # Cross
-                Badge.NONE: "\u2013",        # En dash
+                Badge.NONE: "\u2013",  # En dash
             }
         return symbols.get(badge, badge.value)
 
@@ -464,9 +479,9 @@ class LeaderboardGenerator:
         lines = []
 
         # Header
-        header_line = "| " + " | ".join(
-            h.ljust(w) for h, w in zip(header, widths, strict=True)
-        ) + " |"
+        header_line = (
+            "| " + " | ".join(h.ljust(w) for h, w in zip(header, widths, strict=True)) + " |"
+        )
         lines.append(header_line)
 
         # Separator
@@ -475,9 +490,9 @@ class LeaderboardGenerator:
 
         # Rows
         for row in rows:
-            row_line = "| " + " | ".join(
-                c.ljust(w) for c, w in zip(row, widths, strict=True)
-            ) + " |"
+            row_line = (
+                "| " + " | ".join(c.ljust(w) for c, w in zip(row, widths, strict=True)) + " |"
+            )
             lines.append(row_line)
 
         return "\n".join(lines)
@@ -496,9 +511,9 @@ class LeaderboardGenerator:
         lines.append(top_border)
 
         # Header
-        header_line = "| " + " | ".join(
-            h.ljust(w) for h, w in zip(header, widths, strict=True)
-        ) + " |"
+        header_line = (
+            "| " + " | ".join(h.ljust(w) for h, w in zip(header, widths, strict=True)) + " |"
+        )
         lines.append(header_line)
 
         # Separator
@@ -506,9 +521,9 @@ class LeaderboardGenerator:
 
         # Rows
         for row in rows:
-            row_line = "| " + " | ".join(
-                c.ljust(w) for c, w in zip(row, widths, strict=True)
-            ) + " |"
+            row_line = (
+                "| " + " | ".join(c.ljust(w) for c, w in zip(row, widths, strict=True)) + " |"
+            )
             lines.append(row_line)
 
         # Bottom border
@@ -526,34 +541,32 @@ class LeaderboardGenerator:
         lines = []
 
         # Top border
-        top_border = "\u250c" + "\u252c".join(
-            "\u2500" * (w + 2) for w in widths
-        ) + "\u2510"
+        top_border = "\u250c" + "\u252c".join("\u2500" * (w + 2) for w in widths) + "\u2510"
         lines.append(top_border)
 
         # Header
-        header_line = "\u2502 " + " \u2502 ".join(
-            h.ljust(w) for h, w in zip(header, widths, strict=True)
-        ) + " \u2502"
+        header_line = (
+            "\u2502 "
+            + " \u2502 ".join(h.ljust(w) for h, w in zip(header, widths, strict=True))
+            + " \u2502"
+        )
         lines.append(header_line)
 
         # Header separator
-        mid_border = "\u251c" + "\u253c".join(
-            "\u2500" * (w + 2) for w in widths
-        ) + "\u2524"
+        mid_border = "\u251c" + "\u253c".join("\u2500" * (w + 2) for w in widths) + "\u2524"
         lines.append(mid_border)
 
         # Rows
         for row in rows:
-            row_line = "\u2502 " + " \u2502 ".join(
-                c.ljust(w) for c, w in zip(row, widths, strict=True)
-            ) + " \u2502"
+            row_line = (
+                "\u2502 "
+                + " \u2502 ".join(c.ljust(w) for c, w in zip(row, widths, strict=True))
+                + " \u2502"
+            )
             lines.append(row_line)
 
         # Bottom border
-        bottom_border = "\u2514" + "\u2534".join(
-            "\u2500" * (w + 2) for w in widths
-        ) + "\u2518"
+        bottom_border = "\u2514" + "\u2534".join("\u2500" * (w + 2) for w in widths) + "\u2518"
         lines.append(bottom_border)
 
         return "\n".join(lines)

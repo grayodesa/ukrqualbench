@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -107,9 +107,7 @@ class GECTask(BaseModel):
     category: str = Field(..., description="Error category (russism, grammar_case, etc.)")
     input: str = Field(..., description="Text with errors")
     expected_output: str = Field(..., description="Corrected text")
-    errors: list[ErrorAnnotation] = Field(
-        default_factory=list, description="Annotated errors"
-    )
+    errors: list[ErrorAnnotation] = Field(default_factory=list, description="Annotated errors")
     source: str = "UA-GEC"
     difficulty: TaskDifficulty = TaskDifficulty.MEDIUM
 
@@ -137,9 +135,7 @@ class TranslationTask(BaseModel):
         default_factory=list,
         description="Translation traps (false friends, calques)",
     )
-    trap_type: str | None = Field(
-        None, description="Type of translation trap"
-    )
+    trap_type: str | None = Field(None, description="Type of translation trap")
 
 
 class FalsePositiveTask(BaseModel):
@@ -150,9 +146,7 @@ class FalsePositiveTask(BaseModel):
     text: str = Field(..., description="Text from classic literature")
     author: str | None = Field(None, description="Author name")
     is_correct: bool = Field(True, description="Whether text is correct")
-    notes: str | None = Field(
-        None, description="Notes about potential false flags"
-    )
+    notes: str | None = Field(None, description="Notes about potential false flags")
     acceptable_flags: list[str] = Field(
         default_factory=list,
         description="Error types that are acceptable to flag",
@@ -164,14 +158,10 @@ class PositiveMarkerTask(BaseModel):
 
     id: str
     type: Literal["positive_marker"] = "positive_marker"
-    category: str = Field(
-        ..., description="Marker category (vocative, particles, etc.)"
-    )
+    category: str = Field(..., description="Marker category (vocative, particles, etc.)")
     context: str = Field(..., description="Context for the marker")
     native_form: str = Field(..., description="Native Ukrainian form")
-    non_native_forms: list[str] = Field(
-        ..., description="Non-native alternatives"
-    )
+    non_native_forms: list[str] = Field(..., description="Non-native alternatives")
     marker_regex: str = Field(..., description="Regex pattern for detection")
 
 
@@ -185,9 +175,7 @@ class FreeGenerationTask(BaseModel):
 
     id: str
     type: Literal["free_generation"] = "free_generation"
-    category: str = Field(
-        ..., description="Category (explanation, advice, creative, technical)"
-    )
+    category: str = Field(..., description="Category (explanation, advice, creative, technical)")
     prompt: str = Field(..., description="Generation prompt")
     min_tokens: int = Field(50, ge=10, description="Minimum response tokens")
     max_tokens: int = Field(300, ge=50, description="Maximum response tokens")
@@ -198,16 +186,10 @@ class AdversarialTask(BaseModel):
 
     id: str
     type: Literal["adversarial"] = "adversarial"
-    category: str = Field(
-        ..., description="Adversarial category (russism_trap, anglicism_trap)"
-    )
+    category: str = Field(..., description="Adversarial category (russism_trap, anglicism_trap)")
     prompt: str = Field(..., description="Prompt containing traps")
-    traps_in_prompt: list[str] = Field(
-        ..., description="List of traps/errors in the prompt"
-    )
-    instruction: str = Field(
-        ..., description="Instruction that implies correct Ukrainian"
-    )
+    traps_in_prompt: list[str] = Field(..., description="List of traps/errors in the prompt")
+    instruction: str = Field(..., description="Instruction that implies correct Ukrainian")
 
 
 class LongContextTask(BaseModel):
@@ -215,19 +197,11 @@ class LongContextTask(BaseModel):
 
     id: str
     type: Literal["long_context"] = "long_context"
-    category: str = Field(
-        ..., description="Task category (consistency, degradation)"
-    )
-    messages: list[dict[str, str]] = Field(
-        ..., description="Conversation messages"
-    )
+    category: str = Field(..., description="Task category (consistency, degradation)")
+    messages: list[dict[str, str]] = Field(..., description="Conversation messages")
     total_tokens: int = Field(..., ge=1000, description="Approximate token count")
-    checkpoints: list[float] = Field(
-        ..., description="Token percentages to check quality"
-    )
-    metrics: list[str] = Field(
-        ..., description="Metrics to track at checkpoints"
-    )
+    checkpoints: list[float] = Field(..., description="Token percentages to check quality")
+    metrics: list[str] = Field(..., description="Metrics to track at checkpoints")
 
 
 # ============================================================================
@@ -242,9 +216,7 @@ class ModelResponseData(BaseModel):
     tokens_used: int = Field(..., ge=0, description="Tokens consumed")
     latency_ms: float = Field(..., ge=0, description="Response latency in ms")
     model_id: str = Field(..., description="Model identifier")
-    timestamp: datetime = Field(
-        default_factory=datetime.now, description="Response timestamp"
-    )
+    timestamp: datetime = Field(default_factory=datetime.now, description="Response timestamp")
     cost_usd: float = Field(0.0, ge=0, description="Cost in USD")
 
 
@@ -269,12 +241,8 @@ class ComparisonRecordData(BaseModel):
     response_b: ModelResponseData = Field(..., description="Response from B")
     verdict: JudgeVerdictData = Field(..., description="Judge verdict")
     judge_id: str = Field(..., description="Judge model ID")
-    timestamp: datetime = Field(
-        default_factory=datetime.now, description="Comparison timestamp"
-    )
-    position_order: PositionOrder = Field(
-        ..., description="Presentation order for bias tracking"
-    )
+    timestamp: datetime = Field(default_factory=datetime.now, description="Comparison timestamp")
+    position_order: PositionOrder = Field(..., description="Presentation order for bias tracking")
 
 
 # ============================================================================
@@ -287,15 +255,9 @@ class BlockAScores(BaseModel):
 
     mc_accuracy: float = Field(..., ge=0, le=1, description="MC accuracy")
     gec_f1: float = Field(..., ge=0, le=1, description="GEC F1 score")
-    translation_comet: float = Field(
-        ..., ge=0, le=1, description="COMET score"
-    )
-    false_positive_rate: float = Field(
-        ..., ge=0, le=1, description="FP rate (lower=better)"
-    )
-    positive_markers_score: float = Field(
-        0.0, ge=0, description="Positive markers score"
-    )
+    translation_comet: float = Field(..., ge=0, le=1, description="COMET score")
+    false_positive_rate: float = Field(..., ge=0, le=1, description="FP rate (lower=better)")
+    positive_markers_score: float = Field(0.0, ge=0, description="Positive markers score")
 
 
 class BlockBScores(BaseModel):
@@ -309,18 +271,10 @@ class BlockBScores(BaseModel):
 class BlockVScores(BaseModel):
     """Block V (automatic metrics) scores."""
 
-    fertility_rate: float = Field(
-        ..., ge=1.0, description="Tokens per word (lower=better)"
-    )
-    positive_markers: float = Field(
-        ..., ge=0, description="Markers per 1K tokens"
-    )
-    russism_rate: float = Field(
-        ..., ge=0, description="Russisms per 1K tokens"
-    )
-    anglicism_rate: float = Field(
-        ..., ge=0, description="Anglicisms per 1K tokens"
-    )
+    fertility_rate: float = Field(..., ge=1.0, description="Tokens per word (lower=better)")
+    positive_markers: float = Field(..., ge=0, description="Markers per 1K tokens")
+    russism_rate: float = Field(..., ge=0, description="Russisms per 1K tokens")
+    anglicism_rate: float = Field(..., ge=0, description="Anglicisms per 1K tokens")
 
 
 class ModelScoreData(BaseModel):
@@ -339,16 +293,12 @@ class EvaluationMetadataData(BaseModel):
     benchmark_version: str = Field(..., description="lite/base/large")
     dataset_hash: str = Field(..., description="SHA-256 hash")
     judge_id: str = Field(..., description="Judge model ID")
-    judge_calibration_score: float = Field(
-        ..., ge=0, le=1, description="Judge calibration"
-    )
+    judge_calibration_score: float = Field(..., ge=0, le=1, description="Judge calibration")
     total_prompts: int = Field(..., ge=0, description="Prompts evaluated")
     total_comparisons: int = Field(..., ge=0, description="Comparisons made")
     runtime_minutes: float = Field(..., ge=0, description="Runtime in minutes")
     total_cost_usd: float = Field(0.0, ge=0, description="Total cost")
-    timestamp: datetime = Field(
-        default_factory=datetime.now, description="Completion time"
-    )
+    timestamp: datetime = Field(default_factory=datetime.now, description="Completion time")
 
 
 class EvaluationResultData(BaseModel):
@@ -357,12 +307,17 @@ class EvaluationResultData(BaseModel):
     model_id: str = Field(..., description="Model identifier")
     scores: ModelScoreData = Field(..., description="All scores")
     metadata: EvaluationMetadataData = Field(..., description="Metadata")
-    comparisons_count: int = Field(
-        0, ge=0, description="Number of comparisons"
-    )
-    checkpoints: list[str] = Field(
-        default_factory=list, description="Checkpoint file paths"
-    )
+    comparisons_count: int = Field(0, ge=0, description="Number of comparisons")
+    checkpoints: list[str] = Field(default_factory=list, description="Checkpoint file paths")
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for serialization."""
+        return self.model_dump(mode="json")
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> EvaluationResultData:
+        """Create from dictionary."""
+        return cls.model_validate(data)
 
 
 # ============================================================================

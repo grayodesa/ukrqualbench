@@ -26,9 +26,7 @@ class Histogram:
 
     name: str
     buckets: list[float] = field(
-        default_factory=lambda: [
-            0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 60.0
-        ]
+        default_factory=lambda: [0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0, 60.0]
     )
     _values: list[float] = field(default_factory=list, repr=False)
 
@@ -265,9 +263,7 @@ class MetricsCollector:
         """
         self.current_round[evaluation_id] = round_num
 
-    def update_elo_ratings(
-        self, evaluation_id: str, ratings: dict[str, float]
-    ) -> None:
+    def update_elo_ratings(self, evaluation_id: str, ratings: dict[str, float]) -> None:
         """Update ELO ratings for an evaluation.
 
         Args:
@@ -374,9 +370,7 @@ class MetricsCollector:
         lines.append("# HELP ukrqualbench_circuit_breaker_state Circuit breaker state")
         lines.append("# TYPE ukrqualbench_circuit_breaker_state gauge")
         for provider, state in self.circuit_breaker_state.items():
-            lines.append(
-                f'ukrqualbench_circuit_breaker_state{{provider="{provider}"}} {state}'
-            )
+            lines.append(f'ukrqualbench_circuit_breaker_state{{provider="{provider}"}} {state}')
 
         return "\n".join(lines)
 

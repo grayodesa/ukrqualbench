@@ -74,13 +74,15 @@ class MockModelClient:
         max_tokens: int = 1024,
         json_mode: bool = False,
     ) -> MockModelResponse:
-        self._calls.append({
-            "prompt": prompt,
-            "system_prompt": system_prompt,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "json_mode": json_mode,
-        })
+        self._calls.append(
+            {
+                "prompt": prompt,
+                "system_prompt": system_prompt,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "json_mode": json_mode,
+            }
+        )
 
         if self._call_index < len(self._responses):
             response_text = self._responses[self._call_index]
@@ -269,9 +271,9 @@ class TestJSONParsing:
     @pytest.mark.asyncio
     async def test_parse_json_in_markdown(self) -> None:
         """Test parsing JSON wrapped in markdown code block."""
-        response_json = '''```json
+        response_json = """```json
 {"winner": "B", "confidence": "medium", "reasoning": "Better"}
-```'''
+```"""
         client = MockModelClient([response_json])
         judge = PairwiseJudge(client, shuffle_positions=False)
 
@@ -281,9 +283,9 @@ class TestJSONParsing:
     @pytest.mark.asyncio
     async def test_parse_json_with_text_around(self) -> None:
         """Test parsing JSON with surrounding text."""
-        response_json = '''Here is my analysis:
+        response_json = """Here is my analysis:
 {"winner": "tie", "confidence": "low", "reasoning": "Equal"}
-That's my verdict.'''
+That's my verdict."""
         client = MockModelClient([response_json])
         judge = PairwiseJudge(client, shuffle_positions=False)
 
@@ -364,7 +366,7 @@ class TestPairwiseJudge:
     @pytest.mark.asyncio
     async def test_judge_detailed_with_scores(self) -> None:
         """Test detailed judging with score breakdown."""
-        response = '''{
+        response = """{
             "winner": "A",
             "confidence": "high",
             "reasoning": "Better Ukrainian",
@@ -372,7 +374,7 @@ class TestPairwiseJudge:
                 "a": {"nativeness": 5, "grammar": 4, "russisms": 5, "style": 4},
                 "b": {"nativeness": 3, "grammar": 3, "russisms": 2, "style": 3}
             }
-        }'''
+        }"""
         client = MockModelClient([response])
         judge = PairwiseJudge(client, shuffle_positions=False)
 
@@ -409,9 +411,7 @@ class TestPairwiseJudge:
         client = MockModelClient(responses)
         judge = PairwiseJudge(client, shuffle_positions=False)
 
-        verdict, consistency = await judge.judge_with_consistency(
-            "prompt", "A", "B", rounds=3
-        )
+        verdict, consistency = await judge.judge_with_consistency("prompt", "A", "B", rounds=3)
 
         assert verdict.winner == WinnerChoice.A
         assert consistency == 1.0
@@ -427,9 +427,7 @@ class TestPairwiseJudge:
         client = MockModelClient(responses)
         judge = PairwiseJudge(client, shuffle_positions=False)
 
-        verdict, consistency = await judge.judge_with_consistency(
-            "prompt", "A", "B", rounds=3
-        )
+        verdict, consistency = await judge.judge_with_consistency("prompt", "A", "B", rounds=3)
 
         assert verdict.winner == WinnerChoice.A  # Majority
         assert consistency == pytest.approx(2 / 3)
@@ -731,7 +729,7 @@ class TestJudgeIntegration:
     @pytest.mark.asyncio
     async def test_full_pairwise_evaluation(self) -> None:
         """Test complete pairwise evaluation flow."""
-        response = '''{
+        response = """{
             "winner": "A",
             "confidence": "high",
             "reasoning": "Відповідь A має кращу українську мову",
@@ -739,7 +737,7 @@ class TestJudgeIntegration:
                 "a": {"nativeness": 5, "grammar": 5, "russisms": 5, "style": 4},
                 "b": {"nativeness": 2, "grammar": 3, "russisms": 2, "style": 2}
             }
-        }'''
+        }"""
         client = MockModelClient([response])
         judge = create_pairwise_judge(client, shuffle_positions=False)
 
@@ -825,7 +823,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_score_clamping(self) -> None:
         """Test that scores are clamped to valid range."""
-        response = '''{
+        response = """{
             "winner": "A",
             "confidence": "high",
             "reasoning": "Test",
@@ -833,7 +831,7 @@ class TestEdgeCases:
                 "a": {"nativeness": 10, "grammar": -5, "russisms": 3, "style": 0},
                 "b": {"nativeness": 3, "grammar": 3, "russisms": 3, "style": 3}
             }
-        }'''
+        }"""
         client = MockModelClient([response])
         judge = PairwiseJudge(client, shuffle_positions=False)
 

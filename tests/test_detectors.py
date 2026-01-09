@@ -8,7 +8,6 @@ Tests cover:
 - Fertility rate calculation
 """
 
-
 import pytest
 
 from ukrqualbench.detectors import (
@@ -78,9 +77,7 @@ class TestDetectionResult:
 
     def test_group_by_category(self) -> None:
         """Test grouping matches by category."""
-        match1 = DetectionMatch(
-            start=0, end=5, matched_text="t1", pattern_id="p1", category="cat1"
-        )
+        match1 = DetectionMatch(start=0, end=5, matched_text="t1", pattern_id="p1", category="cat1")
         match2 = DetectionMatch(
             start=10, end=15, matched_text="t2", pattern_id="p2", category="cat2"
         )
@@ -96,12 +93,20 @@ class TestDetectionResult:
     def test_group_by_severity(self) -> None:
         """Test grouping matches by severity."""
         match1 = DetectionMatch(
-            start=0, end=5, matched_text="t1", pattern_id="p1",
-            category="cat", severity=DetectionSeverity.CRITICAL
+            start=0,
+            end=5,
+            matched_text="t1",
+            pattern_id="p1",
+            category="cat",
+            severity=DetectionSeverity.CRITICAL,
         )
         match2 = DetectionMatch(
-            start=10, end=15, matched_text="t2", pattern_id="p2",
-            category="cat", severity=DetectionSeverity.LOW
+            start=10,
+            end=15,
+            matched_text="t2",
+            pattern_id="p2",
+            category="cat",
+            severity=DetectionSeverity.LOW,
         )
         result = DetectionResult(text="test", matches=[match1, match2])
 
@@ -570,6 +575,6 @@ class TestDetectorIntegration:
 
         # Check no overlaps
         for i, match1 in enumerate(result.matches):
-            for match2 in result.matches[i + 1:]:
+            for match2 in result.matches[i + 1 :]:
                 # No overlap should exist
                 assert match1.end <= match2.start or match2.end <= match1.start

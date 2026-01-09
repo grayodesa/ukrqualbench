@@ -326,7 +326,10 @@ class TestOpenAIClient:
 
     def test_requires_api_key(self) -> None:
         """Test that API key is required."""
-        with patch.dict("os.environ", {}, clear=True), pytest.raises(ValueError, match="API key required"):
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            pytest.raises(ValueError, match="API key required"),
+        ):
             OpenAIClient()
 
     def test_accepts_api_key_param(self) -> None:
@@ -356,12 +359,18 @@ class TestAzureOpenAIClient:
 
     def test_requires_api_key_and_endpoint(self) -> None:
         """Test that API key and endpoint are required."""
-        with patch.dict("os.environ", {}, clear=True), pytest.raises(ValueError, match="API key required"):
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            pytest.raises(ValueError, match="API key required"),
+        ):
             AzureOpenAIClient(deployment_name="gpt-4o")
 
     def test_requires_endpoint(self) -> None:
         """Test that endpoint is required."""
-        with patch.dict("os.environ", {"AZURE_OPENAI_API_KEY": "test"}, clear=True), pytest.raises(ValueError, match="endpoint required"):
+        with (
+            patch.dict("os.environ", {"AZURE_OPENAI_API_KEY": "test"}, clear=True),
+            pytest.raises(ValueError, match="endpoint required"),
+        ):
             AzureOpenAIClient(deployment_name="gpt-4o")
 
     def test_accepts_credentials(self) -> None:
@@ -403,7 +412,10 @@ class TestAnthropicClient:
 
     def test_requires_api_key(self) -> None:
         """Test that API key is required."""
-        with patch.dict("os.environ", {}, clear=True), pytest.raises(ValueError, match="API key required"):
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            pytest.raises(ValueError, match="API key required"),
+        ):
             AnthropicClient()
 
     def test_accepts_api_key_param(self) -> None:
@@ -448,7 +460,10 @@ class TestGoogleClient:
 
     def test_requires_api_key(self) -> None:
         """Test that API key is required."""
-        with patch.dict("os.environ", {}, clear=True), pytest.raises(ValueError, match="API key required"):
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            pytest.raises(ValueError, match="API key required"),
+        ):
             GoogleClient()
 
     def test_accepts_api_key_param(self) -> None:
@@ -470,7 +485,11 @@ class TestGoogleClient:
 
     def test_gemini_api_key_takes_precedence(self) -> None:
         """Test GEMINI_API_KEY takes precedence over GOOGLE_API_KEY."""
-        with patch.dict("os.environ", {"GEMINI_API_KEY": "gemini-key", "GOOGLE_API_KEY": "google-key"}, clear=True):
+        with patch.dict(
+            "os.environ",
+            {"GEMINI_API_KEY": "gemini-key", "GOOGLE_API_KEY": "google-key"},
+            clear=True,
+        ):
             client = GoogleClient()
             assert client._api_key == "gemini-key"
 
@@ -505,7 +524,10 @@ class TestNebiusClient:
 
     def test_requires_api_key(self) -> None:
         """Test that API key is required."""
-        with patch.dict("os.environ", {}, clear=True), pytest.raises(ValueError, match="API key required"):
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            pytest.raises(ValueError, match="API key required"),
+        ):
             NebiusClient()
 
     def test_accepts_api_key_param(self) -> None:

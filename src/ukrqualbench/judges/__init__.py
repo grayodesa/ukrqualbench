@@ -14,11 +14,11 @@ from ukrqualbench.judges.base import (
     JSONParseError,
     JudgeConfig,
     ModelClient,
-    ModelResponse,
     MultipleChoiceJudgeBase,
     PairwiseJudgeBase,
     RussismJudgeBase,
 )
+from ukrqualbench.models.base import ModelResponse
 from ukrqualbench.judges.calibrator import (
     FALSE_POSITIVE_THRESHOLD,
     FINAL_SCORE_THRESHOLD,

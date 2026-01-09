@@ -192,9 +192,7 @@ class ZNOLoader:
 
         return options
 
-    def _parse_correct_answer(
-        self, item: dict[str, Any], options: list[str]
-    ) -> str | None:
+    def _parse_correct_answer(self, item: dict[str, Any], options: list[str]) -> str | None:
         """Parse correct answer from various formats."""
         # Direct answer field - check each field explicitly to handle 0 index
         answer = item.get("answer")
@@ -249,10 +247,7 @@ class ZNOLoader:
                 continue
 
             # Format options with letters
-            formatted_options = [
-                f"{chr(ord('A') + i)}) {opt}"
-                for i, opt in enumerate(q.options)
-            ]
+            formatted_options = [f"{chr(ord('A') + i)}) {opt}" for i, opt in enumerate(q.options)]
 
             task = MultipleChoiceTask(
                 id=q.question_id,

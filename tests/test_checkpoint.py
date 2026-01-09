@@ -210,9 +210,7 @@ class TestCheckpointManager:
         assert latest is not None
         assert latest.run_id == sample_checkpoint.run_id
 
-    def test_get_completed_comparisons(
-        self, manager: CheckpointManager
-    ) -> None:
+    def test_get_completed_comparisons(self, manager: CheckpointManager) -> None:
         """Test extracting completed comparison IDs."""
         checkpoint = CheckpointData(
             run_id="test",

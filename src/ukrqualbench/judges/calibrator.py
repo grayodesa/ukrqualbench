@@ -292,10 +292,7 @@ class JudgeCalibrator:
                 response = await self._call_model(system_prompt, user_prompt)
                 parsed = self._parse_json_response(response.text)
 
-                found_russisms = [
-                    r.get("text", "").lower()
-                    for r in parsed.get("russisms", [])
-                ]
+                found_russisms = [r.get("text", "").lower() for r in parsed.get("russisms", [])]
                 found_set = set(found_russisms)
                 expected_set = {r.lower() for r in expected_russisms}
 
@@ -368,9 +365,10 @@ class JudgeCalibrator:
             len_b = len(response_b)
             if len_a != len_b:
                 longer_won = sum(
-                    1 for v in verdicts
-                    if (v == WinnerChoice.A and len_a > len_b) or
-                       (v == WinnerChoice.B and len_b > len_a)
+                    1
+                    for v in verdicts
+                    if (v == WinnerChoice.A and len_a > len_b)
+                    or (v == WinnerChoice.B and len_b > len_a)
                 )
                 correlation = (longer_won / len(verdicts)) - 0.5
                 self._metrics.length_correlations.append(correlation * 2)
@@ -411,27 +409,19 @@ class JudgeCalibrator:
 
         mc_threshold = self._get_threshold("mc_accuracy", MC_ACCURACY_THRESHOLD)
         if m.mc_accuracy < mc_threshold:
-            failures.append(
-                f"MC accuracy {m.mc_accuracy:.2f} < {mc_threshold:.2f}"
-            )
+            failures.append(f"MC accuracy {m.mc_accuracy:.2f} < {mc_threshold:.2f}")
 
         gec_threshold = self._get_threshold("gec_f1", GEC_F1_THRESHOLD)
         if m.gec_f1 < gec_threshold:
-            failures.append(
-                f"GEC F1 {m.gec_f1:.2f} < {gec_threshold:.2f}"
-            )
+            failures.append(f"GEC F1 {m.gec_f1:.2f} < {gec_threshold:.2f}")
 
         russism_threshold = self._get_threshold("russism_f1", RUSSISM_F1_THRESHOLD)
         if m.russism_f1 < russism_threshold:
-            failures.append(
-                f"Russism F1 {m.russism_f1:.2f} < {russism_threshold:.2f}"
-            )
+            failures.append(f"Russism F1 {m.russism_f1:.2f} < {russism_threshold:.2f}")
 
         fp_threshold = self._get_threshold("false_positive", FALSE_POSITIVE_THRESHOLD)
         if m.false_positive_rate > fp_threshold:
-            failures.append(
-                f"False positive rate {m.false_positive_rate:.2f} > {fp_threshold:.2f}"
-            )
+            failures.append(f"False positive rate {m.false_positive_rate:.2f} > {fp_threshold:.2f}")
 
         pairwise_threshold = self._get_threshold(
             "pairwise_consistency", PAIRWISE_CONSISTENCY_THRESHOLD
@@ -443,15 +433,11 @@ class JudgeCalibrator:
 
         position_threshold = self._get_threshold("position_bias", POSITION_BIAS_THRESHOLD)
         if m.position_bias > position_threshold:
-            failures.append(
-                f"Position bias {m.position_bias:.2f} > {position_threshold:.2f}"
-            )
+            failures.append(f"Position bias {m.position_bias:.2f} > {position_threshold:.2f}")
 
         length_threshold = self._get_threshold("length_bias", LENGTH_BIAS_THRESHOLD)
         if m.length_bias_correlation > length_threshold:
-            failures.append(
-                f"Length bias {m.length_bias_correlation:.2f} > {length_threshold:.2f}"
-            )
+            failures.append(f"Length bias {m.length_bias_correlation:.2f} > {length_threshold:.2f}")
 
         # Calculate weighted final score
         weights = {

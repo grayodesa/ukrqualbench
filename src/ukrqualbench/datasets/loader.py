@@ -30,11 +30,7 @@ if TYPE_CHECKING:
 
 # Type aliases for task types
 BlockATask: TypeAlias = (
-    MultipleChoiceTask
-    | GECTask
-    | TranslationTask
-    | FalsePositiveTask
-    | PositiveMarkerTask
+    MultipleChoiceTask | GECTask | TranslationTask | FalsePositiveTask | PositiveMarkerTask
 )
 BlockBTask: TypeAlias = FreeGenerationTask | AdversarialTask | LongContextTask
 
@@ -143,9 +139,7 @@ class BlockBData:
     def total(self) -> int:
         """Total number of Block B tasks."""
         return (
-            len(self.generation_tasks)
-            + len(self.adversarial_tasks)
-            + len(self.long_context_tasks)
+            len(self.generation_tasks) + len(self.adversarial_tasks) + len(self.long_context_tasks)
         )
 
     def all_tasks(self) -> list[BlockBTask]:
@@ -200,9 +194,7 @@ class BenchmarkLoader:
         self.benchmarks_dir = self.data_dir / "benchmarks"
         self.gold_dir = self.data_dir / "gold"
 
-    def load_benchmark(
-        self, version: BenchmarkVersionType = "base"
-    ) -> BenchmarkData:
+    def load_benchmark(self, version: BenchmarkVersionType = "base") -> BenchmarkData:
         """Load a complete benchmark dataset.
 
         Args:
@@ -217,12 +209,8 @@ class BenchmarkLoader:
         block_a = BlockAData(
             mc_tasks=self._load_mc_tasks(spec["block_a"]["mc"]),
             gec_tasks=self._load_gec_tasks(spec["block_a"]["gec"]),
-            translation_tasks=self._load_translation_tasks(
-                spec["block_a"]["translation"]
-            ),
-            false_positive_tasks=self._load_false_positive_tasks(
-                spec["block_a"]["false_positive"]
-            ),
+            translation_tasks=self._load_translation_tasks(spec["block_a"]["translation"]),
+            false_positive_tasks=self._load_false_positive_tasks(spec["block_a"]["false_positive"]),
             positive_marker_tasks=self._load_positive_marker_tasks(
                 spec["block_a"]["positive_marker"]
             ),
@@ -230,15 +218,9 @@ class BenchmarkLoader:
 
         # Load Block B
         block_b = BlockBData(
-            generation_tasks=self._load_generation_tasks(
-                spec["block_b"]["free_generation"]
-            ),
-            adversarial_tasks=self._load_adversarial_tasks(
-                spec["block_b"]["adversarial"]
-            ),
-            long_context_tasks=self._load_long_context_tasks(
-                spec["block_b"]["long_context"]
-            ),
+            generation_tasks=self._load_generation_tasks(spec["block_b"]["free_generation"]),
+            adversarial_tasks=self._load_adversarial_tasks(spec["block_b"]["adversarial"]),
+            long_context_tasks=self._load_long_context_tasks(spec["block_b"]["long_context"]),
         )
 
         benchmark = BenchmarkData(version=version, block_a=block_a, block_b=block_b)
@@ -274,20 +256,13 @@ class BenchmarkLoader:
         block_b_data = data.get("block_b", {})
 
         block_a = BlockAData(
-            mc_tasks=[
-                MultipleChoiceTask.model_validate(t)
-                for t in block_a_data.get("mc", [])
-            ],
-            gec_tasks=[
-                GECTask.model_validate(t) for t in block_a_data.get("gec", [])
-            ],
+            mc_tasks=[MultipleChoiceTask.model_validate(t) for t in block_a_data.get("mc", [])],
+            gec_tasks=[GECTask.model_validate(t) for t in block_a_data.get("gec", [])],
             translation_tasks=[
-                TranslationTask.model_validate(t)
-                for t in block_a_data.get("translation", [])
+                TranslationTask.model_validate(t) for t in block_a_data.get("translation", [])
             ],
             false_positive_tasks=[
-                FalsePositiveTask.model_validate(t)
-                for t in block_a_data.get("false_positive", [])
+                FalsePositiveTask.model_validate(t) for t in block_a_data.get("false_positive", [])
             ],
             positive_marker_tasks=[
                 PositiveMarkerTask.model_validate(t)
@@ -297,16 +272,13 @@ class BenchmarkLoader:
 
         block_b = BlockBData(
             generation_tasks=[
-                FreeGenerationTask.model_validate(t)
-                for t in block_b_data.get("generation", [])
+                FreeGenerationTask.model_validate(t) for t in block_b_data.get("generation", [])
             ],
             adversarial_tasks=[
-                AdversarialTask.model_validate(t)
-                for t in block_b_data.get("adversarial", [])
+                AdversarialTask.model_validate(t) for t in block_b_data.get("adversarial", [])
             ],
             long_context_tasks=[
-                LongContextTask.model_validate(t)
-                for t in block_b_data.get("long_context", [])
+                LongContextTask.model_validate(t) for t in block_b_data.get("long_context", [])
             ],
         )
 
@@ -325,26 +297,16 @@ class BenchmarkLoader:
             "block_a": {
                 "mc": [t.model_dump() for t in benchmark.block_a.mc_tasks],
                 "gec": [t.model_dump() for t in benchmark.block_a.gec_tasks],
-                "translation": [
-                    t.model_dump() for t in benchmark.block_a.translation_tasks
-                ],
-                "false_positive": [
-                    t.model_dump() for t in benchmark.block_a.false_positive_tasks
-                ],
+                "translation": [t.model_dump() for t in benchmark.block_a.translation_tasks],
+                "false_positive": [t.model_dump() for t in benchmark.block_a.false_positive_tasks],
                 "positive_marker": [
                     t.model_dump() for t in benchmark.block_a.positive_marker_tasks
                 ],
             },
             "block_b": {
-                "generation": [
-                    t.model_dump() for t in benchmark.block_b.generation_tasks
-                ],
-                "adversarial": [
-                    t.model_dump() for t in benchmark.block_b.adversarial_tasks
-                ],
-                "long_context": [
-                    t.model_dump() for t in benchmark.block_b.long_context_tasks
-                ],
+                "generation": [t.model_dump() for t in benchmark.block_b.generation_tasks],
+                "adversarial": [t.model_dump() for t in benchmark.block_b.adversarial_tasks],
+                "long_context": [t.model_dump() for t in benchmark.block_b.long_context_tasks],
             },
         }
 
@@ -417,9 +379,7 @@ class BenchmarkLoader:
     # Statistics and validation
     # =========================================================================
 
-    def get_benchmark_statistics(
-        self, benchmark: BenchmarkData
-    ) -> dict[str, int | float | str]:
+    def get_benchmark_statistics(self, benchmark: BenchmarkData) -> dict[str, int | float | str]:
         """Get statistics about a benchmark dataset.
 
         Args:
@@ -459,13 +419,9 @@ class BenchmarkLoader:
         # Check Block A counts
         block_a_spec = spec["block_a"]
         if len(benchmark.block_a.mc_tasks) < block_a_spec["mc"]:
-            errors.append(
-                f"MC tasks: {len(benchmark.block_a.mc_tasks)} < {block_a_spec['mc']}"
-            )
+            errors.append(f"MC tasks: {len(benchmark.block_a.mc_tasks)} < {block_a_spec['mc']}")
         if len(benchmark.block_a.gec_tasks) < block_a_spec["gec"]:
-            errors.append(
-                f"GEC tasks: {len(benchmark.block_a.gec_tasks)} < {block_a_spec['gec']}"
-            )
+            errors.append(f"GEC tasks: {len(benchmark.block_a.gec_tasks)} < {block_a_spec['gec']}")
 
         # Check Block B counts
         block_b_spec = spec["block_b"]

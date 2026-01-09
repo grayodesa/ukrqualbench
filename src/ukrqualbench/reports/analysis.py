@@ -399,8 +399,7 @@ class AnalysisGenerator:
         """
         data: dict[str, Any] = {
             "models": {
-                model_id: analysis.to_dict()
-                for model_id, analysis in self._model_analyses.items()
+                model_id: analysis.to_dict() for model_id, analysis in self._model_analyses.items()
             },
             "comparisons": [c.to_dict() for c in self._comparison_analyses],
         }
@@ -473,9 +472,7 @@ class AnalysisGenerator:
         else:
             return "poor"
 
-    def _analyze_strengths_weaknesses(
-        self, scores: Any
-    ) -> tuple[list[str], list[str]]:
+    def _analyze_strengths_weaknesses(self, scores: Any) -> tuple[list[str], list[str]]:
         """Identify model strengths and weaknesses."""
         strengths = []
         weaknesses = []
@@ -509,9 +506,7 @@ class AnalysisGenerator:
 
         return strengths, weaknesses
 
-    def _generate_recommendations(
-        self, scores: Any, weaknesses: list[str]
-    ) -> list[str]:
+    def _generate_recommendations(self, scores: Any, weaknesses: list[str]) -> list[str]:
         """Generate recommendations based on weaknesses."""
         recommendations = []
 
@@ -526,14 +521,10 @@ class AnalysisGenerator:
             )
 
         if scores.block_v.fertility_rate > 2.0:
-            recommendations.append(
-                "Review tokenizer for Ukrainian language optimization"
-            )
+            recommendations.append("Review tokenizer for Ukrainian language optimization")
 
         if scores.block_a.gec_f1 < 0.70:
-            recommendations.append(
-                "Additional training on grammar error correction data may help"
-            )
+            recommendations.append("Additional training on grammar error correction data may help")
 
         return recommendations
 
@@ -551,9 +542,7 @@ class AnalysisGenerator:
 
     def _summarize_block_b(self, block_b: BlockBScores) -> str:
         """Summarize Block B performance."""
-        avg_elo = (
-            block_b.generation_elo + block_b.adversarial_elo + block_b.long_context_elo
-        ) / 3
+        avg_elo = (block_b.generation_elo + block_b.adversarial_elo + block_b.long_context_elo) / 3
         if avg_elo >= 1600:
             return "Excellent generation quality across all tasks"
         elif avg_elo >= 1550:
@@ -640,9 +629,15 @@ class AnalysisGenerator:
         elif result_b.scores.block_v.russism_rate < result_a.scores.block_v.russism_rate - 0.5:
             categories_b.append("Russism Avoidance")
 
-        if result_a.scores.block_v.positive_markers > result_b.scores.block_v.positive_markers + 0.5:
+        if (
+            result_a.scores.block_v.positive_markers
+            > result_b.scores.block_v.positive_markers + 0.5
+        ):
             categories_a.append("Native Markers")
-        elif result_b.scores.block_v.positive_markers > result_a.scores.block_v.positive_markers + 0.5:
+        elif (
+            result_b.scores.block_v.positive_markers
+            > result_a.scores.block_v.positive_markers + 0.5
+        ):
             categories_b.append("Native Markers")
 
         return categories_a, categories_b
@@ -659,7 +654,9 @@ class AnalysisGenerator:
         elo_diff = result_a.scores.elo_rating - result_b.scores.elo_rating
         if abs(elo_diff) > 50:
             better = result_a.model_id if elo_diff > 0 else result_b.model_id
-            differences.append(f"{better} has significantly higher ELO ({abs(elo_diff):.0f} points)")
+            differences.append(
+                f"{better} has significantly higher ELO ({abs(elo_diff):.0f} points)"
+            )
 
         # Russism difference
         russ_a = result_a.scores.block_v.russism_rate

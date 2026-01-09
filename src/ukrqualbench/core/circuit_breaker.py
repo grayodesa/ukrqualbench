@@ -49,8 +49,7 @@ class CircuitOpenError(Exception):
         self.provider = provider
         self.time_until_half_open = time_until_half_open
         default_message = (
-            f"Circuit breaker for {provider} is OPEN. "
-            f"Retry in {time_until_half_open:.1f}s"
+            f"Circuit breaker for {provider} is OPEN. Retry in {time_until_half_open:.1f}s"
         )
         super().__init__(message or default_message)
 
@@ -294,10 +293,7 @@ class CircuitBreakerRegistry:
         Returns:
             Dict mapping provider names to their status.
         """
-        return {
-            provider: breaker.get_status()
-            for provider, breaker in self._breakers.items()
-        }
+        return {provider: breaker.get_status() for provider, breaker in self._breakers.items()}
 
     def reset_all(self) -> None:
         """Reset all circuit breakers to closed state."""

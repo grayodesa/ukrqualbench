@@ -76,8 +76,7 @@ class GoogleClient(BaseModelClient):
                 from google import genai
             except ImportError as e:
                 raise ImportError(
-                    "google-genai package required. "
-                    "Install with: pip install google-genai"
+                    "google-genai package required. Install with: pip install google-genai"
                 ) from e
 
             self._client = genai.Client(api_key=self._api_key)
@@ -211,8 +210,7 @@ class VertexAIClient(BaseModelClient):
                 from google import genai
             except ImportError as e:
                 raise ImportError(
-                    "google-genai package required. "
-                    "Install with: pip install google-genai"
+                    "google-genai package required. Install with: pip install google-genai"
                 ) from e
 
             self._client = genai.Client(

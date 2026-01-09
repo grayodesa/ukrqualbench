@@ -414,9 +414,7 @@ class EvaluatorHooks(Protocol):
     in the evaluation lifecycle.
     """
 
-    async def on_evaluation_start(
-        self, models: list[str], benchmark: str
-    ) -> None:
+    async def on_evaluation_start(self, models: list[str], benchmark: str) -> None:
         """Called when evaluation begins.
 
         Args:
@@ -425,9 +423,7 @@ class EvaluatorHooks(Protocol):
         """
         ...
 
-    async def on_comparison_start(
-        self, model_a: str, model_b: str, prompt_id: str
-    ) -> None:
+    async def on_comparison_start(self, model_a: str, model_b: str, prompt_id: str) -> None:
         """Called before each comparison.
 
         Args:
@@ -445,9 +441,7 @@ class EvaluatorHooks(Protocol):
         """
         ...
 
-    async def on_round_complete(
-        self, round_num: int, rankings: list[tuple[str, float]]
-    ) -> None:
+    async def on_round_complete(self, round_num: int, rankings: list[tuple[str, float]]) -> None:
         """Called after tournament round completes.
 
         Args:

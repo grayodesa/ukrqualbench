@@ -267,15 +267,21 @@ class TestBadgeAssignment:
         scores = ModelScoreData(
             elo_rating=1680.0,
             block_a=BlockAScores(
-                mc_accuracy=0.90, gec_f1=0.85, translation_comet=0.82,
+                mc_accuracy=0.90,
+                gec_f1=0.85,
+                translation_comet=0.82,
                 false_positive_rate=0.08,
             ),
             block_b=BlockBScores(
-                generation_elo=1650.0, adversarial_elo=1640.0, long_context_elo=1630.0,
+                generation_elo=1650.0,
+                adversarial_elo=1640.0,
+                long_context_elo=1630.0,
             ),
             block_v=BlockVScores(
-                fertility_rate=1.4, positive_markers=6.0,
-                russism_rate=0.8, anglicism_rate=1.0,
+                fertility_rate=1.4,
+                positive_markers=6.0,
+                russism_rate=0.8,
+                anglicism_rate=1.0,
             ),
             badge=Badge.NONE,
         )
@@ -288,15 +294,21 @@ class TestBadgeAssignment:
         scores = ModelScoreData(
             elo_rating=1580.0,
             block_a=BlockAScores(
-                mc_accuracy=0.85, gec_f1=0.82, translation_comet=0.78,
+                mc_accuracy=0.85,
+                gec_f1=0.82,
+                translation_comet=0.78,
                 false_positive_rate=0.12,
             ),
             block_b=BlockBScores(
-                generation_elo=1560.0, adversarial_elo=1550.0, long_context_elo=1540.0,
+                generation_elo=1560.0,
+                adversarial_elo=1550.0,
+                long_context_elo=1540.0,
             ),
             block_v=BlockVScores(
-                fertility_rate=1.6, positive_markers=4.0,
-                russism_rate=2.5, anglicism_rate=2.0,
+                fertility_rate=1.6,
+                positive_markers=4.0,
+                russism_rate=2.5,
+                anglicism_rate=2.0,
             ),
             badge=Badge.NONE,
         )
@@ -309,15 +321,21 @@ class TestBadgeAssignment:
         scores = ModelScoreData(
             elo_rating=1480.0,
             block_a=BlockAScores(
-                mc_accuracy=0.78, gec_f1=0.72, translation_comet=0.70,
+                mc_accuracy=0.78,
+                gec_f1=0.72,
+                translation_comet=0.70,
                 false_positive_rate=0.18,
             ),
             block_b=BlockBScores(
-                generation_elo=1470.0, adversarial_elo=1465.0, long_context_elo=1460.0,
+                generation_elo=1470.0,
+                adversarial_elo=1465.0,
+                long_context_elo=1460.0,
             ),
             block_v=BlockVScores(
-                fertility_rate=1.9, positive_markers=1.5,
-                russism_rate=4.5, anglicism_rate=3.5,
+                fertility_rate=1.9,
+                positive_markers=1.5,
+                russism_rate=4.5,
+                anglicism_rate=3.5,
             ),
             badge=Badge.NONE,
         )
@@ -330,15 +348,21 @@ class TestBadgeAssignment:
         scores = ModelScoreData(
             elo_rating=1300.0,
             block_a=BlockAScores(
-                mc_accuracy=0.60, gec_f1=0.55, translation_comet=0.50,
+                mc_accuracy=0.60,
+                gec_f1=0.55,
+                translation_comet=0.50,
                 false_positive_rate=0.30,
             ),
             block_b=BlockBScores(
-                generation_elo=1320.0, adversarial_elo=1310.0, long_context_elo=1300.0,
+                generation_elo=1320.0,
+                adversarial_elo=1310.0,
+                long_context_elo=1300.0,
             ),
             block_v=BlockVScores(
-                fertility_rate=2.8, positive_markers=0.3,
-                russism_rate=12.0, anglicism_rate=8.0,
+                fertility_rate=2.8,
+                positive_markers=0.3,
+                russism_rate=12.0,
+                anglicism_rate=8.0,
             ),
             badge=Badge.NONE,
         )
@@ -478,9 +502,7 @@ class TestLeaderboardGenerator:
         assert len(entries) == 1
         assert entries[0].badge == Badge.GOLD
 
-    def test_to_json(
-        self, multiple_evaluation_results: list[EvaluationResultData]
-    ) -> None:
+    def test_to_json(self, multiple_evaluation_results: list[EvaluationResultData]) -> None:
         """Test JSON export."""
         generator = LeaderboardGenerator()
         generator.add_from_results(multiple_evaluation_results)
@@ -493,9 +515,7 @@ class TestLeaderboardGenerator:
         assert len(data["leaderboard"]) == 3
         assert "metadata" in data
 
-    def test_to_csv(
-        self, multiple_evaluation_results: list[EvaluationResultData]
-    ) -> None:
+    def test_to_csv(self, multiple_evaluation_results: list[EvaluationResultData]) -> None:
         """Test CSV export."""
         generator = LeaderboardGenerator()
         generator.add_from_results(multiple_evaluation_results)
@@ -532,9 +552,7 @@ class TestLeaderboardGenerator:
 
         assert "\u2502" in table  # Unicode box drawing
 
-    def test_to_table_ascii(
-        self, multiple_evaluation_results: list[EvaluationResultData]
-    ) -> None:
+    def test_to_table_ascii(self, multiple_evaluation_results: list[EvaluationResultData]) -> None:
         """Test ASCII table export."""
         generator = LeaderboardGenerator()
         generator.add_from_results(multiple_evaluation_results)
@@ -723,9 +741,7 @@ class TestAnalysisGenerator:
         assert comparison.winner == "model-gold"
         assert comparison.margin > 0
 
-    def test_to_json(
-        self, multiple_evaluation_results: list[EvaluationResultData]
-    ) -> None:
+    def test_to_json(self, multiple_evaluation_results: list[EvaluationResultData]) -> None:
         """Test JSON export."""
         generator = AnalysisGenerator()
         for result in multiple_evaluation_results:
@@ -779,9 +795,7 @@ class TestAnalysisGenerator:
 class TestAnalyzeResults:
     """Tests for analyze_results convenience function."""
 
-    def test_analyze_results(
-        self, multiple_evaluation_results: list[EvaluationResultData]
-    ) -> None:
+    def test_analyze_results(self, multiple_evaluation_results: list[EvaluationResultData]) -> None:
         """Test analyze_results function."""
         generator = analyze_results(
             multiple_evaluation_results,

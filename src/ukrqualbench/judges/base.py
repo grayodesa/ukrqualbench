@@ -26,6 +26,8 @@ from ukrqualbench.judges.prompts import PromptTemplate, PromptType, get_template
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from ukrqualbench.models.base import ModelResponse
+
 
 @runtime_checkable
 class ModelClient(Protocol):
@@ -43,10 +45,10 @@ class ModelClient(Protocol):
         self,
         prompt: str,
         system_prompt: str | None = None,
-        temperature: float = 0.0,
-        max_tokens: int = 1024,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
         json_mode: bool = False,
-    ) -> ModelResponse:
+    ) -> "ModelResponse":
         """Generate a response from the model.
 
         Args:
@@ -60,18 +62,6 @@ class ModelClient(Protocol):
             Model response with text, tokens, and latency.
         """
         ...
-
-
-@dataclass
-class ModelResponse:
-    """Response from a model client."""
-
-    text: str
-    tokens_used: int
-    latency_ms: float
-    model_id: str
-    timestamp: datetime = field(default_factory=datetime.now)
-    cost_usd: float = 0.0
 
 
 @dataclass
@@ -160,7 +150,7 @@ class BaseJudge(ABC):
         self,
         system_prompt: str,
         user_prompt: str,
-    ) -> ModelResponse:
+    ) -> "ModelResponse":
         """Call the model with given prompts.
 
         Args:
@@ -196,11 +186,10 @@ class BaseJudge(ABC):
                 last_error = e
                 if attempt < self._config.max_retries - 1:
                     import asyncio
+
                     await asyncio.sleep(self._config.retry_delay * (attempt + 1))
 
-        raise RuntimeError(
-            f"All {self._config.max_retries} retries failed"
-        ) from last_error
+        raise RuntimeError(f"All {self._config.max_retries} retries failed") from last_error
 
     def _parse_json_response(
         self,

@@ -56,7 +56,9 @@ class AnglicismDetector(BaseDetector):
 
     def _get_default_dictionary_path(self) -> Path:
         """Return default path to anglicisms dictionary."""
-        return Path(__file__).parent.parent.parent.parent / "data" / "dictionaries" / "anglicisms.json"
+        return (
+            Path(__file__).parent.parent.parent.parent / "data" / "dictionaries" / "anglicisms.json"
+        )
 
     def _load_patterns(self, data: dict[str, Any]) -> list[CompiledPattern]:
         """Load and compile anglicism patterns.
@@ -85,9 +87,7 @@ class AnglicismDetector(BaseDetector):
                     continue
 
                 severity = pattern_data.get("severity", "low")
-                base_weight = SEVERITY_WEIGHTS.get(
-                    DetectionSeverity(severity), 1.0
-                )
+                base_weight = SEVERITY_WEIGHTS.get(DetectionSeverity(severity), 1.0)
 
                 # Apply anglicism weight reduction
                 weight = base_weight * weight_vs_russisms
@@ -172,9 +172,7 @@ class AnglicismDetector(BaseDetector):
 
         return result
 
-    def get_category_breakdown(
-        self, result: DetectionResult
-    ) -> dict[str, dict[str, int | float]]:
+    def get_category_breakdown(self, result: DetectionResult) -> dict[str, dict[str, int | float]]:
         """Get breakdown of matches by category with statistics.
 
         Args:
@@ -196,9 +194,7 @@ class AnglicismDetector(BaseDetector):
 
         return breakdown
 
-    def calculate_quality_score(
-        self, result: DetectionResult, base_score: float = 100.0
-    ) -> float:
+    def calculate_quality_score(self, result: DetectionResult, base_score: float = 100.0) -> float:
         """Calculate quality score based on anglicism density.
 
         Anglicisms have less impact than russisms:
@@ -251,14 +247,14 @@ class AnglicismDetector(BaseDetector):
         acceptable: list[DetectionMatch] = []
 
         for match in result.matches:
-            if (context == "technical" and match.category in self.TECHNICAL_CATEGORIES) or (context == "business" and match.category in self.BUSINESS_CATEGORIES):
+            if (context == "technical" and match.category in self.TECHNICAL_CATEGORIES) or (
+                context == "business" and match.category in self.BUSINESS_CATEGORIES
+            ):
                 acceptable.append(match)
 
         return acceptable
 
-    def get_corrections(
-        self, result: DetectionResult
-    ) -> list[dict[str, str]]:
+    def get_corrections(self, result: DetectionResult) -> list[dict[str, str]]:
         """Get list of corrections for detected anglicisms.
 
         Args:
@@ -271,13 +267,15 @@ class AnglicismDetector(BaseDetector):
 
         for match in result.matches:
             if match.correction:
-                corrections.append({
-                    "original": match.matched_text,
-                    "correction": match.correction,
-                    "category": match.category,
-                    "position": f"{match.start}-{match.end}",
-                    "context_note": self._get_context_note(match.category),
-                })
+                corrections.append(
+                    {
+                        "original": match.matched_text,
+                        "correction": match.correction,
+                        "category": match.category,
+                        "position": f"{match.start}-{match.end}",
+                        "context_note": self._get_context_note(match.category),
+                    }
+                )
 
         return corrections
 

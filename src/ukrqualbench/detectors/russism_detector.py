@@ -46,7 +46,9 @@ class RussismDetector(BaseDetector):
 
     def _get_default_dictionary_path(self) -> Path:
         """Return default path to russisms dictionary."""
-        return Path(__file__).parent.parent.parent.parent / "data" / "dictionaries" / "russisms.json"
+        return (
+            Path(__file__).parent.parent.parent.parent / "data" / "dictionaries" / "russisms.json"
+        )
 
     def _load_patterns(self, data: dict[str, Any]) -> list[CompiledPattern]:
         """Load and compile russism patterns.
@@ -71,9 +73,7 @@ class RussismDetector(BaseDetector):
                     continue
 
                 severity = pattern_data.get("severity", "medium")
-                weight = SEVERITY_WEIGHTS.get(
-                    DetectionSeverity(severity), 1.0
-                )
+                weight = SEVERITY_WEIGHTS.get(DetectionSeverity(severity), 1.0)
 
                 compiled = self._compile_pattern(
                     pattern_str=pattern_str,
@@ -116,23 +116,19 @@ class RussismDetector(BaseDetector):
             rel_start = match.start - start
             rel_end = match.end - start
             marked = (
-                context[:rel_start]
-                + ">>>"
-                + context[rel_start:rel_end]
-                + "<<<"
-                + context[rel_end:]
+                context[:rel_start] + ">>>" + context[rel_start:rel_end] + "<<<" + context[rel_end:]
             )
-            contexts.append({
-                "pattern_id": match.pattern_id,
-                "context": marked,
-            })
+            contexts.append(
+                {
+                    "pattern_id": match.pattern_id,
+                    "context": marked,
+                }
+            )
 
         result.metadata["contexts"] = contexts
         return result
 
-    def get_severity_breakdown(
-        self, result: DetectionResult
-    ) -> dict[str, int]:
+    def get_severity_breakdown(self, result: DetectionResult) -> dict[str, int]:
         """Get breakdown of matches by severity.
 
         Args:
@@ -153,9 +149,7 @@ class RussismDetector(BaseDetector):
 
         return breakdown
 
-    def calculate_quality_score(
-        self, result: DetectionResult
-    ) -> float:
+    def calculate_quality_score(self, result: DetectionResult) -> float:
         """Calculate quality score based on russism density.
 
         Score ranges from 0 to 100, where:
@@ -188,9 +182,7 @@ class RussismDetector(BaseDetector):
         # Below 10 is poor quality
         return max(0.0, 50.0 - (weighted_rate - 10.0) * 2)
 
-    def get_corrections(
-        self, result: DetectionResult
-    ) -> list[dict[str, str]]:
+    def get_corrections(self, result: DetectionResult) -> list[dict[str, str]]:
         """Get list of corrections for detected russisms.
 
         Args:
@@ -203,12 +195,14 @@ class RussismDetector(BaseDetector):
 
         for match in result.matches:
             if match.correction:
-                corrections.append({
-                    "original": match.matched_text,
-                    "correction": match.correction,
-                    "category": match.category,
-                    "position": f"{match.start}-{match.end}",
-                })
+                corrections.append(
+                    {
+                        "original": match.matched_text,
+                        "correction": match.correction,
+                        "category": match.category,
+                        "position": f"{match.start}-{match.end}",
+                    }
+                )
 
         return corrections
 

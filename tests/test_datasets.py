@@ -412,14 +412,10 @@ class TestUAGECLoader:
         loader = UAGECLoader()
 
         # Should detect russism
-        assert loader._looks_like_russism(
-            "прийняти участь", "взяти участь"
-        )
+        assert loader._looks_like_russism("прийняти участь", "взяти участь")
 
         # Should not detect russism
-        assert not loader._looks_like_russism(
-            "правильний текст", "правильний текст"
-        )
+        assert not loader._looks_like_russism("правильний текст", "правильний текст")
 
     def test_load_from_parallel_files(self) -> None:
         """Test loading from parallel text files."""

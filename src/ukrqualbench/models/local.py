@@ -75,9 +75,7 @@ class OllamaClient(BaseModelClient):
             try:
                 import httpx
             except ImportError as e:
-                raise ImportError(
-                    "httpx package required. Install with: pip install httpx"
-                ) from e
+                raise ImportError("httpx package required. Install with: pip install httpx") from e
 
             assert self._base_url is not None  # Always set via default
             self._client = httpx.AsyncClient(

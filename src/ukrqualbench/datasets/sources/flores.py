@@ -26,6 +26,7 @@ class TrapSentence(TypedDict):
     uk: str
     traps: list[str]
 
+
 # Language code mapping
 LANG_CODE_MAPPING: dict[str, str] = {
     "eng_Latn": "en",
@@ -118,9 +119,7 @@ class FLORESLoader:
             targets = f.readlines()
 
         if len(sources) != len(targets):
-            raise ValueError(
-                f"Parallel files mismatch: {len(sources)} vs {len(targets)}"
-            )
+            raise ValueError(f"Parallel files mismatch: {len(sources)} vs {len(targets)}")
 
         # Normalize language codes
         src_lang = LANG_CODE_MAPPING.get(source_lang, source_lang)

@@ -231,9 +231,7 @@ class Config(BaseSettings):
 
         Returns delays: 1s, 2s, 4s, 8s, 16s (for default settings).
         """
-        return [
-            self.retry_base_delay * (2**i) for i in range(self.max_retries)
-        ]
+        return [self.retry_base_delay * (2**i) for i in range(self.max_retries)]
 
 
 class JudgeCalibrationThresholds(BaseSettings):
@@ -354,9 +352,9 @@ BADGE_THRESHOLDS: dict[str, dict[str, float]] = {
 }
 
 
-def get_badge(elo_rating: float, russism_rate: float) -> Literal[
-    "gold", "silver", "bronze", "caution", "not_recommended", "none"
-]:
+def get_badge(
+    elo_rating: float, russism_rate: float
+) -> Literal["gold", "silver", "bronze", "caution", "not_recommended", "none"]:
     """Determine badge based on ELO rating and russism rate.
 
     Args:
