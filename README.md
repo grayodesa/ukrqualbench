@@ -34,20 +34,46 @@ uv sync --extra local
 ## Quick Start
 
 ```bash
-# Show configuration
+# Show configuration and API key status
 ukrqualbench info
 
 # Calibrate a judge model
 ukrqualbench calibrate --judge claude-3-5-haiku-latest
 
 # Evaluate a single model (lite benchmark ~30min)
-ukrqualbench evaluate --model gpt-4o --benchmark lite
+ukrqualbench evaluate --model gpt-5.2 --benchmark lite
 
 # Compare multiple models
-ukrqualbench compare --models gpt-4o,claude-3.5-sonnet --benchmark base
+ukrqualbench compare --models gpt-5.2,claude-opus-4-5-20251101 --benchmark base
 
 # Generate leaderboard
-ukrqualbench leaderboard --results-dir results/ --output leaderboard.html
+ukrqualbench leaderboard --results-dir results/ --format html
+```
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `info` | Show configuration, API keys, and benchmark sizes |
+| `calibrate` | Calibrate a judge model against gold standards |
+| `evaluate` | Evaluate a single model on the benchmark |
+| `compare` | Compare multiple models using Swiss-system tournament |
+| `leaderboard` | Generate leaderboard from evaluation results |
+
+### Command Options
+
+```bash
+# Calibrate with custom output
+ukrqualbench calibrate --judge claude-3-5-haiku-latest --output results/calibration --verbose
+
+# Evaluate with budget limit
+ukrqualbench evaluate --model gpt-5.2 --benchmark lite --max-cost 10.0 --resume
+
+# Compare with specific round count
+ukrqualbench compare --models gpt-5.2,gemini-3-flash-preview --rounds 5 --judge claude-3-5-haiku-latest
+
+# Leaderboard in different formats
+ukrqualbench leaderboard --results-dir results/ --format json  # or csv, markdown, html
 ```
 
 ## Benchmark Architecture
@@ -77,28 +103,46 @@ ukrqualbench leaderboard --results-dir results/ --output leaderboard.html
 | **base** | 550 | 250 | ~2 hr | Standard evaluation |
 | **large** | 1100 | 450 | ~5 hr | Full research |
 
+## Supported Models
+
+### Cloud Providers
+| Provider | Models | Env Variable |
+|----------|--------|--------------|
+| **OpenAI** | gpt-5.2, gpt-5.2-pro, gpt-5-mini | `UKRQUALBENCH_OPENAI_API_KEY` |
+| **Anthropic** | claude-opus-4-5-*, claude-sonnet-4-*, claude-haiku-4 | `UKRQUALBENCH_ANTHROPIC_API_KEY` |
+| **Google** | gemini-3-pro-preview, gemini-3-flash-preview | `UKRQUALBENCH_GOOGLE_API_KEY` |
+| **Nebius** | deepseek-ai/DeepSeek-R1, Qwen/*, meta-llama/* | `UKRQUALBENCH_NEBIUS_API_KEY` |
+
+### Local Models
+| Provider | Configuration |
+|----------|---------------|
+| **Ollama** | `UKRQUALBENCH_OLLAMA_BASE_URL` (default: http://localhost:11434) |
+| **vLLM** | `UKRQUALBENCH_VLLM_BASE_URL` (default: http://localhost:8000) |
+
 ## Judge Calibration
 
 Before using a judge model, it must pass calibration:
 
 | Metric | Threshold |
 |--------|-----------|
-| MC Agreement | > 85% |
+| MC Accuracy | > 85% |
 | GEC F1 | > 80% |
 | Russism Detection F1 | > 85% |
 | False Positive Rate | < 15% |
 | Pairwise Consistency | > 90% |
+| Position Bias | < 5% |
+| Length Bias | |r| < 0.30 |
 | **Final Score** | > 0.80 |
 
 ## Quality Badges
 
-| Badge | Criteria |
-|-------|----------|
-| 🥇 **Gold** | ELO > 1700, russism_rate < 1.0 |
-| 🥈 **Silver** | ELO > 1550, russism_rate < 3.0 |
-| 🥉 **Bronze** | ELO > 1400, russism_rate < 5.0 |
-| ⚠️ **Caution** | russism_rate > 10.0 |
-| 🚫 **Not Recommended** | ELO < 1300 or russism_rate > 20.0 |
+| Badge | ELO | Russism Rate | Positive Markers | Fertility |
+|-------|-----|--------------|------------------|-----------|
+| 🥇 **Gold** | ≥ 1650 | < 1.0 | ≥ 5.0 | < 1.5 |
+| 🥈 **Silver** | ≥ 1550 | < 3.0 | ≥ 3.0 | < 1.8 |
+| 🥉 **Bronze** | ≥ 1450 | < 5.0 | ≥ 1.0 | < 2.0 |
+| ⚠️ **Caution** | ≥ 1350 | < 10.0 | ≥ 0.0 | < 2.5 |
+| 🚫 **Not Recommended** | < 1350 | ≥ 10.0 | — | — |
 
 ## Configuration
 
@@ -109,11 +153,22 @@ Configuration via environment variables (prefix: `UKRQUALBENCH_`):
 UKRQUALBENCH_OPENAI_API_KEY=sk-...
 UKRQUALBENCH_ANTHROPIC_API_KEY=sk-ant-...
 UKRQUALBENCH_GOOGLE_API_KEY=...
+UKRQUALBENCH_NEBIUS_API_KEY=...
 
 # Settings
 UKRQUALBENCH_BENCHMARK_VERSION=base
 UKRQUALBENCH_DEFAULT_JUDGE=claude-3-5-haiku-latest
 UKRQUALBENCH_MAX_COST_USD=50.0
+UKRQUALBENCH_TEMPERATURE=0.0
+
+# ELO Settings
+UKRQUALBENCH_ELO_INITIAL_RATING=1500
+UKRQUALBENCH_ELO_K_FACTOR=32
+
+# Execution
+UKRQUALBENCH_MAX_CONCURRENT_REQUESTS=10
+UKRQUALBENCH_REQUEST_TIMEOUT=60
+UKRQUALBENCH_CHECKPOINT_INTERVAL=100
 ```
 
 See `.env.example` for all options.
@@ -124,6 +179,25 @@ See `.env.example` for all options.
 - **ZNO Dataset**: Multiple choice from Ukrainian standardized tests (MIT)
 - **FLORES-200**: Translation benchmark (CC BY-SA 4.0)
 - **Brown-UK**: Validation corpus (CC BY 4.0)
+
+## Project Structure
+
+```
+ukrqualbench/
+├── src/ukrqualbench/
+│   ├── cli.py              # Command-line interface
+│   ├── core/               # Evaluator, ELO, schemas, config
+│   ├── datasets/           # Data loaders (UA-GEC, ZNO, FLORES, Brown-UK)
+│   ├── detectors/          # Russism, anglicism, markers, fertility
+│   ├── judges/             # LLM judge system, calibration
+│   ├── models/             # API clients (OpenAI, Anthropic, Google, Nebius, local)
+│   └── reports/            # Leaderboard, HTML, analysis
+├── data/
+│   ├── benchmarks/         # lite.json, base.json, large.json
+│   ├── gold/               # Calibration datasets
+│   └── dictionaries/       # Russism/anglicism patterns
+└── tests/                  # 382 tests
+```
 
 ## Development
 
