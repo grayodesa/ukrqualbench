@@ -116,15 +116,18 @@ class OpenAIClient(BaseModelClient):
         client = self._get_client()
         messages = self._build_messages(prompt, system_prompt)
 
-        # Build request kwargs
         request_kwargs: dict[str, Any] = {
             "model": self._model_id,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": max_tokens,
         }
 
-        # Add response format for JSON mode
+        # GPT-5.x models require max_completion_tokens instead of max_tokens
+        if self._model_id.startswith("gpt-5"):
+            request_kwargs["max_completion_tokens"] = max_tokens
+        else:
+            request_kwargs["max_tokens"] = max_tokens
+
         if json_mode:
             request_kwargs["response_format"] = {"type": "json_object"}
 

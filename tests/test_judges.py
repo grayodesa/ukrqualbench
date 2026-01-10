@@ -547,18 +547,17 @@ class TestCalibrationMetrics:
         assert metrics.pairwise_consistency == 0.95
 
     def test_position_bias(self) -> None:
-        """Test position bias calculation."""
+        """Test position bias calculation (inconsistency rate)."""
         metrics = CalibrationMetrics()
-        metrics.position_a_wins = 60
-        metrics.position_total = 100
-        # Deviation from 50% is 10%
+        metrics.position_swaps_consistent = 9
+        metrics.position_swaps_total = 10
         assert metrics.position_bias == pytest.approx(0.10)
 
     def test_length_bias_correlation(self) -> None:
-        """Test length bias correlation."""
+        """Test length bias as incorrect longer-wins rate."""
         metrics = CalibrationMetrics()
-        metrics.length_correlations = [0.2, -0.1, 0.3]
-        # Average of absolute values: (0.2 + 0.1 + 0.3) / 3 = 0.2
+        metrics.length_bias_incorrect = 2
+        metrics.length_bias_applicable = 10
         assert metrics.length_bias_correlation == pytest.approx(0.2)
 
 

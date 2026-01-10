@@ -72,9 +72,14 @@ class CalibrationMetrics:
     false_positive_total: int = 0
     pairwise_consistent: int = 0
     pairwise_total: int = 0
-    position_a_wins: int = 0
-    position_total: int = 0
-    length_correlations: list[float] = field(default_factory=list)
+    # Position bias: tracks if judge gives same answer regardless of position
+    position_swaps_consistent: int = 0
+    position_swaps_total: int = 0
+    # Length bias: tracks if judge incorrectly favors longer response
+    length_bias_incorrect: int = 0  # Cases where longer won but shorter was expected
+    length_bias_applicable: int = 0  # Cases where lengths differ and we have ground truth
+    # Accuracy against expected winner
+    pairwise_correct: int = 0
 
     @property
     def mc_accuracy(self) -> float:
@@ -133,18 +138,24 @@ class CalibrationMetrics:
 
     @property
     def position_bias(self) -> float:
-        """Calculate position bias (deviation from 50%)."""
-        if self.position_total == 0:
+        """Calculate position bias as inconsistency rate when positions are swapped."""
+        if self.position_swaps_total == 0:
             return 0.0
-        a_rate = self.position_a_wins / self.position_total
-        return abs(a_rate - 0.5)
+        return 1.0 - (self.position_swaps_consistent / self.position_swaps_total)
 
     @property
     def length_bias_correlation(self) -> float:
-        """Calculate average length bias correlation."""
-        if not self.length_correlations:
+        """Calculate length bias as rate of incorrect longer-wins verdicts."""
+        if self.length_bias_applicable == 0:
             return 0.0
-        return sum(abs(c) for c in self.length_correlations) / len(self.length_correlations)
+        return self.length_bias_incorrect / self.length_bias_applicable
+
+    @property
+    def pairwise_accuracy(self) -> float:
+        """Calculate accuracy against expected winners."""
+        if self.pairwise_total == 0:
+            return 0.0
+        return self.pairwise_correct / self.pairwise_total
 
 
 class JudgeCalibrator:
@@ -278,30 +289,22 @@ class JudgeCalibrator:
                 parsed = self._parse_json_response(response.text)
 
                 found_errors = parsed.get("correct_fixes", [])
+                found_text = " ".join(found_errors).lower()
 
-                # Extract error terms from expected format: "X → Y" -> "X"
-                expected_terms = set()
-                for err in expected_errors:
-                    if "→" in err:
-                        expected_terms.add(err.split("→")[0].strip().lower())
-                    else:
-                        expected_terms.add(err.strip().lower())
+                expected_keys = self._extract_gec_keys(expected_errors)
 
-                # Count matches: a found fix matches if it contains an expected term
-                matched_expected = set()
-                for found in found_errors:
-                    found_lower = found.lower()
-                    for exp in expected_terms:
-                        if exp in found_lower:
-                            matched_expected.add(exp)
-                            break
+                matched = 0
+                for key in expected_keys:
+                    first_word = key.split()[0] if key else ""
+                    if first_word and first_word in found_text:
+                        matched += 1
 
-                tp = len(matched_expected)
-                fn = len(expected_terms) - tp
-                fp = len(found_errors) - tp
+                tp = matched
+                fn = len(expected_keys) - tp
+                fp = max(0, len(found_errors) - tp)
 
                 self._metrics.gec_tp += tp
-                self._metrics.gec_fp += max(0, fp)
+                self._metrics.gec_fp += fp
                 self._metrics.gec_fn += fn
 
             except Exception:
@@ -373,40 +376,70 @@ class JudgeCalibrator:
             prompt = task.input_data.get("prompt", "")
             response_a = task.input_data.get("response_a", "")
             response_b = task.input_data.get("response_b", "")
-            _expected_winner = task.expected_output  # Reserved for future accuracy check
+            expected_winner = task.expected_output
 
-            # Test consistency with multiple rounds
-            verdicts: list[WinnerChoice] = []
-            for _ in range(3):
+            verdicts_normal: list[WinnerChoice] = []
+            verdicts_swapped: list[WinnerChoice] = []
+
+            for _ in range(2):
                 try:
-                    verdict = await judge.judge_pairwise(prompt, response_a, response_b)
-                    verdicts.append(verdict.winner)
+                    v_normal = await judge.judge_pairwise(prompt, response_a, response_b)
+                    verdicts_normal.append(v_normal.winner)
                 except Exception:
-                    verdicts.append(WinnerChoice.TIE)
+                    verdicts_normal.append(WinnerChoice.TIE)
 
-            # Check if verdicts are consistent
+                try:
+                    v_swapped = await judge.judge_pairwise(prompt, response_b, response_a)
+                    verdicts_swapped.append(v_swapped.winner)
+                except Exception:
+                    verdicts_swapped.append(WinnerChoice.TIE)
+
             self._metrics.pairwise_total += 1
-            if len(set(verdicts)) == 1:
+            all_verdicts = verdicts_normal + verdicts_swapped
+            if len(set(verdicts_normal)) == 1 and len(set(verdicts_swapped)) == 1:
                 self._metrics.pairwise_consistent += 1
 
-            # Track position bias (A vs B preference)
-            self._metrics.position_total += len(verdicts)
-            self._metrics.position_a_wins += sum(1 for v in verdicts if v == WinnerChoice.A)
+            self._metrics.position_swaps_total += 1
+            normal_majority = self._get_majority_verdict(verdicts_normal)
+            swapped_majority = self._get_majority_verdict(verdicts_swapped)
+            if normal_majority != WinnerChoice.TIE and swapped_majority != WinnerChoice.TIE:
+                normal_picks_original_a = normal_majority == WinnerChoice.A
+                swapped_picks_original_a = swapped_majority == WinnerChoice.B
+                if normal_picks_original_a == swapped_picks_original_a:
+                    self._metrics.position_swaps_consistent += 1
 
-            # Track length bias
-            len_a = len(response_a)
-            len_b = len(response_b)
-            if len_a != len_b:
-                longer_won = sum(
-                    1
-                    for v in verdicts
-                    if (v == WinnerChoice.A and len_a > len_b)
-                    or (v == WinnerChoice.B and len_b > len_a)
+            majority_verdict = self._get_majority_verdict(all_verdicts)
+            if (expected_winner == "A" and majority_verdict == WinnerChoice.A) or (
+                expected_winner == "B" and majority_verdict == WinnerChoice.B
+            ):
+                self._metrics.pairwise_correct += 1
+
+            len_a, len_b = len(response_a), len(response_b)
+            if len_a != len_b and majority_verdict != WinnerChoice.TIE:
+                self._metrics.length_bias_applicable += 1
+                longer_is_a = len_a > len_b
+                judge_picked_longer = (majority_verdict == WinnerChoice.A and longer_is_a) or (
+                    majority_verdict == WinnerChoice.B and not longer_is_a
                 )
-                correlation = (longer_won / len(verdicts)) - 0.5
-                self._metrics.length_correlations.append(correlation * 2)
+                expected_is_longer = (expected_winner == "A" and longer_is_a) or (
+                    expected_winner == "B" and not longer_is_a
+                )
+                if judge_picked_longer and not expected_is_longer:
+                    self._metrics.length_bias_incorrect += 1
 
             self._report_progress("pairwise")
+
+    def _get_majority_verdict(self, verdicts: list[WinnerChoice]) -> WinnerChoice:
+        """Get majority verdict from list, returns TIE if no clear majority."""
+        if not verdicts:
+            return WinnerChoice.TIE
+        from collections import Counter
+
+        counts = Counter(verdicts)
+        most_common = counts.most_common(1)[0]
+        if most_common[1] > len(verdicts) / 2:
+            return most_common[0]
+        return WinnerChoice.TIE
 
     async def _call_model(self, system_prompt: str, user_prompt: str) -> Any:
         """Call model for calibration."""
@@ -418,12 +451,34 @@ class JudgeCalibrator:
             json_mode=self._config.json_mode,
         )
 
+    def _extract_gec_keys(self, items: list[str]) -> set[str]:
+        """Extract key error words from GEC correction descriptions."""
+        import re
+
+        keys: set[str] = set()
+        for item in items:
+            item_lower = item.lower()
+
+            if "→" in item:
+                keys.add(item.split("→")[0].strip().lower())
+            elif "->" in item:
+                keys.add(item.split("->")[0].strip().lower())
+            else:
+                quoted = re.findall(r"[«\"']([^»\"']+)[»\"']", item)
+                if quoted:
+                    for q in quoted:
+                        keys.add(q.lower())
+                elif " на " in item_lower:
+                    parts = item_lower.split(" на ")
+                    if parts[0]:
+                        keys.add(parts[0].strip())
+
+        return keys
+
     def _parse_json_response(self, text: str) -> dict[str, Any]:
-        """Parse JSON from model response."""
         import json
         import re
 
-        # Try to extract JSON from markdown
         json_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
         if json_match:
             text = json_match.group(1)
