@@ -180,11 +180,15 @@ def calibrate(
         },
     )
 
-    async def run_calibration() -> Any:
-        return await calibrator.calibrate(calibration_tasks)
+    def on_progress(current: int, total: int, task_type: str) -> None:
+        rprint(f"  [{current}/{total}] {task_type}", end="\r")
 
-    rprint(f"[cyan]Running calibration on {judge}... (this may take several minutes)[/cyan]")
+    async def run_calibration() -> Any:
+        return await calibrator.calibrate(calibration_tasks, on_progress=on_progress)
+
+    rprint(f"[cyan]Running calibration on {judge}...[/cyan]")
     result = asyncio.run(run_calibration())
+    rprint()
 
     _display_calibration_results(result, verbose)
 

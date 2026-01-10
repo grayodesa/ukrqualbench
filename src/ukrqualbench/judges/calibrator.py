@@ -11,6 +11,7 @@ Ensures judges meet quality thresholds before use in evaluation:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -29,6 +30,8 @@ from ukrqualbench.judges.prompts import (
 
 if TYPE_CHECKING:
     pass
+
+ProgressCallback = Callable[[int, int, str], None]
 
 
 # Calibration thresholds
@@ -184,26 +187,28 @@ class JudgeCalibrator:
     async def calibrate(
         self,
         calibration_data: list[CalibrationTask],
+        on_progress: ProgressCallback | None = None,
     ) -> CalibrationResultData:
         """Run full calibration suite.
 
         Args:
             calibration_data: List of calibration tasks.
+            on_progress: Optional callback(current, total, task_type) for progress updates.
 
         Returns:
             Calibration result with pass/fail and detailed metrics.
         """
-        # Reset metrics
         self._metrics = CalibrationMetrics()
+        self._on_progress = on_progress
+        self._progress_current = 0
+        self._progress_total = len(calibration_data)
 
-        # Group tasks by type
         tasks_by_type: dict[str, list[CalibrationTask]] = {}
         for task in calibration_data:
             if task.task_type not in tasks_by_type:
                 tasks_by_type[task.task_type] = []
             tasks_by_type[task.task_type].append(task)
 
-        # Run calibration for each task type
         if "multiple_choice" in tasks_by_type:
             await self._calibrate_mc(tasks_by_type["multiple_choice"])
 
@@ -219,12 +224,15 @@ class JudgeCalibrator:
         if "pairwise" in tasks_by_type:
             await self._calibrate_pairwise(tasks_by_type["pairwise"])
 
-        # Compute final score and pass/fail
         return self._compute_result()
 
-    async def _calibrate_mc(self, tasks: list[CalibrationTask]) -> None:
-        """Calibrate on multiple choice tasks."""
+    def _report_progress(self, task_type: str) -> None:
+        """Report progress after completing a task."""
+        self._progress_current += 1
+        if self._on_progress:
+            self._on_progress(self._progress_current, self._progress_total, task_type)
 
+    async def _calibrate_mc(self, tasks: list[CalibrationTask]) -> None:
         for task in tasks:
             question = task.input_data.get("question", "")
             options = task.input_data.get("options", [])
@@ -233,7 +241,6 @@ class JudgeCalibrator:
             system_prompt, user_prompt = format_mc_prompt(question, options)
 
             try:
-                # Create temporary judge for MC evaluation
                 response = await self._call_model(system_prompt, user_prompt)
                 parsed = self._parse_json_response(response.text)
 
@@ -244,7 +251,9 @@ class JudgeCalibrator:
                     self._metrics.mc_correct += 1
 
             except Exception:
-                self._metrics.mc_total += 1  # Count as wrong
+                self._metrics.mc_total += 1
+
+            self._report_progress("multiple_choice")
 
     async def _calibrate_gec(self, tasks: list[CalibrationTask]) -> None:
         """Calibrate on GEC tasks.
@@ -298,6 +307,8 @@ class JudgeCalibrator:
             except Exception:
                 self._metrics.gec_fn += len(expected_errors)
 
+            self._report_progress("gec")
+
     async def _calibrate_russism(self, tasks: list[CalibrationTask]) -> None:
         """Calibrate on russism detection tasks."""
         for task in tasks:
@@ -325,6 +336,8 @@ class JudgeCalibrator:
             except Exception:
                 self._metrics.russism_fn += len(expected_russisms)
 
+            self._report_progress("russism")
+
     async def _calibrate_false_positive(
         self,
         tasks: list[CalibrationTask],
@@ -349,6 +362,8 @@ class JudgeCalibrator:
 
             except Exception:
                 self._metrics.false_positive_total += 1
+
+            self._report_progress("false_positive")
 
     async def _calibrate_pairwise(self, tasks: list[CalibrationTask]) -> None:
         """Calibrate on pairwise comparison tasks."""
@@ -390,6 +405,8 @@ class JudgeCalibrator:
                 )
                 correlation = (longer_won / len(verdicts)) - 0.5
                 self._metrics.length_correlations.append(correlation * 2)
+
+            self._report_progress("pairwise")
 
     async def _call_model(self, system_prompt: str, user_prompt: str) -> Any:
         """Call model for calibration."""
