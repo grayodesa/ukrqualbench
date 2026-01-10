@@ -14,6 +14,7 @@ from ukrqualbench.core.schemas import (
     MultipleChoiceTask,
     TranslationTask,
 )
+from ukrqualbench.datasets.assembler import BenchmarkAssembler, create_benchmark_assembler
 from ukrqualbench.datasets.loader import (
     BENCHMARK_SPECS,
     BenchmarkData,
@@ -656,3 +657,247 @@ class TestGoldStandardFiles:
             assert "native_form" in task
             assert "non_native_forms" in task
             assert "marker_regex" in task
+
+
+class TestBenchmarkAssembler:
+    """Tests for BenchmarkAssembler class."""
+
+    @pytest.fixture
+    def temp_data_dir(self) -> Path:
+        """Create temporary data directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_dir = Path(tmpdir)
+            (data_dir / "benchmarks").mkdir()
+            (data_dir / "external").mkdir()
+            yield data_dir
+
+    @pytest.fixture
+    def mock_hf_unavailable(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Mock HuggingFace datasets as unavailable to use synthetic data only."""
+        import ukrqualbench.datasets.assembler as assembler_module
+
+        monkeypatch.setattr(assembler_module, "_HF_DATASETS_AVAILABLE", False)
+
+    def test_create_assembler_factory(self) -> None:
+        """Test factory function creates assembler."""
+        assembler = create_benchmark_assembler()
+        assert isinstance(assembler, BenchmarkAssembler)
+        assert assembler.seed == 42
+
+    def test_create_assembler_with_custom_seed(self) -> None:
+        """Test factory function with custom seed."""
+        assembler = create_benchmark_assembler(seed=123)
+        assert assembler.seed == 123
+
+    def test_assembler_init_default_dir(self) -> None:
+        """Test assembler initializes with default data directory."""
+        assembler = BenchmarkAssembler()
+        assert assembler.data_dir == Path("data")
+
+    def test_assembler_init_custom_dir(self, temp_data_dir: Path) -> None:
+        """Test assembler initializes with custom data directory."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        assert assembler.data_dir == temp_data_dir
+
+    def test_assemble_lite_version(self, temp_data_dir: Path, mock_hf_unavailable: None) -> None:
+        """Test assembling lite benchmark version."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        assert benchmark.version == "lite"
+        assert benchmark.block_a is not None
+        assert benchmark.block_b is not None
+        assert benchmark.metadata is not None
+
+    def test_assemble_base_version(self, temp_data_dir: Path, mock_hf_unavailable: None) -> None:
+        """Test assembling base benchmark version."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="base")
+
+        assert benchmark.version == "base"
+
+    def test_assemble_large_version(self, temp_data_dir: Path, mock_hf_unavailable: None) -> None:
+        """Test assembling large benchmark version."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="large")
+
+        assert benchmark.version == "large"
+
+    def test_assemble_produces_correct_counts_lite(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test lite version has correct task counts from specs."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+        spec = BENCHMARK_SPECS["lite"]
+
+        assert len(benchmark.block_a.mc_tasks) == spec["block_a"]["mc"]
+        assert len(benchmark.block_a.gec_tasks) == spec["block_a"]["gec"]
+        assert len(benchmark.block_a.translation_tasks) == spec["block_a"]["translation"]
+        assert len(benchmark.block_a.false_positive_tasks) == spec["block_a"]["false_positive"]
+        assert len(benchmark.block_a.positive_marker_tasks) == spec["block_a"]["positive_marker"]
+
+        assert len(benchmark.block_b.generation_tasks) == spec["block_b"]["free_generation"]
+        assert len(benchmark.block_b.adversarial_tasks) == spec["block_b"]["adversarial"]
+        assert len(benchmark.block_b.long_context_tasks) == spec["block_b"]["long_context"]
+
+    def test_assemble_deterministic_with_same_seed(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that assembly is deterministic with the same seed."""
+        assembler1 = BenchmarkAssembler(data_dir=temp_data_dir, seed=42)
+        assembler2 = BenchmarkAssembler(data_dir=temp_data_dir, seed=42)
+
+        benchmark1 = assembler1.assemble(version="lite")
+        benchmark2 = assembler2.assemble(version="lite")
+
+        assert benchmark1.compute_hash() == benchmark2.compute_hash()
+
+    def test_assemble_different_with_different_seed(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that assembly differs with different seeds."""
+        assembler1 = BenchmarkAssembler(data_dir=temp_data_dir, seed=42)
+        assembler2 = BenchmarkAssembler(data_dir=temp_data_dir, seed=123)
+
+        benchmark1 = assembler1.assemble(version="lite")
+        benchmark2 = assembler2.assemble(version="lite")
+
+        assert benchmark1.version == benchmark2.version
+        assert benchmark1.block_a.total == benchmark2.block_a.total
+
+    def test_synthetic_mc_tasks_have_required_fields(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that synthetic MC tasks have all required fields."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_a.mc_tasks:
+            assert task.id is not None
+            assert task.category is not None
+            assert task.prompt is not None
+            assert len(task.options) > 0
+            assert task.correct in ["A", "B", "C", "D"]
+
+    def test_synthetic_gec_tasks_have_required_fields(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that synthetic GEC tasks have all required fields."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_a.gec_tasks:
+            assert task.id is not None
+            assert task.input is not None
+            assert task.expected_output is not None
+
+    def test_synthetic_translation_tasks_have_required_fields(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that synthetic translation tasks have all required fields."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_a.translation_tasks:
+            assert task.id is not None
+            assert task.source_lang in ["en", "ru"]
+            assert task.source is not None
+            assert task.reference is not None
+
+    def test_synthetic_false_positive_tasks_are_correct(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that false positive tasks are marked as correct."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_a.false_positive_tasks:
+            assert task.is_correct is True
+            assert task.text is not None
+
+    def test_synthetic_positive_marker_tasks_have_regex(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that positive marker tasks have valid regex patterns."""
+        import re
+
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_a.positive_marker_tasks:
+            assert task.marker_regex is not None
+            re.compile(task.marker_regex)
+
+    def test_synthetic_generation_tasks_have_prompts(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that generation tasks have prompts."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_b.generation_tasks:
+            assert task.id is not None
+            assert task.prompt is not None
+            assert len(task.prompt) > 0
+
+    def test_synthetic_adversarial_tasks_have_traps(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that adversarial tasks have trap words."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_b.adversarial_tasks:
+            assert task.id is not None
+            assert task.prompt is not None
+            assert len(task.traps_in_prompt) > 0
+
+    def test_synthetic_long_context_tasks_have_messages(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that long context tasks have message history."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        for task in benchmark.block_b.long_context_tasks:
+            assert task.id is not None
+            assert len(task.messages) > 0
+            assert task.total_tokens > 0
+
+    def test_metadata_populated(self, temp_data_dir: Path, mock_hf_unavailable: None) -> None:
+        """Test that metadata is populated after assembly."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        assert benchmark.metadata is not None
+        assert benchmark.metadata.version == "lite"
+        assert benchmark.metadata.dataset_hash is not None
+        assert benchmark.metadata.total_block_a == benchmark.block_a.total
+        assert benchmark.metadata.total_block_b == benchmark.block_b.total
+        assert benchmark.metadata.created_at is not None
+        assert len(benchmark.metadata.sources) > 0
+
+    def test_sources_include_synthetic(
+        self, temp_data_dir: Path, mock_hf_unavailable: None
+    ) -> None:
+        """Test that sources include synthetic."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        assert "synthetic" in benchmark.metadata.sources
+
+    def test_unique_task_ids(self, temp_data_dir: Path, mock_hf_unavailable: None) -> None:
+        """Test that all task IDs are unique."""
+        assembler = BenchmarkAssembler(data_dir=temp_data_dir)
+        benchmark = assembler.assemble(version="lite")
+
+        all_ids = set()
+
+        for task in benchmark.block_a.all_tasks():
+            assert task.id not in all_ids, f"Duplicate ID: {task.id}"
+            all_ids.add(task.id)
+
+        for task in benchmark.block_b.all_tasks():
+            assert task.id not in all_ids, f"Duplicate ID: {task.id}"
+            all_ids.add(task.id)

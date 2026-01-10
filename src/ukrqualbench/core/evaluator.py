@@ -1014,27 +1014,93 @@ class Evaluator:
             self.add_detector("fertility", FertilityCalculator())
 
     def _load_default_tasks(self) -> None:
-        """Load default synthetic tasks for testing."""
-        tasks = [
-            BenchmarkTask(
-                id="gen_1",
-                type="generation",
-                category="explanation",
-                prompt="Поясніть, що таке машинне навчання.",
-            ),
-            BenchmarkTask(
-                id="gen_2",
-                type="generation",
-                category="advice",
-                prompt="Дайте поради щодо здорового харчування.",
-            ),
-            BenchmarkTask(
-                id="gen_3",
-                type="generation",
-                category="creative",
-                prompt="Напишіть короткий вірш про весну.",
-            ),
-        ]
+        """Load benchmark tasks using BenchmarkAssembler."""
+        from ukrqualbench.datasets import BenchmarkAssembler
+
+        assembler = BenchmarkAssembler(data_dir=self._config.data_dir)
+        benchmark = assembler.assemble(self._eval_config.benchmark_version)  # type: ignore[arg-type]
+
+        tasks: list[BenchmarkTask] = []
+
+        for mc_task in benchmark.block_a.mc_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=mc_task.id,
+                    type="multiple_choice",
+                    category=mc_task.category,
+                    prompt=mc_task.prompt,
+                    reference=mc_task.correct,
+                    metadata={"options": mc_task.options},
+                )
+            )
+
+        for gec_task in benchmark.block_a.gec_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=gec_task.id,
+                    type="gec",
+                    category=gec_task.category,
+                    prompt=gec_task.input,
+                    reference=gec_task.expected_output,
+                )
+            )
+
+        for trans_task in benchmark.block_a.translation_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=trans_task.id,
+                    type="translation",
+                    category=f"{trans_task.source_lang}-{trans_task.target_lang}",
+                    prompt=trans_task.source,
+                    reference=trans_task.reference,
+                    metadata={"traps": trans_task.traps},
+                )
+            )
+
+        for fp_task in benchmark.block_a.false_positive_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=fp_task.id,
+                    type="false_positive",
+                    category="false_positive",
+                    prompt=fp_task.text,
+                    reference=None,
+                    metadata={"author": fp_task.author, "is_correct": fp_task.is_correct},
+                )
+            )
+
+        for gen_task in benchmark.block_b.generation_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=gen_task.id,
+                    type="free_generation",
+                    category=gen_task.category,
+                    prompt=gen_task.prompt,
+                )
+            )
+
+        for adv_task in benchmark.block_b.adversarial_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=adv_task.id,
+                    type="adversarial",
+                    category=adv_task.category,
+                    prompt=adv_task.prompt,
+                    metadata={"traps": adv_task.traps_in_prompt},
+                )
+            )
+
+        for lc_task in benchmark.block_b.long_context_tasks:
+            tasks.append(
+                BenchmarkTask(
+                    id=lc_task.id,
+                    type="long_context",
+                    category=lc_task.category,
+                    prompt=str(lc_task.messages),
+                    metadata={"total_tokens": lc_task.total_tokens},
+                )
+            )
+
         self.load_tasks(tasks)
 
     def _create_empty_result(self, model_id: str) -> EvaluationResultData:

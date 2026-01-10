@@ -644,5 +644,100 @@ def info() -> None:
     console.print(size_table)
 
 
+@app.command()
+def benchmark(
+    version: Annotated[
+        str,
+        typer.Option(
+            "--version",
+            "-v",
+            help="Benchmark version: lite, base, or large",
+        ),
+    ] = "base",
+    output: Annotated[
+        Path | None,
+        typer.Option(
+            "--output",
+            "-o",
+            help="Output file path (defaults to data/benchmarks/{version}.json)",
+        ),
+    ] = None,
+    show_stats: Annotated[
+        bool,
+        typer.Option(
+            "--stats",
+            "-s",
+            help="Show benchmark statistics",
+        ),
+    ] = False,
+) -> None:
+    """Assemble benchmark dataset from available sources."""
+    from ukrqualbench.datasets import BENCHMARK_SPECS, BenchmarkAssembler
+
+    if version not in BENCHMARK_SPECS:
+        rprint(f"[red]Invalid version: {version}. Must be lite, base, or large.[/red]")
+        raise typer.Exit(1)
+
+    config = Config()
+    assembler = BenchmarkAssembler(data_dir=config.data_dir)
+
+    rprint(f"[blue]Assembling {version} benchmark...[/blue]")
+
+    benchmark_data = assembler.assemble(version)  # type: ignore[arg-type]
+
+    if show_stats:
+        stats_table = Table(title=f"Benchmark Statistics ({version})")
+        stats_table.add_column("Component", style="cyan")
+        stats_table.add_column("Count", style="green")
+
+        stats_table.add_row("Block A - MC Tasks", str(len(benchmark_data.block_a.mc_tasks)))
+        stats_table.add_row("Block A - GEC Tasks", str(len(benchmark_data.block_a.gec_tasks)))
+        stats_table.add_row(
+            "Block A - Translation", str(len(benchmark_data.block_a.translation_tasks))
+        )
+        stats_table.add_row(
+            "Block A - False Positive", str(len(benchmark_data.block_a.false_positive_tasks))
+        )
+        stats_table.add_row(
+            "Block A - Positive Markers", str(len(benchmark_data.block_a.positive_marker_tasks))
+        )
+        stats_table.add_row(
+            "[bold]Block A Total[/bold]", f"[bold]{benchmark_data.block_a.total}[/bold]"
+        )
+        stats_table.add_row("", "")
+        stats_table.add_row(
+            "Block B - Generation", str(len(benchmark_data.block_b.generation_tasks))
+        )
+        stats_table.add_row(
+            "Block B - Adversarial", str(len(benchmark_data.block_b.adversarial_tasks))
+        )
+        stats_table.add_row(
+            "Block B - Long Context", str(len(benchmark_data.block_b.long_context_tasks))
+        )
+        stats_table.add_row(
+            "[bold]Block B Total[/bold]", f"[bold]{benchmark_data.block_b.total}[/bold]"
+        )
+        stats_table.add_row("", "")
+        stats_table.add_row(
+            "[bold cyan]Grand Total[/bold cyan]",
+            f"[bold cyan]{benchmark_data.total_tasks}[/bold cyan]",
+        )
+
+        console.print(stats_table)
+
+        if benchmark_data.metadata:
+            rprint(f"\n[dim]Dataset hash: {benchmark_data.metadata.dataset_hash[:16]}...[/dim]")
+            rprint(f"[dim]Sources: {', '.join(benchmark_data.metadata.sources)}[/dim]")
+
+    output_path = output or config.data_dir / "benchmarks" / f"{version}.json"
+
+    from ukrqualbench.datasets import BenchmarkLoader
+
+    loader = BenchmarkLoader(config.data_dir)
+    loader.save_benchmark(benchmark_data, output_path)
+
+    rprint(f"\n[green]Benchmark saved to: {output_path}[/green]")
+
+
 if __name__ == "__main__":
     app()
