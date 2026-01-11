@@ -545,6 +545,7 @@ class Evaluator:
             # Record result
             self._pairwise_engine.record_result(result)
             self._progress.completed_comparisons += 1
+            self._notify_progress()
 
             # Record metrics
             self._metrics.record_comparison(

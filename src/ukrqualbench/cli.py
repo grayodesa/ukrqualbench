@@ -11,14 +11,6 @@ import typer
 from rich import print as rprint
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import (
-    BarColumn,
-    Progress,
-    SpinnerColumn,
-    TaskProgressColumn,
-    TextColumn,
-    TimeElapsedColumn,
-)
 from rich.table import Table
 
 from ukrqualbench import __version__
@@ -362,7 +354,7 @@ def evaluate(
     resume: Annotated[bool, typer.Option("--resume", "-r", help="Resume from checkpoint")] = True,
 ) -> None:
     """Evaluate a single model on the benchmark."""
-    from ukrqualbench.core.evaluator import Evaluator
+    from ukrqualbench.core.evaluator import EvaluationProgress, Evaluator
 
     config = Config()
     config.benchmark_version = benchmark
@@ -380,20 +372,23 @@ def evaluate(
 
     evaluator = Evaluator(config=config)
 
+    def on_progress(p: EvaluationProgress) -> None:
+        if p.total_comparisons > 0:
+            rprint(
+                f"  [Round {p.current_round}/{p.total_rounds}] "
+                f"{p.completed_comparisons}/{p.total_comparisons} comparisons "
+                f"({p.progress_percent:.0f}%)",
+                end="\r",
+            )
+
+    evaluator.set_progress_callback(on_progress)
+
     async def run_evaluation() -> Any:
         return await evaluator.evaluate_model(model_id=model, judge_id=judge, resume=resume)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
-        task = progress.add_task(f"[cyan]Evaluating {model}...", total=None)
-        result = asyncio.run(run_evaluation())
-        progress.update(task, completed=True)
+    rprint(f"[cyan]Evaluating {model}...[/cyan]")
+    result = asyncio.run(run_evaluation())
+    rprint()
 
     _display_evaluation_results(result)
 
@@ -455,7 +450,7 @@ def compare(
     import math
 
     from ukrqualbench.core.elo_registry import ELORegistry
-    from ukrqualbench.core.evaluator import Evaluator
+    from ukrqualbench.core.evaluator import EvaluationProgress, Evaluator
 
     config = Config()
     config.benchmark_version = benchmark
@@ -512,22 +507,23 @@ def compare(
 
     evaluator = Evaluator(config=config, elo_registry=registry)
 
+    def on_progress(p: EvaluationProgress) -> None:
+        if p.total_comparisons > 0:
+            rprint(
+                f"  [Round {p.current_round}/{p.total_rounds}] "
+                f"{p.completed_comparisons}/{p.total_comparisons} comparisons "
+                f"({p.progress_percent:.0f}%)",
+                end="\r",
+            )
+
+    evaluator.set_progress_callback(on_progress)
+
     async def run_comparison() -> Any:
         return await evaluator.compare_models(model_ids=model_list, judge_id=judge, rounds=rounds)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        TimeElapsedColumn(),
-        console=console,
-    ) as progress:
-        task = progress.add_task(
-            f"[cyan]Running {rounds} rounds of comparison...", total=rounds * n_models
-        )
-        results = asyncio.run(run_comparison())
-        progress.update(task, completed=True)
+    rprint(f"[cyan]Running {rounds} rounds of comparison...[/cyan]")
+    results = asyncio.run(run_comparison())
+    rprint()
 
     if registry:
         registry.save()
