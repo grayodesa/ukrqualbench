@@ -119,8 +119,12 @@ class OpenAIClient(BaseModelClient):
         request_kwargs: dict[str, Any] = {
             "model": self._model_id,
             "messages": messages,
-            "temperature": temperature,
         }
+
+        model_lower = self._model_id.lower()
+        is_reasoning_model = model_lower.startswith(("o1", "o3", "gpt-5"))
+        if not is_reasoning_model:
+            request_kwargs["temperature"] = temperature
 
         # GPT-5.x models require max_completion_tokens instead of max_tokens
         if self._model_id.startswith("gpt-5"):

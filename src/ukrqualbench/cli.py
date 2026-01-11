@@ -17,7 +17,7 @@ from ukrqualbench import __version__
 from ukrqualbench.core.config import BenchmarkVersion, Config
 
 if TYPE_CHECKING:
-    from ukrqualbench.core.schemas import EvaluationResultData
+    pass
 
 app = typer.Typer(
     name="ukrqualbench",
@@ -33,15 +33,22 @@ def create_model_client(model_id: str, config: Config | None = None) -> Any:
     from ukrqualbench.models import (
         create_anthropic_client,
         create_google_client,
+        create_local_client,
         create_nebius_client,
-        create_ollama_client,
         create_openai_client,
     )
 
     config = config or Config()
     model_lower = model_id.lower()
 
-    if model_lower.startswith(("gpt-", "o1", "o3")):
+    if "/" in model_id:
+        return create_nebius_client(
+            model_id=model_id,
+            api_key=config.nebius_api_key,
+            temperature=config.temperature,
+            max_retries=config.max_retries,
+        )
+    elif model_lower.startswith(("gpt-", "o1", "o3")):
         return create_openai_client(
             model_id=model_id,
             api_key=config.openai_api_key,
@@ -62,17 +69,10 @@ def create_model_client(model_id: str, config: Config | None = None) -> Any:
             temperature=config.temperature,
             max_retries=config.max_retries,
         )
-    elif "/" in model_id:
-        return create_nebius_client(
-            model_id=model_id,
-            api_key=config.nebius_api_key,
-            temperature=config.temperature,
-            max_retries=config.max_retries,
-        )
     else:
-        return create_ollama_client(
+        return create_local_client(
             model_id=model_id,
-            base_url=config.ollama_base_url,
+            base_url=config.local_base_url,
             temperature=config.temperature,
         )
 
@@ -344,86 +344,218 @@ def evaluate(
     benchmark: Annotated[
         BenchmarkVersion, typer.Option("--benchmark", "-b", help="Benchmark version")
     ] = BenchmarkVersion.LITE,
-    judge: Annotated[
-        str, typer.Option("--judge", "-j", help="Judge model")
-    ] = "claude-3-5-haiku-latest",
     output: Annotated[Path, typer.Option("--output", "-o", help="Output directory")] = Path(
-        "results"
+        "results/evaluations"
     ),
-    max_cost: Annotated[float | None, typer.Option("--max-cost", help="Max cost USD")] = None,
-    resume: Annotated[bool, typer.Option("--resume", "-r", help="Resume from checkpoint")] = True,
+    resume: Annotated[bool, typer.Option("--resume", help="Resume from checkpoint")] = False,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", "-v", help="Show detailed LLM request/response logs")
+    ] = False,
 ) -> None:
-    """Evaluate a single model on the benchmark."""
+    """Evaluate a single model on Block A + V (calibration tests and automatic metrics).
+
+    This does NOT run pairwise comparisons. Use 'compare' command for ELO ratings.
+    Results are saved and can be loaded by 'compare' or 'leaderboard' commands.
+    """
+    import logging
+
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / f"evaluate_{model.replace('/', '_')}_{benchmark.value}.log"
+
+    file_handler = logging.FileHandler(log_file, mode="w", encoding="utf-8")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s [%(name)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+
+    model_logger = logging.getLogger("ukrqualbench.models")
+    model_logger.setLevel(logging.INFO)
+    model_logger.addHandler(file_handler)
+
+    if verbose:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(message)s", datefmt="%H:%M:%S")
+        )
+        model_logger.addHandler(console_handler)
+
+    rprint(f"[dim]Logging to: {log_file}[/dim]")
+
     from ukrqualbench.core.evaluator import EvaluationProgress, Evaluator
+    from ukrqualbench.core.schemas import ModelEvaluationData
 
     config = Config()
     config.benchmark_version = benchmark
-    if max_cost is not None:
-        config.max_cost_usd = max_cost
 
     output.mkdir(parents=True, exist_ok=True)
 
+    checkpoint_file = (
+        config.data_dir / "checkpoints" / "block_a" / f"{model.replace('/', '_')}_checkpoint.json"
+    )
+    if resume and checkpoint_file.exists():
+        with open(checkpoint_file) as f:
+            checkpoint = json.load(f)
+        rprint(
+            f"[yellow]Resuming from checkpoint: {checkpoint['completed']}/{checkpoint['total']} tasks[/yellow]"
+        )
+    elif resume:
+        rprint("[yellow]No checkpoint found, starting fresh[/yellow]")
+
     rprint(
         Panel.fit(
-            f"[bold]Evaluating Model[/bold]\n\nModel: [cyan]{model}[/cyan]\nBenchmark: [yellow]{benchmark.value}[/yellow]\nJudge: [dim]{judge}[/dim]",
+            f"[bold]Evaluating Model (Block A + V)[/bold]\n\n"
+            f"Model: [cyan]{model}[/cyan]\n"
+            f"Benchmark: [yellow]{benchmark.value}[/yellow]\n\n"
+            f"[dim]This runs calibration tests and automatic metrics.\n"
+            f"For ELO ratings, use 'compare' command after evaluation.[/dim]",
             title="UkrQualBench Evaluation",
         )
     )
 
     evaluator = Evaluator(config=config)
 
+    from rich.live import Live
+    from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
+    from rich.table import Table as ProgressTable
+
+    block_a_progress = Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TaskProgressColumn(),
+        TextColumn("[cyan]{task.fields[status]}[/cyan]"),
+    )
+    block_v_status = "[dim]Waiting...[/dim]"
+
+    def make_progress_table() -> ProgressTable:
+        table = ProgressTable.grid(padding=(0, 1))
+        table.add_row(block_a_progress)
+        table.add_row(f"  Block V (metrics): {block_v_status}")
+        return table
+
+    task_id = None
+
     def on_progress(p: EvaluationProgress) -> None:
-        if p.total_comparisons > 0:
-            rprint(
-                f"  [Round {p.current_round}/{p.total_rounds}] "
-                f"{p.completed_comparisons}/{p.total_comparisons} comparisons "
-                f"({p.progress_percent:.0f}%)",
-                end="\r",
+        nonlocal task_id, block_v_status
+        if p.total_tasks > 0:
+            if task_id is None:
+                task_id = block_a_progress.add_task(
+                    "[bold]Block A[/bold]",
+                    total=p.total_tasks,
+                    status=f"${evaluator._total_cost_usd:.4f}",
+                )
+            block_a_progress.update(
+                task_id,
+                completed=p.completed_tasks,
+                status=f"${evaluator._total_cost_usd:.4f} | {p.errors} errors",
             )
+        if p.block_v_status:
+            block_v_status = f"[yellow]{p.block_v_status}[/yellow]"
+            if live_display:
+                live_display.update(make_progress_table())
 
     evaluator.set_progress_callback(on_progress)
 
-    async def run_evaluation() -> Any:
-        return await evaluator.evaluate_model(model_id=model, judge_id=judge, resume=resume)
+    rprint(f"[cyan]Running Block A + V evaluation for {model}...[/cyan]")
 
-    rprint(f"[cyan]Evaluating {model}...[/cyan]")
-    result = asyncio.run(run_evaluation())
+    live_display: Live | None = None
+
+    async def run_with_progress() -> ModelEvaluationData:
+        nonlocal block_v_status, live_display
+        result = await evaluator.evaluate_model(model_id=model)
+        block_v_status = "[green]Done[/green]"
+        if live_display:
+            live_display.update(make_progress_table())
+        return result
+
+    with Live(make_progress_table(), console=console, refresh_per_second=10) as live:
+        live_display = live
+        result = asyncio.run(run_with_progress())
     rprint()
 
-    _display_evaluation_results(result)
+    _display_model_evaluation(result)
 
-    result_file = output / f"{model.replace('/', '_')}_evaluation.json"
+    result_file = output / f"{model.replace('/', '_')}.json"
     with open(result_file, "w") as f:
         json.dump(result.to_dict(), f, indent=2, default=str)
 
-    rprint(f"\n[dim]Results saved to: {result_file}[/dim]")
+    rprint(f"\n[green]Results saved to: {result_file}[/green]")
+    rprint(f"[dim]Run 'ukrqualbench compare --models {model},...' for ELO ratings[/dim]")
 
 
-def _display_evaluation_results(result: EvaluationResultData) -> None:
+def _display_model_evaluation(result: Any) -> None:
+    from ukrqualbench.core.schemas import ModelEvaluationData
+
+    if not isinstance(result, ModelEvaluationData):
+        return
+
     table = Table(title=f"Evaluation Results: {result.model_id}")
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
 
-    scores = result.scores
-
     table.add_row("[bold]Block A (Calibration)[/bold]", "")
-    table.add_row("  MC Accuracy", f"{scores.block_a.mc_accuracy:.1%}")
-    table.add_row("  GEC F1", f"{scores.block_a.gec_f1:.1%}")
-    table.add_row("  Translation COMET", f"{scores.block_a.translation_comet:.3f}")
+    table.add_row("  MC Accuracy", f"{result.block_a.mc_accuracy:.1%}")
+    table.add_row("  GEC F1", f"{result.block_a.gec_f1:.1%}")
+    table.add_row("  Translation COMET", f"{result.block_a.translation_comet:.3f}")
+    table.add_row("  False Positive Rate", f"{result.block_a.false_positive_rate:.1%}")
 
-    table.add_row("[bold]Block B (Generation)[/bold]", "")
-    table.add_row("  Generation ELO", f"{scores.block_b.generation_elo:.0f}")
-    table.add_row("  Adversarial ELO", f"{scores.block_b.adversarial_elo:.0f}")
-    table.add_row("  Long Context ELO", f"{scores.block_b.long_context_elo:.0f}")
+    table.add_row("[bold]Block V (Automatic Metrics)[/bold]", "")
+    table.add_row("  Fertility Rate", f"{result.block_v.fertility_rate:.2f}")
+    table.add_row("  Positive Markers", f"{result.block_v.positive_markers:.1f}/1K")
+    table.add_row("  Russism Rate", f"{result.block_v.russism_rate:.2f}/1K")
+    table.add_row("  Anglicism Rate", f"{result.block_v.anglicism_rate:.2f}/1K")
 
-    table.add_row("[bold]Block V (Metrics)[/bold]", "")
-    table.add_row("  Fertility Rate", f"{scores.block_v.fertility_rate:.2f}")
-    table.add_row("  Positive Markers", f"{scores.block_v.positive_markers:.1f}")
-    table.add_row("  Russism Rate", f"{scores.block_v.russism_rate:.2f}")
-    table.add_row("  Anglicism Rate", f"{scores.block_v.anglicism_rate:.2f}")
+    table.add_row("", "")
+    table.add_row("[dim]Runtime[/dim]", f"[dim]{result.runtime_minutes:.1f} min[/dim]")
+    table.add_row("[dim]Cost[/dim]", f"[dim]${result.cost_usd:.4f}[/dim]")
 
-    table.add_row("[bold]Overall[/bold]", "")
-    table.add_row("  ELO Rating", f"[bold]{scores.elo_rating:.0f}[/bold]")
+    console.print(table)
+
+
+def _display_elo_results(elo_ratings: dict[str, float], registry: Any) -> None:
+    from ukrqualbench.core.elo_registry import ELORegistry
+
+    table = Table(title="ELO Ratings (Block B Comparison)")
+    table.add_column("Rank", style="dim", justify="right")
+    table.add_column("Model", style="cyan")
+    table.add_column("ELO", style="green", justify="right")
+    table.add_column("Games", justify="right")
+    table.add_column("W/L/T", justify="center")
+    table.add_column("Win Rate", justify="right")
+    table.add_column("Status", justify="center")
+
+    sorted_ratings = sorted(elo_ratings.items(), key=lambda x: x[1], reverse=True)
+
+    for rank, (model_id, rating) in enumerate(sorted_ratings, start=1):
+        games = "-"
+        wlt = "-"
+        win_rate = "-"
+        status = ""
+
+        if isinstance(registry, ELORegistry):
+            entry = registry.get_model(model_id)
+            if entry:
+                games = str(entry.games_played)
+                wlt = f"{entry.wins}/{entry.losses}/{entry.ties}"
+                win_rate = f"{entry.win_rate:.1%}"
+                status = (
+                    "[dim]provisional[/dim]" if entry.is_provisional else "[green]stable[/green]"
+                )
+
+        table.add_row(
+            str(rank),
+            model_id,
+            f"{rating:.1f}",
+            games,
+            wlt,
+            win_rate,
+            status,
+        )
 
     console.print(table)
 
@@ -518,99 +650,194 @@ def compare(
 
     evaluator.set_progress_callback(on_progress)
 
-    async def run_comparison() -> Any:
+    async def run_comparison() -> dict[str, float]:
         return await evaluator.compare_models(model_ids=model_list, judge_id=judge, rounds=rounds)
 
-    rprint(f"[cyan]Running {rounds} rounds of comparison...[/cyan]")
-    results = asyncio.run(run_comparison())
+    rprint(f"[cyan]Running {rounds} rounds of comparison (Block B only)...[/cyan]")
+    elo_ratings = asyncio.run(run_comparison())
     rprint()
 
     if registry:
-        registry.save()
         rprint(
-            f"[dim]ELO registry saved: {registry.model_count} models, {registry.comparison_count} comparisons[/dim]"
+            f"[dim]ELO registry saved: {registry.model_count} models, "
+            f"{registry.comparison_count} comparisons[/dim]"
         )
 
-    from ukrqualbench.reports import create_leaderboard
-
-    leaderboard = create_leaderboard(
-        results=results, benchmark_version=benchmark.value, judge_id=judge
-    )
-
-    rprint("\n" + leaderboard.to_table(format="unicode"))
+    _display_elo_results(elo_ratings, registry)
 
     results_file = output / "comparison_results.json"
     with open(results_file, "w") as f:
-        f.write(leaderboard.to_json())
+        json.dump(
+            {
+                "benchmark_version": benchmark.value,
+                "judge_id": judge,
+                "rounds": rounds,
+                "elo_ratings": elo_ratings,
+            },
+            f,
+            indent=2,
+        )
 
     rprint(f"\n[dim]Results saved to: {results_file}[/dim]")
 
 
 @app.command()
 def leaderboard(
-    results_dir: Annotated[
-        Path, typer.Option("--results-dir", "-r", help="Results directory")
-    ] = Path("results"),
+    evaluations_dir: Annotated[
+        Path, typer.Option("--evaluations-dir", "-e", help="ModelEvaluationData directory")
+    ] = Path("results/evaluations"),
     output: Annotated[Path, typer.Option("--output", "-o", help="Output file")] = Path(
         "leaderboard.html"
     ),
     format_type: Annotated[str, typer.Option("--format", "-f", help="Output format")] = "html",
     limit: Annotated[int | None, typer.Option("--limit", "-n", help="Max entries")] = None,
+    registry_path: Annotated[
+        Path | None, typer.Option("--registry", help="ELO registry path")
+    ] = None,
 ) -> None:
-    """Generate leaderboard from evaluation results."""
-    from ukrqualbench.core.schemas import EvaluationResultData
-    from ukrqualbench.reports import LeaderboardGenerator, generate_leaderboard_html
+    """Generate leaderboard from model evaluations and ELO registry."""
+    from ukrqualbench.core.elo_registry import ELORegistry
+    from ukrqualbench.core.schemas import ModelEvaluationData
 
-    rprint(f"[yellow]Generating leaderboard from:[/yellow] {results_dir}")
+    rprint(f"[yellow]Loading evaluations from:[/yellow] {evaluations_dir}")
 
-    results: list[EvaluationResultData] = []
-    result_files = list(results_dir.glob("*_evaluation.json"))
+    evaluations: dict[str, ModelEvaluationData] = {}
+    eval_files = list(evaluations_dir.glob("*.json"))
 
-    if not result_files:
-        rprint("[red]No evaluation results found in the specified directory.[/red]")
-        raise typer.Exit(1)
-
-    for result_file in result_files:
+    for eval_file in eval_files:
         try:
-            with open(result_file) as f:
+            with open(eval_file) as f:
                 data = json.load(f)
-                results.append(EvaluationResultData.from_dict(data))
+                loaded_eval = ModelEvaluationData.from_dict(data)
+                evaluations[loaded_eval.model_id] = loaded_eval
         except Exception as e:
-            rprint(f"[yellow]Warning: Could not load {result_file}: {e}[/yellow]")
+            rprint(f"[yellow]Warning: Could not load {eval_file}: {e}[/yellow]")
 
-    if not results:
-        rprint("[red]No valid evaluation results found.[/red]")
-        raise typer.Exit(1)
+    rprint(f"[green]Loaded {len(evaluations)} model evaluations[/green]")
 
-    rprint(f"[green]Loaded {len(results)} evaluation results[/green]")
+    registry = ELORegistry(registry_path=registry_path)
+    rprint(f"[green]Loaded ELO registry: {registry.model_count} models[/green]")
 
-    generator = LeaderboardGenerator()
-    for result in results:
-        generator.add_result(result)
-    generator.finalize()
+    table = Table(title="Leaderboard")
+    table.add_column("Rank", style="dim", justify="right")
+    table.add_column("Model", style="cyan")
+    table.add_column("ELO", style="green", justify="right")
+    table.add_column("MC Acc", justify="right")
+    table.add_column("GEC F1", justify="right")
+    table.add_column("Fertility", justify="right")
+    table.add_column("Russisms", justify="right")
+    table.add_column("Markers", justify="right")
+    table.add_column("Status", justify="center")
 
-    if format_type == "html":
-        content = generate_leaderboard_html(generator)
-        output = output.with_suffix(".html")
-    elif format_type == "json":
-        content = generator.to_json()
+    rankings = registry.get_rankings()
+    leaderboard_data: list[dict[str, Any]] = []
+
+    for rank, (model_id, elo) in enumerate(rankings[:limit] if limit else rankings, start=1):
+        entry = registry.get_model(model_id)
+        eval_data = evaluations.get(model_id)
+
+        mc_acc = f"{eval_data.block_a.mc_accuracy:.1%}" if eval_data else "-"
+        gec_f1 = f"{eval_data.block_a.gec_f1:.1%}" if eval_data else "-"
+        fertility = f"{eval_data.block_v.fertility_rate:.2f}" if eval_data else "-"
+        russisms = f"{eval_data.block_v.russism_rate:.1f}" if eval_data else "-"
+        markers = f"{eval_data.block_v.positive_markers:.1f}" if eval_data else "-"
+        status = (
+            "[dim]provisional[/dim]" if entry and entry.is_provisional else "[green]stable[/green]"
+        )
+
+        table.add_row(
+            str(rank), model_id, f"{elo:.1f}", mc_acc, gec_f1, fertility, russisms, markers, status
+        )
+        leaderboard_data.append(
+            {
+                "rank": rank,
+                "model_id": model_id,
+                "elo_rating": round(elo, 1),
+                "mc_accuracy": eval_data.block_a.mc_accuracy if eval_data else None,
+                "gec_f1": eval_data.block_a.gec_f1 if eval_data else None,
+                "fertility_rate": eval_data.block_v.fertility_rate if eval_data else None,
+                "russism_rate": eval_data.block_v.russism_rate if eval_data else None,
+                "positive_markers": eval_data.block_v.positive_markers if eval_data else None,
+                "provisional": entry.is_provisional if entry else True,
+            }
+        )
+
+    console.print(table)
+
+    if format_type == "json":
+        content = json.dumps({"leaderboard": leaderboard_data}, indent=2)
         output = output.with_suffix(".json")
     elif format_type == "csv":
-        content = generator.to_csv(include_details=True)
+        import csv as csv_module
+        import io
+
+        buf = io.StringIO()
+        if leaderboard_data:
+            writer = csv_module.DictWriter(buf, fieldnames=leaderboard_data[0].keys())
+            writer.writeheader()
+            writer.writerows(leaderboard_data)
+        content = buf.getvalue()
         output = output.with_suffix(".csv")
-    elif format_type == "markdown":
-        content = generator.to_table(format="markdown")
-        output = output.with_suffix(".md")
+    elif format_type == "html":
+        content = _generate_simple_html_leaderboard(leaderboard_data)
+        output = output.with_suffix(".html")
     else:
-        rprint(f"[red]Unknown format: {format_type}[/red]")
-        raise typer.Exit(1)
+        content = _generate_markdown_table(leaderboard_data)
+        output = output.with_suffix(".md")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with open(output, "w") as f:
         f.write(content)
 
-    rprint(f"[green]Leaderboard saved to: {output}[/green]")
-    rprint("\n" + generator.to_table(format="unicode"))
+    rprint(f"\n[green]Leaderboard saved to: {output}[/green]")
+
+
+def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
+    rows = ""
+    for entry in data:
+        rows += (
+            f"""<tr>
+            <td>{entry["rank"]}</td>
+            <td>{entry["model_id"]}</td>
+            <td>{entry["elo_rating"]}</td>
+            <td>{entry["mc_accuracy"]:.1%}</td>
+            <td>{entry["gec_f1"]:.1%}</td>
+            <td>{entry["fertility_rate"]:.2f}</td>
+            <td>{entry["russism_rate"]:.1f}</td>
+            <td>{entry["positive_markers"]:.1f}</td>
+        </tr>"""
+            if entry["mc_accuracy"]
+            else f"""<tr>
+            <td>{entry["rank"]}</td>
+            <td>{entry["model_id"]}</td>
+            <td>{entry["elo_rating"]}</td>
+            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+        </tr>"""
+        )
+    return f"""<!DOCTYPE html>
+<html><head><title>UkrQualBench Leaderboard</title>
+<style>table {{border-collapse: collapse; width: 100%;}} th,td {{border: 1px solid #ddd; padding: 8px; text-align: left;}}</style>
+</head><body>
+<h1>UkrQualBench Leaderboard</h1>
+<table><tr><th>Rank</th><th>Model</th><th>ELO</th><th>MC Acc</th><th>GEC F1</th><th>Fertility</th><th>Russisms</th><th>Markers</th></tr>
+{rows}</table></body></html>"""
+
+
+def _generate_markdown_table(data: list[dict[str, Any]]) -> str:
+    lines = [
+        "| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Russisms | Markers |",
+        "|------|-------|-----|--------|--------|-----------|----------|---------|",
+    ]
+    for entry in data:
+        if entry["mc_accuracy"]:
+            lines.append(
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {entry['fertility_rate']:.2f} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
+            )
+        else:
+            lines.append(
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | - | - | - | - | - |"
+            )
+    return "\n".join(lines)
 
 
 @app.command()
@@ -664,7 +891,8 @@ def info() -> None:
         if config.nebius_api_key
         else "[red]\u2717 Not set[/red]",
     )
-    api_table.add_row("Ollama", f"[dim]{config.ollama_base_url}[/dim]")
+    local_url = config.local_base_url or "Not configured"
+    api_table.add_row("Local (LM Studio/etc)", f"[dim]{local_url}[/dim]")
 
     console.print(api_table)
 

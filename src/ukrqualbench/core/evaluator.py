@@ -32,6 +32,7 @@ from ukrqualbench.core.schemas import (
     BlockVScores,
     EvaluationMetadataData,
     EvaluationResultData,
+    ModelEvaluationData,
     ModelScoreData,
 )
 
@@ -67,6 +68,7 @@ class EvaluationProgress:
     total_rounds: int = 0
     start_time: float = field(default_factory=time.time)
     errors: int = 0
+    block_v_status: str = ""
 
     @property
     def progress_percent(self) -> float:
@@ -136,7 +138,9 @@ class Evaluator:
             elo_registry: Optional persistent ELO registry for cross-session ratings.
         """
         self._config = config or Config()
-        self._eval_config = eval_config or EvaluationConfig()
+        self._eval_config = eval_config or EvaluationConfig(
+            benchmark_version=self._config.benchmark_version.value
+        )
         self._output_dir = Path(output_dir) if output_dir else Path("results")
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._elo_registry = elo_registry
@@ -236,17 +240,98 @@ class Evaluator:
         with path.open() as f:
             data = json.load(f)
 
-        tasks = []
-        for task_data in data.get("tasks", []):
-            task = BenchmarkTask(
-                id=task_data["id"],
-                type=task_data["type"],
-                category=task_data.get("category", ""),
-                prompt=task_data["prompt"],
-                reference=task_data.get("reference"),
-                metadata=task_data.get("metadata", {}),
+        tasks: list[BenchmarkTask] = []
+
+        block_a = data.get("block_a", {})
+        for mc in block_a.get("mc", []):
+            options = mc.get("options", [])
+            options_text = "\n".join(options) if options else ""
+            full_prompt = f"{mc['prompt']}\n{options_text}\n\nВідповідь (лише літера):"
+            tasks.append(
+                BenchmarkTask(
+                    id=mc["id"],
+                    type="multiple_choice",
+                    category=mc.get("category", ""),
+                    prompt=full_prompt,
+                    reference=mc.get("correct"),
+                    metadata={"options": options},
+                )
             )
-            tasks.append(task)
+
+        for gec in block_a.get("gec", []):
+            raw_input = gec.get("input", gec.get("prompt", ""))
+            gec_prompt = (
+                f"Виправте граматичні та стилістичні помилки в реченні. "
+                f"Поверніть лише виправлене речення без пояснень.\n\n"
+                f"Речення: {raw_input}\n\nВиправлене речення:"
+            )
+            tasks.append(
+                BenchmarkTask(
+                    id=gec["id"],
+                    type="gec",
+                    category=gec.get("category", ""),
+                    prompt=gec_prompt,
+                    reference=gec.get("expected_output", gec.get("reference")),
+                )
+            )
+
+        for trans in block_a.get("translation", []):
+            source_text = trans.get("source", trans.get("prompt", ""))
+            source_lang = trans.get("source_lang", "en")
+            lang_name = "англійської" if source_lang == "en" else "російської"
+            trans_prompt = (
+                f"Перекладіть текст з {lang_name} мови на українську. "
+                f"Поверніть лише переклад без пояснень.\n\n"
+                f"Текст: {source_text}\n\nПереклад:"
+            )
+            tasks.append(
+                BenchmarkTask(
+                    id=trans["id"],
+                    type="translation",
+                    category=f"{source_lang}-uk",
+                    prompt=trans_prompt,
+                    reference=trans.get("reference"),
+                )
+            )
+
+        for fp in block_a.get("false_positive", []):
+            raw_text = fp.get("text", fp.get("prompt", ""))
+            fp_prompt = (
+                f"Перевірте текст на наявність граматичних помилок. "
+                f"Якщо помилок немає, напишіть 'CORRECT'. "
+                f"Якщо є помилки, виправте їх.\n\n"
+                f"Текст: {raw_text}\n\nВідповідь:"
+            )
+            tasks.append(
+                BenchmarkTask(
+                    id=fp["id"],
+                    type="false_positive",
+                    category="false_positive",
+                    prompt=fp_prompt,
+                    reference=None,
+                )
+            )
+
+        block_b = data.get("block_b", {})
+        for gen in block_b.get("generation", []):
+            tasks.append(
+                BenchmarkTask(
+                    id=gen["id"],
+                    type="free_generation",
+                    category=gen.get("category", ""),
+                    prompt=gen["prompt"],
+                )
+            )
+
+        for adv in block_b.get("adversarial", []):
+            tasks.append(
+                BenchmarkTask(
+                    id=adv["id"],
+                    type="adversarial",
+                    category=adv.get("category", ""),
+                    prompt=adv["prompt"],
+                )
+            )
 
         self.load_tasks(tasks)
 
@@ -364,12 +449,9 @@ class Evaluator:
                 }
             return
 
-        # Run each model on Block A tasks
         for model_id, client in self._model_clients.items():
             results = await self._evaluate_block_a_model(model_id, client, block_a_tasks)
             self._block_a_results[model_id] = results
-            self._progress.completed_tasks += len(block_a_tasks)
-            self._notify_progress()
 
     async def _evaluate_block_a_model(
         self,
@@ -394,42 +476,70 @@ class Evaluator:
         translation_scores: list[float] = []
         false_positives = 0
         false_positive_total = 0
+        task_results: list[dict[str, Any]] = []
+        checkpoint_interval = 20
 
-        for task in tasks:
+        for i, task in enumerate(tasks):
             try:
-                response = await client.generate(
-                    task.prompt,
-                    temperature=0.0,
-                    max_tokens=512,
+                response = await asyncio.wait_for(
+                    client.generate(task.prompt, temperature=0.0),
+                    timeout=60.0,
                 )
                 self._total_cost_usd += response.cost_usd
 
+                task_result: dict[str, Any] = {
+                    "task_id": task.id,
+                    "type": task.type,
+                    "response": response.text[:500],
+                }
+
                 if task.type == "multiple_choice" and task.reference:
                     mc_total += 1
-                    # Check if response contains correct answer
-                    if task.reference.upper() in response.text.upper()[:10]:
+                    correct = task.reference.upper() in response.text.upper()[:10]
+                    if correct:
                         mc_correct += 1
+                    task_result["correct"] = correct
 
                 elif task.type == "gec" and task.reference:
                     gec_total += 1
-                    # Simple exact match for now
-                    if response.text.strip() == task.reference.strip():
+                    correct = response.text.strip() == task.reference.strip()
+                    if correct:
                         gec_correct += 1
+                    task_result["correct"] = correct
 
                 elif task.type == "translation" and task.reference:
-                    # Simplified COMET approximation
                     score = self._simple_translation_score(response.text, task.reference)
                     translation_scores.append(score)
+                    task_result["score"] = score
 
                 elif task.type == "false_positive":
                     false_positive_total += 1
-                    # Check if model incorrectly flagged correct text
-                    if "помилк" in response.text.lower() or "error" in response.text.lower():
+                    flagged = "помилк" in response.text.lower() or "error" in response.text.lower()
+                    if flagged:
                         false_positives += 1
+                    task_result["flagged"] = flagged
 
+                task_results.append(task_result)
+                self._progress.completed_tasks += 1
+                self._notify_progress()
+
+                if (i + 1) % checkpoint_interval == 0:
+                    self._save_block_a_checkpoint(model_id, task_results, i + 1, len(tasks))
+
+            except TimeoutError:
+                self._progress.errors += 1
+                self._progress.completed_tasks += 1
+                self._notify_progress()
+                self._metrics.record_error("TimeoutError", self._get_provider(model_id))
+                task_results.append({"task_id": task.id, "type": task.type, "error": "timeout"})
             except Exception as e:
                 self._progress.errors += 1
+                self._progress.completed_tasks += 1
+                self._notify_progress()
                 self._metrics.record_error(str(type(e).__name__), self._get_provider(model_id))
+                task_results.append({"task_id": task.id, "type": task.type, "error": str(e)})
+
+        self._save_block_a_checkpoint(model_id, task_results, len(tasks), len(tasks))
 
         return {
             "mc_accuracy": mc_correct / mc_total if mc_total > 0 else 0.0,
@@ -441,6 +551,30 @@ class Evaluator:
             if false_positive_total > 0
             else 0.0,
         }
+
+    def _save_block_a_checkpoint(
+        self, model_id: str, results: list[dict[str, Any]], completed: int, total: int
+    ) -> None:
+        checkpoint_dir = self._config.data_dir / "checkpoints" / "block_a"
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_model_id = model_id.replace("/", "_")
+        checkpoint_file = checkpoint_dir / f"{safe_model_id}_checkpoint.json"
+
+        data = {
+            "model_id": model_id,
+            "completed": completed,
+            "total": total,
+            "cost_usd": self._total_cost_usd,
+            "errors": self._progress.errors,
+            "timestamp": datetime.now().isoformat(),
+            "results": results,
+        }
+
+        temp_file = checkpoint_file.with_suffix(".json.tmp")
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        temp_file.rename(checkpoint_file)
 
     def _simple_translation_score(self, hypothesis: str, reference: str) -> float:
         """Simple translation quality score (placeholder for COMET).
@@ -564,24 +698,32 @@ class Evaluator:
 
     async def _run_block_v(self) -> None:
         """Run Block V automatic metrics using detectors."""
-        # For each model, generate sample texts and run detectors
         sample_prompts = [
             "Поясніть, що таке штучний інтелект простими словами.",
             "Напишіть короткий лист-подяку колезі за допомогу.",
             "Опишіть переваги здорового способу життя.",
         ]
 
+        self._progress.block_v_status = "generating"
+        self._notify_progress()
+
         for model_id, client in self._model_clients.items():
             all_texts: list[str] = []
 
-            # Generate sample texts
-            for prompt in sample_prompts:
+            for i, prompt in enumerate(sample_prompts):
+                self._progress.block_v_status = f"generating {i + 1}/{len(sample_prompts)}"
+                self._notify_progress()
                 try:
-                    response = await client.generate(prompt, max_tokens=300)
+                    response = await asyncio.wait_for(
+                        client.generate(prompt),
+                        timeout=60.0,
+                    )
                     all_texts.append(response.text)
                     self._total_cost_usd += response.cost_usd
+                except TimeoutError:
+                    self._progress.errors += 1
                 except Exception:
-                    pass
+                    self._progress.errors += 1
 
             combined_text = " ".join(all_texts)
 
@@ -622,6 +764,9 @@ class Evaluator:
                     pass
 
             self._block_v_results[model_id] = results
+
+        self._progress.block_v_status = "done"
+        self._notify_progress()
 
     def _calculate_results(self) -> list[EvaluationResultData]:
         """Calculate final evaluation results for all models.
@@ -856,31 +1001,23 @@ class Evaluator:
     async def evaluate_model(
         self,
         model_id: str,
-        judge_id: str = "claude-3-5-haiku-latest",
-        resume: bool = True,
-    ) -> EvaluationResultData:
-        """Evaluate a single model (convenience method).
+    ) -> ModelEvaluationData:
+        """Evaluate a single model on Block A + V (no pairwise comparisons).
+
+        This runs calibration tests (Block A) and automatic metrics (Block V).
+        Results are saved and can be used later for pairwise comparisons.
 
         Args:
             model_id: Model to evaluate.
-            judge_id: Judge model ID.
-            resume: Whether to resume from checkpoint.
 
         Returns:
-            Evaluation result for the model.
+            ModelEvaluationData with Block A and V scores.
         """
-        from ukrqualbench.judges import PairwiseJudge
+        start_time = time.time()
 
-        # Create model client
         model_client = self._create_model_client(model_id)
         self.add_model(model_id, model_client)
 
-        # Create judge
-        judge_client = self._create_model_client(judge_id)
-        judge = PairwiseJudge(judge_client)
-        self.set_judge(judge)
-
-        # Load benchmark tasks
         benchmark_file = (
             self._config.data_dir / "benchmarks" / f"{self._eval_config.benchmark_version}.json"
         )
@@ -889,46 +1026,91 @@ class Evaluator:
         else:
             self._load_default_tasks()
 
-        # Setup detectors
         self._setup_detectors()
+        self._progress.total_tasks = len(
+            [
+                t
+                for t in self._tasks
+                if t.type in ("multiple_choice", "gec", "translation", "false_positive")
+            ]
+        )
 
-        # Configure resume
-        self._eval_config.auto_resume = resume
+        await self._run_block_a()
 
-        # Run evaluation
-        results = await self.run()
-        return results[0] if results else self._create_empty_result(model_id)
+        try:
+            await asyncio.wait_for(self._run_block_v(), timeout=120.0)
+        except TimeoutError:
+            pass  # Block V timeout, use defaults
+        except Exception:
+            pass  # Block V failed, use defaults
+
+        block_a = self._block_a_results.get(model_id, {})
+        block_v = self._block_v_results.get(model_id, {})
+
+        result = ModelEvaluationData(
+            model_id=model_id,
+            block_a=BlockAScores(
+                mc_accuracy=block_a.get("mc_accuracy", 0.0),
+                gec_f1=block_a.get("gec_f1", 0.0),
+                translation_comet=block_a.get("translation_comet", 0.0),
+                false_positive_rate=block_a.get("false_positive_rate", 0.0),
+                positive_markers_score=block_a.get("positive_markers_score", 0.0),
+            ),
+            block_v=BlockVScores(
+                fertility_rate=block_v.get("fertility_rate", 1.5),
+                positive_markers=block_v.get("positive_markers", 0.0),
+                russism_rate=block_v.get("russism_rate", 0.0),
+                anglicism_rate=block_v.get("anglicism_rate", 0.0),
+            ),
+            benchmark_version=self._eval_config.benchmark_version,
+            runtime_minutes=(time.time() - start_time) / 60,
+            cost_usd=self._total_cost_usd,
+        )
+
+        return result
 
     async def compare_models(
         self,
         model_ids: list[str],
         judge_id: str = "claude-3-5-haiku-latest",
         rounds: int | None = None,
-    ) -> list[EvaluationResultData]:
-        """Compare multiple models (convenience method).
+        anchor_count: int = 2,
+    ) -> dict[str, float]:
+        """Run pairwise comparisons (Block B only) and update ELO ratings.
+
+        If persistent registry is configured, automatically includes anchor
+        models for new model calibration.
 
         Args:
             model_ids: List of model IDs to compare.
             judge_id: Judge model ID.
             rounds: Number of tournament rounds (auto if None).
+            anchor_count: Number of anchor models to include for new models.
 
         Returns:
-            List of evaluation results for all models.
+            Dict mapping model_id to final ELO rating.
         """
-
         from ukrqualbench.judges import PairwiseJudge
 
-        # Create model clients
-        for model_id in model_ids:
-            client = self._create_model_client(model_id)
-            self.add_model(model_id, client)
+        all_model_ids = list(model_ids)
 
-        # Create judge
+        if self._elo_registry:
+            new_models = self._elo_registry.get_new_models(model_ids)
+            if new_models and self._elo_registry.model_count > 0:
+                anchors = self._elo_registry.get_anchor_models(anchor_count)
+                for anchor in anchors:
+                    if anchor not in all_model_ids:
+                        all_model_ids.append(anchor)
+
+        for model_id in all_model_ids:
+            if model_id not in self._model_clients:
+                client = self._create_model_client(model_id)
+                self.add_model(model_id, client)
+
         judge_client = self._create_model_client(judge_id)
         judge = PairwiseJudge(judge_client)
         self.set_judge(judge)
 
-        # Load benchmark tasks
         benchmark_file = (
             self._config.data_dir / "benchmarks" / f"{self._eval_config.benchmark_version}.json"
         )
@@ -937,29 +1119,36 @@ class Evaluator:
         else:
             self._load_default_tasks()
 
-        # Setup detectors
-        self._setup_detectors()
+        num_models = len(all_model_ids)
+        if rounds is None:
+            rounds = self._pairwise_engine.get_recommended_rounds(num_models)
 
-        # Override rounds if specified
-        if rounds is not None:
-            self._progress.total_rounds = rounds
+        await self._run_block_b(rounds)
 
-        # Run evaluation
-        return await self.run()
+        if self._elo_registry:
+            self._elo_registry.save()
+
+        return self._pairwise_engine.ratings
 
     def _create_model_client(self, model_id: str) -> BaseModelClient:
         """Create model client from model ID."""
         from ukrqualbench.models import (
             create_anthropic_client,
             create_google_client,
+            create_local_client,
             create_nebius_client,
-            create_ollama_client,
             create_openai_client,
         )
 
         model_lower = model_id.lower()
 
-        if (
+        if "/" in model_id:
+            return create_nebius_client(
+                model_id=model_id,
+                api_key=self._config.nebius_api_key,
+                temperature=self._config.temperature,
+            )
+        elif (
             model_lower.startswith("gpt-")
             or model_lower.startswith("o1")
             or model_lower.startswith("o3")
@@ -981,16 +1170,10 @@ class Evaluator:
                 api_key=self._config.google_api_key,
                 temperature=self._config.temperature,
             )
-        elif "/" in model_id:
-            return create_nebius_client(
-                model_id=model_id,
-                api_key=self._config.nebius_api_key,
-                temperature=self._config.temperature,
-            )
         else:
-            return create_ollama_client(
+            return create_local_client(
                 model_id=model_id,
-                base_url=self._config.ollama_base_url,
+                base_url=self._config.local_base_url,
                 temperature=self._config.temperature,
             )
 

@@ -321,6 +321,30 @@ class EvaluationResultData(BaseModel):
 
 
 # ============================================================================
+# Model Evaluation (Block A + V only, no ELO)
+# ============================================================================
+
+
+class ModelEvaluationData(BaseModel):
+    """Evaluation result for a single model (Block A + V, no pairwise)."""
+
+    model_id: str = Field(..., description="Model identifier")
+    block_a: BlockAScores = Field(..., description="Block A calibration scores")
+    block_v: BlockVScores = Field(..., description="Block V automatic metrics")
+    benchmark_version: str = Field(..., description="lite/base/large")
+    timestamp: datetime = Field(default_factory=datetime.now)
+    runtime_minutes: float = Field(0.0, ge=0)
+    cost_usd: float = Field(0.0, ge=0)
+
+    def to_dict(self) -> dict[str, Any]:
+        return self.model_dump(mode="json")
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ModelEvaluationData:
+        return cls.model_validate(data)
+
+
+# ============================================================================
 # Calibration Results
 # ============================================================================
 

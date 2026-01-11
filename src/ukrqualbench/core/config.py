@@ -110,10 +110,14 @@ class Config(BaseSettings):
         ),
     )
 
-    # Local models
-    ollama_base_url: str = Field(
-        default="http://localhost:11434",
-        description="Ollama API base URL for local models",
+    # Local models (LM Studio, Ollama, vLLM, etc. - OpenAI-compatible)
+    local_base_url: str | None = Field(  # type: ignore[pydantic-alias]
+        default=None,
+        description="Local model API base URL (OpenAI-compatible, e.g., http://localhost:1234/v1)",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_LOCAL_BASE_URL",
+            "UKRQUALBENCH_OLLAMA_BASE_URL",
+        ),
     )
     vllm_api_key: str | None = Field(
         default=None,

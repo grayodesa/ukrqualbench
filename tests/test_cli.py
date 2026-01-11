@@ -13,53 +13,27 @@ from ukrqualbench.cli import app, create_model_client
 runner = CliRunner()
 
 
-def make_test_result(model_id: str = "test-model") -> dict[str, Any]:
-    """Create test evaluation result dict."""
-    from ukrqualbench.core.schemas import (
-        Badge,
-        BlockAScores,
-        BlockBScores,
-        BlockVScores,
-        EvaluationMetadataData,
-        EvaluationResultData,
-        ModelScoreData,
-    )
+def make_test_evaluation(model_id: str = "test-model") -> dict[str, Any]:
+    from ukrqualbench.core.schemas import BlockAScores, BlockVScores, ModelEvaluationData
 
-    result = EvaluationResultData(
+    result = ModelEvaluationData(
         model_id=model_id,
-        scores=ModelScoreData(
-            elo_rating=1600.0,
-            block_a=BlockAScores(
-                mc_accuracy=0.85,
-                gec_f1=0.80,
-                translation_comet=0.75,
-                false_positive_rate=0.10,
-                positive_markers_score=0.80,
-            ),
-            block_b=BlockBScores(
-                generation_elo=1600.0,
-                adversarial_elo=1550.0,
-                long_context_elo=1500.0,
-            ),
-            block_v=BlockVScores(
-                fertility_rate=1.4,
-                positive_markers=3.5,
-                russism_rate=2.0,
-                anglicism_rate=1.5,
-            ),
-            badge=Badge.SILVER,
+        block_a=BlockAScores(
+            mc_accuracy=0.85,
+            gec_f1=0.80,
+            translation_comet=0.75,
+            false_positive_rate=0.10,
+            positive_markers_score=0.80,
         ),
-        metadata=EvaluationMetadataData(
-            benchmark_version="lite",
-            dataset_hash="abc123",
-            judge_id="test-judge",
-            judge_calibration_score=0.90,
-            total_prompts=100,
-            total_comparisons=50,
-            runtime_minutes=30.0,
-            total_cost_usd=5.0,
+        block_v=BlockVScores(
+            fertility_rate=1.4,
+            positive_markers=3.5,
+            russism_rate=2.0,
+            anglicism_rate=1.5,
         ),
-        comparisons_count=50,
+        benchmark_version="lite",
+        runtime_minutes=30.0,
+        cost_usd=5.0,
     )
     return result.to_dict()
 
@@ -151,12 +125,12 @@ class TestCalibrateCommand:
 
 
 class TestEvaluateCommand:
-    def test_evaluate_help(self):
+    def test_evaluate_help_shows_model_and_benchmark_options_but_not_judge(self):
         result = runner.invoke(app, ["evaluate", "--help"])
         assert result.exit_code == 0
         assert "--model" in result.stdout
         assert "--benchmark" in result.stdout
-        assert "--judge" in result.stdout
+        assert "--judge" not in result.stdout
 
     def test_evaluate_requires_model(self):
         result = runner.invoke(app, ["evaluate"])
@@ -179,25 +153,41 @@ class TestLeaderboardCommand:
     def test_leaderboard_help(self):
         result = runner.invoke(app, ["leaderboard", "--help"])
         assert result.exit_code == 0
-        assert "--results-dir" in result.stdout
+        assert "--evaluations-dir" in result.stdout
         assert "--format" in result.stdout
 
-    def test_leaderboard_no_results(self, tmp_path):
-        result = runner.invoke(app, ["leaderboard", "--results-dir", str(tmp_path)])
-        assert result.exit_code == 1
-        assert "No evaluation results found" in result.stdout
+    def test_leaderboard_empty_registry(self, tmp_path):
+        result = runner.invoke(
+            app,
+            [
+                "leaderboard",
+                "--evaluations-dir",
+                str(tmp_path),
+                "--registry",
+                str(tmp_path / "empty_registry.json"),
+            ],
+        )
+        assert result.exit_code == 0
 
-    def test_leaderboard_with_results(self, tmp_path):
-        result_file = tmp_path / "test-model_evaluation.json"
-        with open(result_file, "w") as f:
-            json.dump(make_test_result(), f)
+    def test_leaderboard_with_evaluations(self, tmp_path):
+        from ukrqualbench.core.elo_registry import ELORegistry
+
+        eval_file = tmp_path / "test-model.json"
+        with open(eval_file, "w") as f:
+            json.dump(make_test_evaluation(), f)
+
+        registry = ELORegistry(registry_path=tmp_path / "test_registry.json")
+        registry.register_model("test-model", 1600.0)
+        registry.save()
 
         result = runner.invoke(
             app,
             [
                 "leaderboard",
-                "--results-dir",
+                "--evaluations-dir",
                 str(tmp_path),
+                "--registry",
+                str(tmp_path / "test_registry.json"),
                 "--format",
                 "json",
                 "--output",
@@ -206,7 +196,7 @@ class TestLeaderboardCommand:
         )
 
         assert result.exit_code == 0
-        assert "Loaded 1 evaluation results" in result.stdout
+        assert "Loaded 1 model evaluations" in result.stdout
 
 
 class TestCreateModelClient:
@@ -234,8 +224,8 @@ class TestCreateModelClient:
             create_model_client("deepseek-ai/DeepSeek-R1")
             mock.assert_called_once()
 
-    def test_ollama_fallback(self):
-        with patch("ukrqualbench.models.create_ollama_client") as mock:
+    def test_local_fallback(self):
+        with patch("ukrqualbench.models.create_local_client") as mock:
             mock.return_value = MagicMock()
             create_model_client("llama3.2")
             mock.assert_called_once()
@@ -243,16 +233,24 @@ class TestCreateModelClient:
 
 class TestCLIFormats:
     def test_leaderboard_markdown_format(self, tmp_path):
-        result_file = tmp_path / "test-model_evaluation.json"
-        with open(result_file, "w") as f:
-            json.dump(make_test_result(), f)
+        from ukrqualbench.core.elo_registry import ELORegistry
+
+        eval_file = tmp_path / "test-model.json"
+        with open(eval_file, "w") as f:
+            json.dump(make_test_evaluation(), f)
+
+        registry = ELORegistry(registry_path=tmp_path / "test_registry.json")
+        registry.register_model("test-model", 1600.0)
+        registry.save()
 
         result = runner.invoke(
             app,
             [
                 "leaderboard",
-                "--results-dir",
+                "--evaluations-dir",
                 str(tmp_path),
+                "--registry",
+                str(tmp_path / "test_registry.json"),
                 "--format",
                 "markdown",
                 "--output",
@@ -265,16 +263,24 @@ class TestCLIFormats:
         assert md_file.exists()
 
     def test_leaderboard_csv_format(self, tmp_path):
-        result_file = tmp_path / "test-model_evaluation.json"
-        with open(result_file, "w") as f:
-            json.dump(make_test_result(), f)
+        from ukrqualbench.core.elo_registry import ELORegistry
+
+        eval_file = tmp_path / "test-model.json"
+        with open(eval_file, "w") as f:
+            json.dump(make_test_evaluation(), f)
+
+        registry = ELORegistry(registry_path=tmp_path / "test_registry.json")
+        registry.register_model("test-model", 1600.0)
+        registry.save()
 
         result = runner.invoke(
             app,
             [
                 "leaderboard",
-                "--results-dir",
+                "--evaluations-dir",
                 str(tmp_path),
+                "--registry",
+                str(tmp_path / "test_registry.json"),
                 "--format",
                 "csv",
                 "--output",

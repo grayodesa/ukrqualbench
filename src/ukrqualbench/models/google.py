@@ -136,14 +136,37 @@ class GoogleClient(BaseModelClient):
         # Extract response content
         text = response.text if response.text else ""
 
+        # Check finish reason for debugging truncation issues
+        finish_reason = None
+        if hasattr(response, "candidates") and response.candidates:
+            candidate = response.candidates[0]
+            if hasattr(candidate, "finish_reason"):
+                finish_reason = candidate.finish_reason
+
         # Get token counts from usage metadata
         input_tokens = 0
         output_tokens = 0
+        thinking_tokens = 0
         if hasattr(response, "usage_metadata") and response.usage_metadata:
             input_tokens = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
             output_tokens = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
+            thinking_tokens = getattr(response.usage_metadata, "thoughts_token_count", 0) or 0
 
         total_tokens = input_tokens + output_tokens
+
+        # Log warning if response was truncated unexpectedly
+        if finish_reason and str(finish_reason) not in ("STOP", "FinishReason.STOP", "1"):
+            import logging
+
+            logger = logging.getLogger("ukrqualbench.models")
+            logger.warning(
+                "[TRUNCATED] model=%s finish_reason=%s output_tokens=%d thinking_tokens=%d max_requested=%d",
+                self._model_id,
+                finish_reason,
+                output_tokens,
+                thinking_tokens,
+                max_tokens,
+            )
 
         # Calculate cost
         cost = calculate_cost(self._model_id, input_tokens, output_tokens)

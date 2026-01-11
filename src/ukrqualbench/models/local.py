@@ -698,6 +698,35 @@ def create_vllm_client(
     return VLLMClient(model_id=model_id, base_url=base_url, config=config)
 
 
+def create_local_client(
+    model_id: str,
+    base_url: str | None = None,
+    temperature: float = 0.0,
+) -> OpenAICompatibleClient:
+    """Factory function to create a local OpenAI-compatible client.
+
+    Works with LM Studio, Ollama (OpenAI mode), vLLM, LocalAI, llama.cpp server, etc.
+
+    Args:
+        model_id: Model identifier (as shown in your local server).
+        base_url: Server URL (defaults to UKRQUALBENCH_OLLAMA_BASE_URL or http://localhost:1234/v1).
+        temperature: Default sampling temperature.
+
+    Returns:
+        Configured OpenAICompatibleClient instance.
+    """
+    import os
+
+    resolved_url = (
+        base_url
+        or os.getenv("UKRQUALBENCH_OLLAMA_BASE_URL")
+        or os.getenv("UKRQUALBENCH_LOCAL_BASE_URL")
+        or "http://localhost:1234/v1"
+    )
+    config = ModelConfig(default_temperature=temperature)
+    return OpenAICompatibleClient(model_id=model_id, base_url=resolved_url, config=config)
+
+
 def create_nebius_client(
     model_id: str = "deepseek-ai/DeepSeek-R1-0528",
     api_key: str | None = None,

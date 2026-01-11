@@ -54,7 +54,7 @@ class TestModelConfig:
         assert config.max_retries == 3
         assert config.retry_delay == 1.0
         assert config.default_temperature == 0.0
-        assert config.default_max_tokens == 1024
+        assert config.default_max_tokens == 8192
 
     def test_custom_values(self) -> None:
         """Test custom configuration values."""

@@ -7,6 +7,7 @@ All model clients must implement the ModelClient protocol from judges.base.
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -15,6 +16,8 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+logger = logging.getLogger("ukrqualbench.models")
 
 
 @dataclass
@@ -43,7 +46,7 @@ class ModelConfig:
     max_retries: int = 3
     retry_delay: float = 1.0
     default_temperature: float = 0.0
-    default_max_tokens: int = 1024
+    default_max_tokens: int = 8192
 
 
 # Pricing per 1M tokens (input, output) as of January 2026
@@ -247,8 +250,18 @@ class BaseModelClient(ABC):
         last_error: Exception | None = None
         start_time = time.perf_counter()
 
+        prompt_preview = prompt[:200] + "..." if len(prompt) > 200 else prompt
+        logger.info(
+            "[REQ] model=%s temp=%.1f max_tokens=%d prompt=%r",
+            self._model_id,
+            temperature,
+            max_tokens,
+            prompt_preview,
+        )
+
         for attempt in range(self._config.max_retries):
             try:
+                logger.debug("[API] attempt=%d/%d", attempt + 1, self._config.max_retries)
                 response = await self._call_api(
                     prompt=prompt,
                     system_prompt=system_prompt,
@@ -257,7 +270,6 @@ class BaseModelClient(ABC):
                     json_mode=json_mode,
                 )
 
-                # Calculate latency
                 latency_ms = (time.perf_counter() - start_time) * 1000
                 response = ModelResponse(
                     text=response.text,
@@ -268,20 +280,41 @@ class BaseModelClient(ABC):
                     cost_usd=response.cost_usd,
                 )
 
-                # Update statistics
                 self._call_count += 1
                 self._total_tokens += response.tokens_used
                 self._total_cost += response.cost_usd
                 self._total_latency_ms += latency_ms
 
+                response_preview = (
+                    response.text[:200] + "..." if len(response.text) > 200 else response.text
+                )
+                logger.info(
+                    "[RES] model=%s tokens=%d latency=%.0fms cost=$%.4f response=%r",
+                    self._model_id,
+                    response.tokens_used,
+                    latency_ms,
+                    response.cost_usd,
+                    response_preview,
+                )
+
                 return response
 
             except Exception as e:
                 last_error = e
+                logger.warning(
+                    "[ERR] model=%s attempt=%d/%d error=%s",
+                    self._model_id,
+                    attempt + 1,
+                    self._config.max_retries,
+                    str(e),
+                )
                 if attempt < self._config.max_retries - 1:
-                    delay = self._config.retry_delay * (2**attempt)  # Exponential backoff
+                    delay = self._config.retry_delay * (2**attempt)
                     await asyncio.sleep(delay)
 
+        logger.error(
+            "[FAIL] model=%s all %d retries failed", self._model_id, self._config.max_retries
+        )
         raise RuntimeError(
             f"All {self._config.max_retries} retries failed for {self._model_id}"
         ) from last_error

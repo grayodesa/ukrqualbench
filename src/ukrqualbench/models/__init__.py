@@ -33,6 +33,7 @@ from ukrqualbench.models.local import (
     OllamaClient,
     OpenAICompatibleClient,
     VLLMClient,
+    create_local_client,
     create_nebius_client,
     create_ollama_client,
     create_vllm_client,
@@ -76,6 +77,7 @@ __all__ = [
     # Factory functions
     "create_anthropic_client",
     "create_google_client",
+    "create_local_client",
     "create_nebius_client",
     "create_ollama_client",
     "create_openai_client",
