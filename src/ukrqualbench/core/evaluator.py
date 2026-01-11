@@ -125,6 +125,7 @@ class Evaluator:
         config: Config | None = None,
         eval_config: EvaluationConfig | None = None,
         output_dir: str | Path | None = None,
+        elo_registry: Any | None = None,
     ) -> None:
         """Initialize the evaluator.
 
@@ -132,26 +133,23 @@ class Evaluator:
             config: Global configuration.
             eval_config: Evaluation-specific configuration.
             output_dir: Directory for outputs and checkpoints.
+            elo_registry: Optional persistent ELO registry for cross-session ratings.
         """
         self._config = config or Config()
         self._eval_config = eval_config or EvaluationConfig()
         self._output_dir = Path(output_dir) if output_dir else Path("results")
         self._output_dir.mkdir(parents=True, exist_ok=True)
+        self._elo_registry = elo_registry
 
-        # Model clients
         self._model_clients: dict[str, BaseModelClient] = {}
-
-        # Judge
         self._judge: BaseJudge | None = None
-
-        # Detectors for Block V
         self._detectors: dict[str, BaseDetector] = {}
 
-        # Pairwise engine
         self._pairwise_engine = PairwiseEngine(
             initial_rating=self._config.elo_initial_rating,
             k_factor=self._config.elo_k_factor,
             strategy=PairingStrategy.SWISS,
+            registry=elo_registry,
         )
 
         # Circuit breakers per provider

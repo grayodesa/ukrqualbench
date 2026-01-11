@@ -3,6 +3,7 @@
 from ukrqualbench.core.circuit_breaker import CircuitBreaker, CircuitState
 from ukrqualbench.core.config import BenchmarkVersion, Config
 from ukrqualbench.core.elo import ELOCalculator
+from ukrqualbench.core.elo_registry import ELORegistry, create_registry
 from ukrqualbench.core.evaluator import (
     BenchmarkTask,
     EvaluationConfig,
@@ -38,6 +39,7 @@ __all__ = [
     "ComparisonResult",
     "Config",
     "ELOCalculator",
+    "ELORegistry",
     "EvaluationConfig",
     "EvaluationProgress",
     "EvaluationResult",
@@ -50,4 +52,5 @@ __all__ = [
     "TournamentRound",
     "create_evaluator",
     "create_pairwise_engine",
+    "create_registry",
 ]

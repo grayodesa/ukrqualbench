@@ -447,10 +447,14 @@ def compare(
         "results"
     ),
     max_cost: Annotated[float | None, typer.Option("--max-cost", help="Max cost USD")] = None,
+    persistent: Annotated[
+        bool, typer.Option("--persistent/--no-persistent", help="Use persistent ELO registry")
+    ] = True,
 ) -> None:
     """Compare multiple models using pairwise evaluation."""
     import math
 
+    from ukrqualbench.core.elo_registry import ELORegistry
     from ukrqualbench.core.evaluator import Evaluator
 
     config = Config()
@@ -466,16 +470,47 @@ def compare(
 
     output.mkdir(parents=True, exist_ok=True)
 
-    rprint(
-        Panel.fit(
-            f"[bold]Comparing Models[/bold]\n\nModels: [cyan]{n_models}[/cyan]\n"
-            + "\n".join(f"  \u2022 {m}" for m in model_list)
-            + f"\n\nBenchmark: [yellow]{benchmark.value}[/yellow]\nRounds: [yellow]{rounds}[/yellow]",
-            title="UkrQualBench Comparison",
+    registry: ELORegistry | None = None
+    if persistent:
+        registry_path = config.data_dir / "elo_registry.json"
+        registry = ELORegistry(
+            registry_path=registry_path,
+            initial_rating=config.elo_initial_rating,
+            k_factor=config.elo_k_factor,
         )
-    )
+        new_models = registry.get_new_models(model_list)
+        existing_models = registry.get_existing_models(model_list)
 
-    evaluator = Evaluator(config=config)
+        status_lines = [f"[bold]Comparing Models[/bold]\n\nModels: [cyan]{n_models}[/cyan]"]
+        for m in model_list:
+            if m in new_models:
+                status_lines.append(f"  \u2022 {m} [yellow](new)[/yellow]")
+            else:
+                entry = registry.get_model(m)
+                rating = entry.rating if entry else config.elo_initial_rating
+                status_lines.append(f"  \u2022 {m} [dim](ELO: {rating:.0f})[/dim]")
+
+        if existing_models and new_models:
+            anchors = registry.get_anchor_models(min(3, len(existing_models)))
+            if anchors:
+                status_lines.append(
+                    f"\n[dim]Anchor models for calibration: {', '.join(anchors)}[/dim]"
+                )
+
+        status_lines.append(f"\nBenchmark: [yellow]{benchmark.value}[/yellow]")
+        status_lines.append(f"Rounds: [yellow]{rounds}[/yellow]")
+        status_lines.append(f"Registry: [dim]{registry_path}[/dim]")
+    else:
+        status_lines = [
+            f"[bold]Comparing Models[/bold]\n\nModels: [cyan]{n_models}[/cyan]",
+            *[f"  \u2022 {m}" for m in model_list],
+            f"\nBenchmark: [yellow]{benchmark.value}[/yellow]",
+            f"Rounds: [yellow]{rounds}[/yellow]",
+        ]
+
+    rprint(Panel.fit("\n".join(status_lines), title="UkrQualBench Comparison"))
+
+    evaluator = Evaluator(config=config, elo_registry=registry)
 
     async def run_comparison() -> Any:
         return await evaluator.compare_models(model_ids=model_list, judge_id=judge, rounds=rounds)
@@ -493,6 +528,12 @@ def compare(
         )
         results = asyncio.run(run_comparison())
         progress.update(task, completed=True)
+
+    if registry:
+        registry.save()
+        rprint(
+            f"[dim]ELO registry saved: {registry.model_count} models, {registry.comparison_count} comparisons[/dim]"
+        )
 
     from ukrqualbench.reports import create_leaderboard
 
@@ -642,6 +683,133 @@ def info() -> None:
     size_table.add_row("large", "1100", "450", "~5 hr")
 
     console.print(size_table)
+
+
+@app.command()
+def elo(
+    action: Annotated[
+        str,
+        typer.Argument(help="Action: show, reset, export, history"),
+    ] = "show",
+    model: Annotated[str | None, typer.Option("--model", "-m", help="Filter by model")] = None,
+    limit: Annotated[int, typer.Option("--limit", "-n", help="Limit results")] = 20,
+    output: Annotated[Path | None, typer.Option("--output", "-o", help="Export file")] = None,
+) -> None:
+    """View and manage persistent ELO registry."""
+    from ukrqualbench.core.elo_registry import ELORegistry
+
+    config = Config()
+    registry_path = config.data_dir / "elo_registry.json"
+
+    if not registry_path.exists() and action != "reset":
+        rprint(f"[yellow]No ELO registry found at {registry_path}[/yellow]")
+        rprint("[dim]Run 'ukrqualbench compare' with --persistent to create one.[/dim]")
+        raise typer.Exit(0)
+
+    registry = ELORegistry(
+        registry_path=registry_path,
+        initial_rating=config.elo_initial_rating,
+        k_factor=config.elo_k_factor,
+    )
+
+    if action == "show":
+        if registry.model_count == 0:
+            rprint("[yellow]Registry is empty.[/yellow]")
+            raise typer.Exit(0)
+
+        leaderboard = registry.get_leaderboard()
+
+        table = Table(title=f"ELO Leaderboard ({registry.model_count} models)")
+        table.add_column("#", style="dim")
+        table.add_column("Model", style="cyan")
+        table.add_column("ELO", style="green", justify="right")
+        table.add_column("W/L/T", style="yellow", justify="center")
+        table.add_column("Win%", style="blue", justify="right")
+        table.add_column("Status", style="dim")
+
+        for entry in leaderboard[:limit]:
+            status = "[yellow]provisional[/yellow]" if entry["provisional"] else ""
+            wlt = f"{entry['wins']}/{entry['losses']}/{entry['ties']}"
+            win_pct = f"{entry['win_rate']:.1%}" if entry["games"] > 0 else "-"
+            table.add_row(
+                str(entry["rank"]),
+                entry["model_id"],
+                f"{entry['rating']:.0f}",
+                wlt,
+                win_pct,
+                status,
+            )
+
+        console.print(table)
+        rprint(f"\n[dim]Total comparisons: {registry.comparison_count}[/dim]")
+        rprint(f"[dim]Registry: {registry_path}[/dim]")
+
+    elif action == "history":
+        from ukrqualbench.core.elo_registry import ComparisonLogEntry
+
+        entries: list[ComparisonLogEntry]
+        if model:
+            entries = registry.get_model_history(model)
+            title = f"History for {model}"
+        else:
+            entries = registry.get_recent_comparisons(limit)
+            title = f"Recent Comparisons (last {limit})"
+
+        if not entries:
+            rprint("[yellow]No comparison history found.[/yellow]")
+            raise typer.Exit(0)
+
+        table = Table(title=title)
+        table.add_column("Time", style="dim")
+        table.add_column("Model A", style="cyan")
+        table.add_column("Model B", style="cyan")
+        table.add_column("Winner", style="green")
+        table.add_column("Rating Change", style="yellow")
+
+        for log in entries[-limit:]:
+            ts = log.timestamp[:16].replace("T", " ")
+            delta_a = log.new_rating_a - log.old_rating_a
+            delta_b = log.new_rating_b - log.old_rating_b
+
+            if log.winner == "A":
+                winner = log.model_a
+                change = f"+{delta_a:.0f} / {delta_b:.0f}"
+            elif log.winner == "B":
+                winner = log.model_b
+                change = f"{delta_a:.0f} / +{abs(delta_b):.0f}"
+            else:
+                winner = "tie"
+                change = f"{delta_a:+.0f} / {delta_b:+.0f}"
+
+            table.add_row(ts, log.model_a, log.model_b, winner, change)
+
+        console.print(table)
+
+    elif action == "export":
+        export_path = output or Path("elo_export.json")
+        data = {
+            "models": registry.get_leaderboard(),
+            "metadata": registry.metadata.to_dict(),
+        }
+        with open(export_path, "w") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        rprint(f"[green]Exported to: {export_path}[/green]")
+
+    elif action == "reset":
+        if registry.model_count > 0:
+            confirm = typer.confirm(
+                f"This will delete {registry.model_count} models and {registry.comparison_count} comparisons. Continue?"
+            )
+            if not confirm:
+                raise typer.Abort()
+        registry.reset()
+        registry.save()
+        rprint("[green]Registry reset.[/green]")
+
+    else:
+        rprint(f"[red]Unknown action: {action}[/red]")
+        rprint("[dim]Valid actions: show, history, export, reset[/dim]")
+        raise typer.Exit(1)
 
 
 @app.command()

@@ -1,10 +1,13 @@
-"""Tests for ELO rating calculator."""
+"""Tests for ELO rating calculator and persistent registry."""
 
 from __future__ import annotations
+
+from pathlib import Path
 
 import pytest
 
 from ukrqualbench.core.elo import ELOCalculator, ModelStatistics, RatingUpdate
+from ukrqualbench.core.elo_registry import ELORegistry
 
 
 class TestELOCalculator:
@@ -243,3 +246,121 @@ class TestModelStatistics:
         )
 
         assert stats.rating_change == pytest.approx(100.0)
+
+
+class TestELORegistry:
+    """Tests for persistent ELO registry."""
+
+    @pytest.fixture
+    def temp_registry_path(self, tmp_path: Path) -> Path:
+        return tmp_path / "test_registry.json"
+
+    @pytest.fixture
+    def registry(self, temp_registry_path: Path) -> ELORegistry:
+        return ELORegistry(registry_path=temp_registry_path)
+
+    def test_register_model(self, registry: ELORegistry) -> None:
+        entry = registry.register_model("gpt-4o")
+        assert entry.model_id == "gpt-4o"
+        assert entry.rating == 1500.0
+        assert entry.games_played == 0
+        assert entry.is_provisional is True
+
+    def test_register_model_returns_existing(self, registry: ELORegistry) -> None:
+        registry.register_model("gpt-4o")
+        registry.models["gpt-4o"].rating = 1600.0
+        entry = registry.register_model("gpt-4o")
+        assert entry.rating == 1600.0
+
+    def test_record_comparison_updates_ratings(self, registry: ELORegistry) -> None:
+        registry.record_comparison("model_a", "model_b", "A")
+
+        assert registry.models["model_a"].rating > 1500
+        assert registry.models["model_b"].rating < 1500
+        assert registry.models["model_a"].wins == 1
+        assert registry.models["model_b"].losses == 1
+
+    def test_record_comparison_tie(self, registry: ELORegistry) -> None:
+        registry.record_comparison("model_a", "model_b", "tie")
+
+        assert registry.models["model_a"].rating == pytest.approx(1500)
+        assert registry.models["model_a"].ties == 1
+        assert registry.models["model_b"].ties == 1
+
+    def test_save_and_load(self, temp_registry_path: Path) -> None:
+        registry = ELORegistry(registry_path=temp_registry_path)
+        registry.record_comparison("model_a", "model_b", "A")
+        registry.record_comparison("model_a", "model_c", "B")
+        registry.save()
+
+        loaded = ELORegistry(registry_path=temp_registry_path)
+        assert len(loaded.models) == 3
+        assert loaded.models["model_a"].wins == 1
+        assert loaded.models["model_a"].losses == 1
+        assert loaded.comparison_count == 2
+
+    def test_get_rankings(self, registry: ELORegistry) -> None:
+        registry.record_comparison("model_a", "model_b", "A")
+        registry.record_comparison("model_a", "model_c", "A")
+
+        rankings = registry.get_rankings()
+        assert rankings[0][0] == "model_a"
+        assert rankings[0][1] > 1500
+
+    def test_get_leaderboard(self, registry: ELORegistry) -> None:
+        registry.record_comparison("model_a", "model_b", "A")
+
+        leaderboard = registry.get_leaderboard()
+        assert len(leaderboard) == 2
+        assert leaderboard[0]["rank"] == 1
+        assert "wins" in leaderboard[0]
+        assert "provisional" in leaderboard[0]
+
+    def test_get_anchor_models_prefers_non_provisional(self, registry: ELORegistry) -> None:
+        for _ in range(35):
+            registry.record_comparison("established", "other", "A")
+        registry.register_model("new_model")
+
+        anchors = registry.get_anchor_models(2)
+        assert "established" in anchors
+        assert "new_model" not in anchors
+
+    def test_get_new_models(self, registry: ELORegistry) -> None:
+        registry.register_model("existing")
+        new = registry.get_new_models(["existing", "brand_new"])
+        assert new == ["brand_new"]
+
+    def test_get_existing_models(self, registry: ELORegistry) -> None:
+        registry.register_model("existing")
+        existing = registry.get_existing_models(["existing", "brand_new"])
+        assert existing == ["existing"]
+
+    def test_get_head_to_head(self, registry: ELORegistry) -> None:
+        registry.record_comparison("a", "b", "A")
+        registry.record_comparison("a", "b", "A")
+        registry.record_comparison("a", "b", "B")
+
+        h2h = registry.get_head_to_head("a", "b")
+        assert h2h["a_wins"] == 2
+        assert h2h["b_wins"] == 1
+        assert h2h["ties"] == 0
+
+    def test_provisional_threshold(self, registry: ELORegistry) -> None:
+        for i in range(29):
+            registry.record_comparison("model_a", f"opp_{i}", "A")
+        assert registry.models["model_a"].is_provisional is True
+
+        registry.record_comparison("model_a", "opp_30", "A")
+        assert registry.models["model_a"].is_provisional is False
+
+    def test_reset(self, registry: ELORegistry) -> None:
+        registry.record_comparison("a", "b", "A")
+        registry.reset()
+
+        assert len(registry.models) == 0
+        assert registry.comparison_count == 0
+
+    def test_contains(self, registry: ELORegistry) -> None:
+        registry.register_model("gpt-4o")
+        assert "gpt-4o" in registry
+        assert "claude" not in registry

@@ -17,6 +17,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
 from ukrqualbench.core.elo import ELOCalculator
+from ukrqualbench.core.elo_registry import ELORegistry
 from ukrqualbench.core.schemas import (
     ComparisonRecordData,
     JudgeVerdictData,
@@ -137,6 +138,7 @@ class PairwiseEngine:
         k_factor: float = 32.0,
         strategy: PairingStrategy = PairingStrategy.SWISS,
         seed: int | None = None,
+        registry: ELORegistry | None = None,
     ) -> None:
         """Initialize pairwise engine.
 
@@ -145,6 +147,7 @@ class PairwiseEngine:
             k_factor: ELO K-factor for rating updates.
             strategy: Pairing strategy for tournament.
             seed: Random seed for reproducibility.
+            registry: Optional persistent ELO registry for cross-session ratings.
         """
         self.elo_calculator = ELOCalculator(
             initial_rating=initial_rating,
@@ -156,11 +159,26 @@ class PairwiseEngine:
         self._comparison_history: list[ComparisonResult] = []
         self._rounds: list[TournamentRound] = []
         self._model_pair_counts: dict[tuple[str, str], int] = {}
+        self._registry = registry
+        self._run_id: str | None = None
+        self._benchmark_version: str | None = None
 
     @property
     def ratings(self) -> dict[str, float]:
         """Current ELO ratings for all models."""
+        if self._registry:
+            return {m: e.rating for m, e in self._registry.models.items()}
         return dict(self.elo_calculator.ratings)
+
+    @property
+    def registry(self) -> ELORegistry | None:
+        """Persistent ELO registry if configured."""
+        return self._registry
+
+    def set_run_metadata(self, run_id: str, benchmark_version: str) -> None:
+        """Set metadata for comparison logging."""
+        self._run_id = run_id
+        self._benchmark_version = benchmark_version
 
     @property
     def comparison_count(self) -> int:
@@ -179,7 +197,15 @@ class PairwiseEngine:
             model_ids: List of model identifiers.
         """
         for model_id in model_ids:
-            self.elo_calculator.ensure_registered(model_id)
+            if self._registry:
+                entry = self._registry.get_model(model_id)
+                if entry:
+                    self.elo_calculator.ratings[model_id] = entry.rating
+                else:
+                    self._registry.register_model(model_id)
+                    self.elo_calculator.ratings[model_id] = self._registry.get_rating(model_id)
+            else:
+                self.elo_calculator.ensure_registered(model_id)
 
     def get_recommended_rounds(self, num_models: int) -> int:
         """Get recommended number of tournament rounds.
@@ -441,7 +467,6 @@ class PairwiseEngine:
         Args:
             result: Completed comparison result.
         """
-        # Update ELO ratings
         winner_literal: Literal["A", "B", "tie"]
         if result.verdict.winner == WinnerChoice.A:
             winner_literal = "A"
@@ -457,7 +482,17 @@ class PairwiseEngine:
             prompt_id=result.scheduled.prompt_id,
         )
 
-        # Track completion
+        if self._registry:
+            self._registry.record_comparison(
+                model_a=result.scheduled.model_a,
+                model_b=result.scheduled.model_b,
+                winner=winner_literal,
+                prompt_id=result.scheduled.prompt_id,
+                judge_id=result.judge_id,
+                run_id=self._run_id,
+                benchmark_version=self._benchmark_version,
+            )
+
         self._completed_comparison_ids.add(result.scheduled.comparison_id)
         self._comparison_history.append(result)
 
@@ -554,6 +589,7 @@ def create_pairwise_engine(
     initial_rating: float = 1500.0,
     k_factor: float = 32.0,
     seed: int | None = None,
+    registry: ELORegistry | None = None,
 ) -> PairwiseEngine:
     """Factory function to create a pairwise engine.
 
@@ -562,6 +598,7 @@ def create_pairwise_engine(
         initial_rating: Starting ELO rating.
         k_factor: ELO K-factor.
         seed: Random seed for reproducibility.
+        registry: Optional persistent ELO registry.
 
     Returns:
         Configured PairwiseEngine.
@@ -572,4 +609,5 @@ def create_pairwise_engine(
         k_factor=k_factor,
         strategy=strategy_enum,
         seed=seed,
+        registry=registry,
     )
