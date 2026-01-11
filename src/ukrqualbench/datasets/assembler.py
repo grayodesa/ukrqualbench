@@ -273,40 +273,48 @@ class BenchmarkAssembler:
         return []
 
     def _try_load_uagec_from_hf(self, count: int) -> list[GECTask]:
-        """Load UA-GEC tasks from HuggingFace datasets."""
-        if not _check_hf_datasets():
+        """Load UA-GEC tasks from ua_gec pip package.
+
+        Uses the official ua_gec package which provides direct access to
+        the UA-GEC 2.0 corpus with proper source/target text pairs.
+        """
+        try:
+            from ua_gec import Corpus
+        except ImportError:
+            logger.debug("ua_gec package not installed, skipping")
             return []
 
         try:
-            from datasets import load_dataset
+            # Load train partition with gec-only annotations
+            corpus = Corpus(partition="train", annotation_layer="gec-only")
+            docs = list(corpus)
 
-            dataset = load_dataset(
-                "osyvokon/ua_gec_instruction_tuning", split="train", token=self.hf_token
-            )
+            if not docs:
+                logger.warning("UA-GEC corpus is empty")
+                return []
 
             tasks: list[GECTask] = []
             # Sample deterministically
-            indices = list(range(len(dataset)))
+            indices = list(range(len(docs)))
             self._rng.shuffle(indices)
 
-            for idx in indices[:count]:
-                item = dataset[idx]
-                # The dataset has instruction/response pairs
-                # Extract source (with errors) and target (corrected)
-                source_text = item.get("source", item.get("input", ""))
-                target_text = item.get("target", item.get("output", ""))
+            for idx in indices:
+                doc = docs[idx]
+                source_text = doc.source.strip()
+                target_text = doc.target.strip()
 
+                # Skip if no actual corrections needed
                 if not source_text or not target_text or source_text == target_text:
                     continue
 
                 tasks.append(
                     GECTask(
-                        id=f"uagec_hf_{idx:05d}",
+                        id=f"uagec_{doc.doc_id}",
                         category="grammar",
                         input=source_text,
                         expected_output=target_text,
                         errors=[],
-                        source="osyvokon/ua_gec_instruction_tuning",
+                        source="ua_gec",
                         difficulty=TaskDifficulty.MEDIUM,
                     )
                 )
@@ -314,11 +322,11 @@ class BenchmarkAssembler:
                 if len(tasks) >= count:
                     break
 
-            logger.info(f"Loaded {len(tasks)} UA-GEC tasks from HuggingFace")
+            logger.info(f"Loaded {len(tasks)} UA-GEC tasks from ua_gec package")
             return tasks
 
         except Exception as e:
-            logger.warning(f"Failed to load UA-GEC from HuggingFace: {e}")
+            logger.warning(f"Failed to load UA-GEC from ua_gec package: {e}")
             return []
 
     def _try_load_flores_tasks(self, count: int) -> list[TranslationTask]:
@@ -357,55 +365,53 @@ class BenchmarkAssembler:
             en_count = int(count * 0.6)
             ru_count = count - en_count
 
-            try:
-                en_uk = load_dataset(
-                    "facebook/flores",
-                    "eng_Latn-ukr_Cyrl",
-                    split="devtest",
-                    token=self.hf_token,
-                )
-                indices = list(range(len(en_uk)))
-                self._rng.shuffle(indices)
+            dataset = load_dataset(
+                "facebook/flores",
+                "all",
+                split="devtest",
+                token=self.hf_token,
+            )
 
-                for idx in indices[:en_count]:
-                    item = en_uk[idx]
+            indices = list(range(len(dataset)))
+            self._rng.shuffle(indices)
+
+            en_added = 0
+            ru_added = 0
+
+            for idx in indices:
+                if en_added >= en_count and ru_added >= ru_count:
+                    break
+
+                item = dataset[idx]
+                eng_text = item.get("sentence_eng_Latn", "")
+                ukr_text = item.get("sentence_ukr_Cyrl", "")
+                rus_text = item.get("sentence_rus_Cyrl", "")
+
+                if en_added < en_count and eng_text and ukr_text:
                     tasks.append(
                         TranslationTask(
                             id=f"flores_en_hf_{idx:05d}",
                             source_lang="en",
-                            source=item["sentence_eng_Latn"],
-                            reference=item["sentence_ukr_Cyrl"],
+                            source=eng_text,
+                            reference=ukr_text,
                             traps=[],
                             trap_type="none",
                         )
                     )
-            except Exception as e:
-                logger.warning(f"Failed to load EN-UK FLORES: {e}")
+                    en_added += 1
 
-            try:
-                ru_uk = load_dataset(
-                    "facebook/flores",
-                    "rus_Cyrl-ukr_Cyrl",
-                    split="devtest",
-                    token=self.hf_token,
-                )
-                indices = list(range(len(ru_uk)))
-                self._rng.shuffle(indices)
-
-                for idx in indices[:ru_count]:
-                    item = ru_uk[idx]
+                if ru_added < ru_count and rus_text and ukr_text:
                     tasks.append(
                         TranslationTask(
                             id=f"flores_ru_hf_{idx:05d}",
                             source_lang="ru",
-                            source=item["sentence_rus_Cyrl"],
-                            reference=item["sentence_ukr_Cyrl"],
+                            source=rus_text,
+                            reference=ukr_text,
                             traps=[],
                             trap_type="russism",
                         )
                     )
-            except Exception as e:
-                logger.warning(f"Failed to load RU-UK FLORES: {e}")
+                    ru_added += 1
 
             logger.info(f"Loaded {len(tasks)} FLORES tasks from HuggingFace")
             return tasks
