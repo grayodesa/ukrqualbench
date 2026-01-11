@@ -74,9 +74,11 @@ class BenchmarkAssembler:
         self,
         data_dir: Path | None = None,
         seed: int = 42,
+        hf_token: str | None = None,
     ) -> None:
         self.data_dir = data_dir or Path("data")
         self.seed = seed
+        self.hf_token = hf_token
         self._rng = random.Random(seed)
 
     def assemble(self, version: BenchmarkVersionType = "base") -> BenchmarkData:
@@ -201,8 +203,7 @@ class BenchmarkAssembler:
         try:
             from datasets import load_dataset
 
-            # Load INSAIT-Institute/zno_ukr dataset
-            dataset = load_dataset("INSAIT-Institute/zno_ukr", split="test")
+            dataset = load_dataset("INSAIT-Institute/zno_ukr", split="test", token=self.hf_token)
 
             tasks: list[MultipleChoiceTask] = []
             # Sample deterministically
@@ -279,8 +280,9 @@ class BenchmarkAssembler:
         try:
             from datasets import load_dataset
 
-            # Load osyvokon/ua_gec_instruction_tuning dataset
-            dataset = load_dataset("osyvokon/ua_gec_instruction_tuning", split="train")
+            dataset = load_dataset(
+                "osyvokon/ua_gec_instruction_tuning", split="train", token=self.hf_token
+            )
 
             tasks: list[GECTask] = []
             # Sample deterministically
@@ -352,13 +354,16 @@ class BenchmarkAssembler:
 
             tasks: list[TranslationTask] = []
 
-            # Split count between EN-UK and RU-UK (60% EN, 40% RU for variety)
             en_count = int(count * 0.6)
             ru_count = count - en_count
 
-            # Load English-Ukrainian pairs
             try:
-                en_uk = load_dataset("facebook/flores", "eng_Latn-ukr_Cyrl", split="devtest")
+                en_uk = load_dataset(
+                    "facebook/flores",
+                    "eng_Latn-ukr_Cyrl",
+                    split="devtest",
+                    token=self.hf_token,
+                )
                 indices = list(range(len(en_uk)))
                 self._rng.shuffle(indices)
 
@@ -377,9 +382,13 @@ class BenchmarkAssembler:
             except Exception as e:
                 logger.warning(f"Failed to load EN-UK FLORES: {e}")
 
-            # Load Russian-Ukrainian pairs
             try:
-                ru_uk = load_dataset("facebook/flores", "rus_Cyrl-ukr_Cyrl", split="devtest")
+                ru_uk = load_dataset(
+                    "facebook/flores",
+                    "rus_Cyrl-ukr_Cyrl",
+                    split="devtest",
+                    token=self.hf_token,
+                )
                 indices = list(range(len(ru_uk)))
                 self._rng.shuffle(indices)
 
@@ -993,6 +1002,7 @@ class BenchmarkAssembler:
 def create_benchmark_assembler(
     data_dir: Path | None = None,
     seed: int = 42,
+    hf_token: str | None = None,
 ) -> BenchmarkAssembler:
     """Factory function to create benchmark assembler."""
-    return BenchmarkAssembler(data_dir=data_dir, seed=seed)
+    return BenchmarkAssembler(data_dir=data_dir, seed=seed, hf_token=hf_token)

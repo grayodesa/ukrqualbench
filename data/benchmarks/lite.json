@@ -1,0 +1,4499 @@
+{
+  "version": "lite",
+  "metadata": {
+    "version": "lite",
+    "dataset_hash": "c03efb334bed07cff841fa94bba9980ffa891a6dba307add22f837b94b09ab19",
+    "total_block_a": 200,
+    "total_block_b": 100,
+    "created_at": "2026-01-10T21:25:20.402854",
+    "sources": [
+      "synthetic"
+    ]
+  },
+  "block_a": {
+    "mc": [
+      {
+        "id": "mc_synth_0000",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів'яблука",
+          "B) півяблука",
+          "C) пів яблука"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф після пів- перед я",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0001",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів-України",
+          "B) півУкраїни",
+          "C) пів України"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у пів- з великою літерою",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0002",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) п'ятсот",
+          "B) пятсот",
+          "C) п'ять сот"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф у числівниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0003",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) восени",
+          "B) в осені",
+          "C) во сені"
+        ],
+        "correct": "A",
+        "explanation": "Злите написання прислівників",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0004",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) будь-який",
+          "B) будьякий",
+          "C) будь який"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у неозначених займенниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0005",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Він прийшов, але нікого не застав.",
+          "B) Він прийшов але нікого не застав.",
+          "C) Він прийшов, але, нікого не застав."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед але",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0006",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Мама сказала, що прийде пізніше.",
+          "B) Мама сказала що прийде пізніше.",
+          "C) Мама, сказала що прийде пізніше."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед що",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0007",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) батькові",
+          "B) батьку",
+          "C) батька"
+        ],
+        "correct": "A",
+        "explanation": "Давальний відмінок з -ові",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0008",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) Києві",
+          "B) Києву",
+          "C) Київі"
+        ],
+        "correct": "A",
+        "explanation": "Місцевий відмінок -і",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0009",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) брату",
+          "B) братові",
+          "C) братом"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0010",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) сину",
+          "B) синові",
+          "C) сином"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0011",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) взяти участь",
+          "B) прийняти участь",
+          "C) приймати участь"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти участь'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0012",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) захід",
+          "B) міроприємство",
+          "C) мероприятіє"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'міроприємство'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0013",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) протягом",
+          "B) на протязі",
+          "C) в продовж"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'на протязі'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0014",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) є",
+          "B) являється",
+          "C) являеться"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'являється'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0015",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) наступний",
+          "B) слідуючий",
+          "C) слідующий"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'слідуючий'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0016",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) вжити заходів",
+          "B) прийняти міри",
+          "C) приняти меры"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти міри'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0017",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) ухвалити рішення",
+          "B) прийняти рішення",
+          "C) приняти решення"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти рішення'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0018",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) здобути досвід",
+          "B) отримати досвід",
+          "C) получити досвід"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'отримати досвід'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0019",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Андрію",
+          "B) Андрій",
+          "C) Андріє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Андрій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0020",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Сергію",
+          "B) Сергій",
+          "C) Сергіє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Сергій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0021",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Маріє",
+          "B) Марія",
+          "C) Марійо"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Марія",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0022",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Олено",
+          "B) Олена",
+          "C) Оленко"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Олена",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0023",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) друже",
+          "B) друг",
+          "C) другу"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від друг",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0024",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів'яблука",
+          "B) півяблука",
+          "C) пів яблука"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф після пів- перед я",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0025",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів-України",
+          "B) півУкраїни",
+          "C) пів України"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у пів- з великою літерою",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0026",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) п'ятсот",
+          "B) пятсот",
+          "C) п'ять сот"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф у числівниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0027",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) восени",
+          "B) в осені",
+          "C) во сені"
+        ],
+        "correct": "A",
+        "explanation": "Злите написання прислівників",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0028",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) будь-який",
+          "B) будьякий",
+          "C) будь який"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у неозначених займенниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0029",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Він прийшов, але нікого не застав.",
+          "B) Він прийшов але нікого не застав.",
+          "C) Він прийшов, але, нікого не застав."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед але",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0030",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Мама сказала, що прийде пізніше.",
+          "B) Мама сказала що прийде пізніше.",
+          "C) Мама, сказала що прийде пізніше."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед що",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0031",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) батькові",
+          "B) батьку",
+          "C) батька"
+        ],
+        "correct": "A",
+        "explanation": "Давальний відмінок з -ові",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0032",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) Києві",
+          "B) Києву",
+          "C) Київі"
+        ],
+        "correct": "A",
+        "explanation": "Місцевий відмінок -і",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0033",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) брату",
+          "B) братові",
+          "C) братом"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0034",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) сину",
+          "B) синові",
+          "C) сином"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0035",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) взяти участь",
+          "B) прийняти участь",
+          "C) приймати участь"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти участь'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0036",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) захід",
+          "B) міроприємство",
+          "C) мероприятіє"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'міроприємство'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0037",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) протягом",
+          "B) на протязі",
+          "C) в продовж"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'на протязі'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0038",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) є",
+          "B) являється",
+          "C) являеться"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'являється'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0039",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) наступний",
+          "B) слідуючий",
+          "C) слідующий"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'слідуючий'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0040",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) вжити заходів",
+          "B) прийняти міри",
+          "C) приняти меры"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти міри'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0041",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) ухвалити рішення",
+          "B) прийняти рішення",
+          "C) приняти решення"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти рішення'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0042",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) здобути досвід",
+          "B) отримати досвід",
+          "C) получити досвід"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'отримати досвід'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0043",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Андрію",
+          "B) Андрій",
+          "C) Андріє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Андрій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0044",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Сергію",
+          "B) Сергій",
+          "C) Сергіє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Сергій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0045",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Маріє",
+          "B) Марія",
+          "C) Марійо"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Марія",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0046",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Олено",
+          "B) Олена",
+          "C) Оленко"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Олена",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0047",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) друже",
+          "B) друг",
+          "C) другу"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від друг",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0048",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів'яблука",
+          "B) півяблука",
+          "C) пів яблука"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф після пів- перед я",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0049",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів-України",
+          "B) півУкраїни",
+          "C) пів України"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у пів- з великою літерою",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0050",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) п'ятсот",
+          "B) пятсот",
+          "C) п'ять сот"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф у числівниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0051",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) восени",
+          "B) в осені",
+          "C) во сені"
+        ],
+        "correct": "A",
+        "explanation": "Злите написання прислівників",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0052",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) будь-який",
+          "B) будьякий",
+          "C) будь який"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у неозначених займенниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0053",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Він прийшов, але нікого не застав.",
+          "B) Він прийшов але нікого не застав.",
+          "C) Він прийшов, але, нікого не застав."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед але",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0054",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Мама сказала, що прийде пізніше.",
+          "B) Мама сказала що прийде пізніше.",
+          "C) Мама, сказала що прийде пізніше."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед що",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0055",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) батькові",
+          "B) батьку",
+          "C) батька"
+        ],
+        "correct": "A",
+        "explanation": "Давальний відмінок з -ові",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0056",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) Києві",
+          "B) Києву",
+          "C) Київі"
+        ],
+        "correct": "A",
+        "explanation": "Місцевий відмінок -і",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0057",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) брату",
+          "B) братові",
+          "C) братом"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0058",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) сину",
+          "B) синові",
+          "C) сином"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0059",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) взяти участь",
+          "B) прийняти участь",
+          "C) приймати участь"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти участь'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0060",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) захід",
+          "B) міроприємство",
+          "C) мероприятіє"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'міроприємство'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0061",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) протягом",
+          "B) на протязі",
+          "C) в продовж"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'на протязі'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0062",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) є",
+          "B) являється",
+          "C) являеться"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'являється'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0063",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) наступний",
+          "B) слідуючий",
+          "C) слідующий"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'слідуючий'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0064",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) вжити заходів",
+          "B) прийняти міри",
+          "C) приняти меры"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти міри'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0065",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) ухвалити рішення",
+          "B) прийняти рішення",
+          "C) приняти решення"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти рішення'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0066",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) здобути досвід",
+          "B) отримати досвід",
+          "C) получити досвід"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'отримати досвід'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0067",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Андрію",
+          "B) Андрій",
+          "C) Андріє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Андрій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0068",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Сергію",
+          "B) Сергій",
+          "C) Сергіє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Сергій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0069",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Маріє",
+          "B) Марія",
+          "C) Марійо"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Марія",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0070",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Олено",
+          "B) Олена",
+          "C) Оленко"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Олена",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0071",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) друже",
+          "B) друг",
+          "C) другу"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від друг",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0072",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів'яблука",
+          "B) півяблука",
+          "C) пів яблука"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф після пів- перед я",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0073",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів-України",
+          "B) півУкраїни",
+          "C) пів України"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у пів- з великою літерою",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0074",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) п'ятсот",
+          "B) пятсот",
+          "C) п'ять сот"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф у числівниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0075",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) восени",
+          "B) в осені",
+          "C) во сені"
+        ],
+        "correct": "A",
+        "explanation": "Злите написання прислівників",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0076",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) будь-який",
+          "B) будьякий",
+          "C) будь який"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у неозначених займенниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0077",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Він прийшов, але нікого не застав.",
+          "B) Він прийшов але нікого не застав.",
+          "C) Він прийшов, але, нікого не застав."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед але",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0078",
+        "type": "multiple_choice",
+        "category": "punctuation",
+        "subcategory": null,
+        "prompt": "Виберіть речення з правильною пунктуацією:",
+        "options": [
+          "A) Мама сказала, що прийде пізніше.",
+          "B) Мама сказала що прийде пізніше.",
+          "C) Мама, сказала що прийде пізніше."
+        ],
+        "correct": "A",
+        "explanation": "Кома перед що",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0079",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) батькові",
+          "B) батьку",
+          "C) батька"
+        ],
+        "correct": "A",
+        "explanation": "Давальний відмінок з -ові",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0080",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) Києві",
+          "B) Києву",
+          "C) Київі"
+        ],
+        "correct": "A",
+        "explanation": "Місцевий відмінок -і",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0081",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) брату",
+          "B) братові",
+          "C) братом"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0082",
+        "type": "multiple_choice",
+        "category": "grammar_case",
+        "subcategory": null,
+        "prompt": "Виберіть правильну форму слова:",
+        "options": [
+          "A) сину",
+          "B) синові",
+          "C) сином"
+        ],
+        "correct": "B",
+        "explanation": "Давальний з -ові для осіб",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0083",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) взяти участь",
+          "B) прийняти участь",
+          "C) приймати участь"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти участь'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0084",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) захід",
+          "B) міроприємство",
+          "C) мероприятіє"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'міроприємство'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0085",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) протягом",
+          "B) на протязі",
+          "C) в продовж"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'на протязі'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0086",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) є",
+          "B) являється",
+          "C) являеться"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'являється'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0087",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) наступний",
+          "B) слідуючий",
+          "C) слідующий"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'слідуючий'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0088",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) вжити заходів",
+          "B) прийняти міри",
+          "C) приняти меры"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти міри'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0089",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) ухвалити рішення",
+          "B) прийняти рішення",
+          "C) приняти решення"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'прийняти рішення'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0090",
+        "type": "multiple_choice",
+        "category": "russism_detection",
+        "subcategory": null,
+        "prompt": "Виберіть літературну українську форму:",
+        "options": [
+          "A) здобути досвід",
+          "B) отримати досвід",
+          "C) получити досвід"
+        ],
+        "correct": "A",
+        "explanation": "Русизм 'отримати досвід'",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0091",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Андрію",
+          "B) Андрій",
+          "C) Андріє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Андрій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0092",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Сергію",
+          "B) Сергій",
+          "C) Сергіє"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Сергій",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0093",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Маріє",
+          "B) Марія",
+          "C) Марійо"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Марія",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0094",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) Олено",
+          "B) Олена",
+          "C) Оленко"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від Олена",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0095",
+        "type": "multiple_choice",
+        "category": "vocative",
+        "subcategory": null,
+        "prompt": "Виберіть правильну кличну форму:",
+        "options": [
+          "A) друже",
+          "B) друг",
+          "C) другу"
+        ],
+        "correct": "A",
+        "explanation": "Кличний від друг",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0096",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів'яблука",
+          "B) півяблука",
+          "C) пів яблука"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф після пів- перед я",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0097",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) пів-України",
+          "B) півУкраїни",
+          "C) пів України"
+        ],
+        "correct": "A",
+        "explanation": "Дефіс у пів- з великою літерою",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0098",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) п'ятсот",
+          "B) пятсот",
+          "C) п'ять сот"
+        ],
+        "correct": "A",
+        "explanation": "Апостроф у числівниках",
+        "difficulty": "medium",
+        "source": "synthetic"
+      },
+      {
+        "id": "mc_synth_0099",
+        "type": "multiple_choice",
+        "category": "orthography",
+        "subcategory": null,
+        "prompt": "Виберіть правильний варіант написання:",
+        "options": [
+          "A) восени",
+          "B) в осені",
+          "C) во сені"
+        ],
+        "correct": "A",
+        "explanation": "Злите написання прислівників",
+        "difficulty": "medium",
+        "source": "synthetic"
+      }
+    ],
+    "gec": [
+      {
+        "id": "gec_synth_0000",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти участь у заході.",
+        "expected_output": "Треба взяти участь у заході.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0001",
+        "type": "gec",
+        "category": "russism",
+        "input": "На протязі року ми працювали.",
+        "expected_output": "Протягом року ми працювали.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0002",
+        "type": "gec",
+        "category": "russism",
+        "input": "Це являється головною проблемою.",
+        "expected_output": "Це є головною проблемою.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0003",
+        "type": "gec",
+        "category": "russism",
+        "input": "Слідуючий крок буде важливим.",
+        "expected_output": "Наступний крок буде важливим.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0004",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти міри.",
+        "expected_output": "Треба вжити заходів.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0005",
+        "type": "gec",
+        "category": "russism",
+        "input": "Збори будуть мати місце завтра.",
+        "expected_output": "Збори відбудуться завтра.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0006",
+        "type": "gec",
+        "category": "russism",
+        "input": "Прийняти рішення до кінця дня.",
+        "expected_output": "Ухвалити рішення до кінця дня.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0007",
+        "type": "gec",
+        "category": "russism",
+        "input": "Отримати досвід роботи.",
+        "expected_output": "Здобути досвід роботи.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0008",
+        "type": "gec",
+        "category": "russism",
+        "input": "В даному випадку це важливо.",
+        "expected_output": "У цьому випадку це важливо.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0009",
+        "type": "gec",
+        "category": "russism",
+        "input": "Дякуючи вашій допомозі.",
+        "expected_output": "Завдяки вашій допомозі.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0010",
+        "type": "gec",
+        "category": "russism",
+        "input": "Не дивлячись на це.",
+        "expected_output": "Попри це.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0011",
+        "type": "gec",
+        "category": "russism",
+        "input": "Самий кращий варіант.",
+        "expected_output": "Найкращий варіант.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0012",
+        "type": "gec",
+        "category": "russism",
+        "input": "По відношенню до цього питання.",
+        "expected_output": "Щодо цього питання.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0013",
+        "type": "gec",
+        "category": "russism",
+        "input": "Приводжу до вашого відома.",
+        "expected_output": "Повідомляю вам.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0014",
+        "type": "gec",
+        "category": "russism",
+        "input": "В кінці кінців.",
+        "expected_output": "Врешті-решт.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0015",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти участь у заході.",
+        "expected_output": "Треба взяти участь у заході.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0016",
+        "type": "gec",
+        "category": "russism",
+        "input": "На протязі року ми працювали.",
+        "expected_output": "Протягом року ми працювали.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0017",
+        "type": "gec",
+        "category": "russism",
+        "input": "Це являється головною проблемою.",
+        "expected_output": "Це є головною проблемою.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0018",
+        "type": "gec",
+        "category": "russism",
+        "input": "Слідуючий крок буде важливим.",
+        "expected_output": "Наступний крок буде важливим.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0019",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти міри.",
+        "expected_output": "Треба вжити заходів.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0020",
+        "type": "gec",
+        "category": "russism",
+        "input": "Збори будуть мати місце завтра.",
+        "expected_output": "Збори відбудуться завтра.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0021",
+        "type": "gec",
+        "category": "russism",
+        "input": "Прийняти рішення до кінця дня.",
+        "expected_output": "Ухвалити рішення до кінця дня.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0022",
+        "type": "gec",
+        "category": "russism",
+        "input": "Отримати досвід роботи.",
+        "expected_output": "Здобути досвід роботи.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0023",
+        "type": "gec",
+        "category": "russism",
+        "input": "В даному випадку це важливо.",
+        "expected_output": "У цьому випадку це важливо.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0024",
+        "type": "gec",
+        "category": "russism",
+        "input": "Дякуючи вашій допомозі.",
+        "expected_output": "Завдяки вашій допомозі.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0025",
+        "type": "gec",
+        "category": "russism",
+        "input": "Не дивлячись на це.",
+        "expected_output": "Попри це.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0026",
+        "type": "gec",
+        "category": "russism",
+        "input": "Самий кращий варіант.",
+        "expected_output": "Найкращий варіант.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0027",
+        "type": "gec",
+        "category": "russism",
+        "input": "По відношенню до цього питання.",
+        "expected_output": "Щодо цього питання.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0028",
+        "type": "gec",
+        "category": "russism",
+        "input": "Приводжу до вашого відома.",
+        "expected_output": "Повідомляю вам.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0029",
+        "type": "gec",
+        "category": "russism",
+        "input": "В кінці кінців.",
+        "expected_output": "Врешті-решт.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0030",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти участь у заході.",
+        "expected_output": "Треба взяти участь у заході.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0031",
+        "type": "gec",
+        "category": "russism",
+        "input": "На протязі року ми працювали.",
+        "expected_output": "Протягом року ми працювали.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0032",
+        "type": "gec",
+        "category": "russism",
+        "input": "Це являється головною проблемою.",
+        "expected_output": "Це є головною проблемою.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0033",
+        "type": "gec",
+        "category": "russism",
+        "input": "Слідуючий крок буде важливим.",
+        "expected_output": "Наступний крок буде важливим.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0034",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти міри.",
+        "expected_output": "Треба вжити заходів.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0035",
+        "type": "gec",
+        "category": "russism",
+        "input": "Збори будуть мати місце завтра.",
+        "expected_output": "Збори відбудуться завтра.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0036",
+        "type": "gec",
+        "category": "russism",
+        "input": "Прийняти рішення до кінця дня.",
+        "expected_output": "Ухвалити рішення до кінця дня.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0037",
+        "type": "gec",
+        "category": "russism",
+        "input": "Отримати досвід роботи.",
+        "expected_output": "Здобути досвід роботи.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0038",
+        "type": "gec",
+        "category": "russism",
+        "input": "В даному випадку це важливо.",
+        "expected_output": "У цьому випадку це важливо.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0039",
+        "type": "gec",
+        "category": "russism",
+        "input": "Дякуючи вашій допомозі.",
+        "expected_output": "Завдяки вашій допомозі.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0040",
+        "type": "gec",
+        "category": "russism",
+        "input": "Не дивлячись на це.",
+        "expected_output": "Попри це.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0041",
+        "type": "gec",
+        "category": "russism",
+        "input": "Самий кращий варіант.",
+        "expected_output": "Найкращий варіант.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0042",
+        "type": "gec",
+        "category": "russism",
+        "input": "По відношенню до цього питання.",
+        "expected_output": "Щодо цього питання.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0043",
+        "type": "gec",
+        "category": "russism",
+        "input": "Приводжу до вашого відома.",
+        "expected_output": "Повідомляю вам.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0044",
+        "type": "gec",
+        "category": "russism",
+        "input": "В кінці кінців.",
+        "expected_output": "Врешті-решт.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0045",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти участь у заході.",
+        "expected_output": "Треба взяти участь у заході.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0046",
+        "type": "gec",
+        "category": "russism",
+        "input": "На протязі року ми працювали.",
+        "expected_output": "Протягом року ми працювали.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0047",
+        "type": "gec",
+        "category": "russism",
+        "input": "Це являється головною проблемою.",
+        "expected_output": "Це є головною проблемою.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0048",
+        "type": "gec",
+        "category": "russism",
+        "input": "Слідуючий крок буде важливим.",
+        "expected_output": "Наступний крок буде важливим.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      },
+      {
+        "id": "gec_synth_0049",
+        "type": "gec",
+        "category": "russism",
+        "input": "Треба прийняти міри.",
+        "expected_output": "Треба вжити заходів.",
+        "errors": [],
+        "source": "synthetic",
+        "difficulty": "medium"
+      }
+    ],
+    "translation": [
+      {
+        "id": "trans_synth_0000",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Мы должны принять участие в мероприятии.",
+        "reference": "Ми маємо взяти участь у заході.",
+        "traps": [
+          "прийняти участь",
+          "міроприємство"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0001",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "На протяжении всего дня шел дождь.",
+        "reference": "Протягом усього дня йшов дощ.",
+        "traps": [
+          "на протязі"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0002",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Это является основной причиной.",
+        "reference": "Це є основною причиною.",
+        "traps": [
+          "являється"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0003",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Следующий вопрос касается экономики.",
+        "reference": "Наступне питання стосується економіки.",
+        "traps": [
+          "слідуючий"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0004",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Необходимо принять меры.",
+        "reference": "Необхідно вжити заходів.",
+        "traps": [
+          "прийняти міри"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0005",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Собрание будет иметь место завтра.",
+        "reference": "Збори відбудуться завтра.",
+        "traps": [
+          "мати місце"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0006",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Принять решение до конца дня.",
+        "reference": "Ухвалити рішення до кінця дня.",
+        "traps": [
+          "прийняти рішення"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0007",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Получить опыт работы.",
+        "reference": "Здобути досвід роботи.",
+        "traps": [
+          "отримати досвід"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0008",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "В данном случае это важно.",
+        "reference": "У цьому випадку це важливо.",
+        "traps": [
+          "в даному випадку"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0009",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Благодаря вашей помощи.",
+        "reference": "Завдяки вашій допомозі.",
+        "traps": [
+          "дякуючи"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0010",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Мы должны принять участие в мероприятии.",
+        "reference": "Ми маємо взяти участь у заході.",
+        "traps": [
+          "прийняти участь",
+          "міроприємство"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0011",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "На протяжении всего дня шел дождь.",
+        "reference": "Протягом усього дня йшов дощ.",
+        "traps": [
+          "на протязі"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0012",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Это является основной причиной.",
+        "reference": "Це є основною причиною.",
+        "traps": [
+          "являється"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0013",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Следующий вопрос касается экономики.",
+        "reference": "Наступне питання стосується економіки.",
+        "traps": [
+          "слідуючий"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0014",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Необходимо принять меры.",
+        "reference": "Необхідно вжити заходів.",
+        "traps": [
+          "прийняти міри"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0015",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Собрание будет иметь место завтра.",
+        "reference": "Збори відбудуться завтра.",
+        "traps": [
+          "мати місце"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0016",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Принять решение до конца дня.",
+        "reference": "Ухвалити рішення до кінця дня.",
+        "traps": [
+          "прийняти рішення"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0017",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Получить опыт работы.",
+        "reference": "Здобути досвід роботи.",
+        "traps": [
+          "отримати досвід"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0018",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "В данном случае это важно.",
+        "reference": "У цьому випадку це важливо.",
+        "traps": [
+          "в даному випадку"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0019",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Благодаря вашей помощи.",
+        "reference": "Завдяки вашій допомозі.",
+        "traps": [
+          "дякуючи"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0020",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Мы должны принять участие в мероприятии.",
+        "reference": "Ми маємо взяти участь у заході.",
+        "traps": [
+          "прийняти участь",
+          "міроприємство"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0021",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "На протяжении всего дня шел дождь.",
+        "reference": "Протягом усього дня йшов дощ.",
+        "traps": [
+          "на протязі"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0022",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Это является основной причиной.",
+        "reference": "Це є основною причиною.",
+        "traps": [
+          "являється"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0023",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Следующий вопрос касается экономики.",
+        "reference": "Наступне питання стосується економіки.",
+        "traps": [
+          "слідуючий"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0024",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Необходимо принять меры.",
+        "reference": "Необхідно вжити заходів.",
+        "traps": [
+          "прийняти міри"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0025",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Собрание будет иметь место завтра.",
+        "reference": "Збори відбудуться завтра.",
+        "traps": [
+          "мати місце"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0026",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Принять решение до конца дня.",
+        "reference": "Ухвалити рішення до кінця дня.",
+        "traps": [
+          "прийняти рішення"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0027",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Получить опыт работы.",
+        "reference": "Здобути досвід роботи.",
+        "traps": [
+          "отримати досвід"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0028",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "В данном случае это важно.",
+        "reference": "У цьому випадку це важливо.",
+        "traps": [
+          "в даному випадку"
+        ],
+        "trap_type": "russism"
+      },
+      {
+        "id": "trans_synth_0029",
+        "type": "translation",
+        "source_lang": "ru",
+        "target_lang": "uk",
+        "source": "Благодаря вашей помощи.",
+        "reference": "Завдяки вашій допомозі.",
+        "traps": [
+          "дякуючи"
+        ],
+        "trap_type": "russism"
+      }
+    ],
+    "false_positive": [
+      {
+        "id": "fp_synth_0000",
+        "type": "false_positive",
+        "text": "Реве та стогне Дніпр широкий, Сердитий вітер завива, Додолу верби гне високі, Горами хвилю підійма.",
+        "author": "Тарас Шевченко",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0001",
+        "type": "false_positive",
+        "text": "Як умру, то поховайте Мене на могилі, Серед степу широкого, На Вкраїні милій.",
+        "author": "Тарас Шевченко",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0002",
+        "type": "false_positive",
+        "text": "Ні, я жива! Я буду вічно жити! Я в серці маю те, що не вмирає.",
+        "author": "Леся Українка",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0003",
+        "type": "false_positive",
+        "text": "Земле моя, всеплодющая мати, Сили, що творять в твоїй глибині!",
+        "author": "Іван Франко",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0004",
+        "type": "false_positive",
+        "text": "І все-таки до тебе думка лине, Мій занапащений, нещасний краю!",
+        "author": "Василь Стус",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0005",
+        "type": "false_positive",
+        "text": "Любіть Україну, як сонце, любіть, Як вітер, і трави, і води.",
+        "author": "Володимир Сосюра",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0006",
+        "type": "false_positive",
+        "text": "Чого являєшся мені у сні? Чого звертаєш ти до мене очі?",
+        "author": "Ліна Костенко",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0007",
+        "type": "false_positive",
+        "text": "Мріють крилами з туману лебеді рожеві, Сиплють ночі у лимани зорі сургучеві.",
+        "author": "Павло Тичина",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0008",
+        "type": "false_positive",
+        "text": "Ой не ріж косою, тато, Тій травички молодої, Бо то ж рідна Україна Плаче, тужить надо мною.",
+        "author": "Богдан-Ігор Антонич",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      },
+      {
+        "id": "fp_synth_0009",
+        "type": "false_positive",
+        "text": "Душа моя сумує, мов той сірий ранок, Що журиться по листю обсипанім.",
+        "author": "Олександр Олесь",
+        "is_correct": true,
+        "notes": "Classic Ukrainian literature",
+        "acceptable_flags": [
+          "archaic_style"
+        ]
+      }
+    ],
+    "positive_marker": [
+      {
+        "id": "pm_synth_0000",
+        "type": "positive_marker",
+        "category": "vocative",
+        "context": "Звертання до людини",
+        "native_form": "Пане Андрію, допоможіть мені.",
+        "non_native_forms": [
+          "Пан Андрій"
+        ],
+        "marker_regex": "\\b(Пане|Пані|Друже|Брате|Сестро)\\s+[А-ЯІЇЄҐ][а-яіїєґ']+[ію]\\b"
+      },
+      {
+        "id": "pm_synth_0001",
+        "type": "positive_marker",
+        "category": "vocative",
+        "context": "Кличний відмінок імені",
+        "native_form": "Маріє, ти чула новину?",
+        "non_native_forms": [
+          "Марія"
+        ],
+        "marker_regex": "\\b[А-ЯІЇЄҐ][а-яіїєґ']+[ею]\\b,"
+      },
+      {
+        "id": "pm_synth_0002",
+        "type": "positive_marker",
+        "category": "particle_bo",
+        "context": "Частка 'бо'",
+        "native_form": "Він не прийшов, бо був зайнятий.",
+        "non_native_forms": [
+          "тому що"
+        ],
+        "marker_regex": "\\bбо\\b"
+      },
+      {
+        "id": "pm_synth_0003",
+        "type": "positive_marker",
+        "category": "particle_zh",
+        "context": "Частка 'ж/же'",
+        "native_form": "Це ж очевидно!",
+        "non_native_forms": [
+          "ведь"
+        ],
+        "marker_regex": "\\b(ж|же)\\b"
+      },
+      {
+        "id": "pm_synth_0004",
+        "type": "positive_marker",
+        "category": "particle_khiba",
+        "context": "Частка 'хіба'",
+        "native_form": "Хіба це можливо?",
+        "non_native_forms": [
+          "разве"
+        ],
+        "marker_regex": "\\bхіба\\b"
+      },
+      {
+        "id": "pm_synth_0005",
+        "type": "positive_marker",
+        "category": "particle_nevzhe",
+        "context": "Частка 'невже'",
+        "native_form": "Невже ти не знаєш?",
+        "non_native_forms": [
+          "неужели"
+        ],
+        "marker_regex": "\\bневже\\b"
+      },
+      {
+        "id": "pm_synth_0006",
+        "type": "positive_marker",
+        "category": "conjunction_prote",
+        "context": "Сполучник 'проте'",
+        "native_form": "Було холодно, проте ми вийшли.",
+        "non_native_forms": [
+          "однако"
+        ],
+        "marker_regex": "\\bпроте\\b"
+      },
+      {
+        "id": "pm_synth_0007",
+        "type": "positive_marker",
+        "category": "conjunction_otzhe",
+        "context": "Сполучник 'отже'",
+        "native_form": "Отже, рішення прийнято.",
+        "non_native_forms": [
+          "значит"
+        ],
+        "marker_regex": "\\bотже\\b"
+      },
+      {
+        "id": "pm_synth_0008",
+        "type": "positive_marker",
+        "category": "conjunction_utim",
+        "context": "Сполучник 'утім'",
+        "native_form": "Утім, це не має значення.",
+        "non_native_forms": [
+          "впрочем"
+        ],
+        "marker_regex": "\\bутім\\b"
+      },
+      {
+        "id": "pm_synth_0009",
+        "type": "positive_marker",
+        "category": "conjunction_zato",
+        "context": "Сполучник 'зате'",
+        "native_form": "Він не прийшов, зате подзвонив.",
+        "non_native_forms": [
+          "зато"
+        ],
+        "marker_regex": "\\bзате\\b"
+      }
+    ]
+  },
+  "block_b": {
+    "generation": [
+      {
+        "id": "gen_001",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни простими словами, що таке штучний інтелект.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_002",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, як працює фотосинтез.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_003",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Розкажи про причини Першої світової війни.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_004",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Що таке демократія і які її основні принципи?",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_005",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни різницю між процесором та оперативною пам'яттю комп'ютера.",
+        "min_tokens": 50,
+        "max_tokens": 250
+      },
+      {
+        "id": "gen_006",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо ефективного вивчення іноземних мов.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_007",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Які поради ти б дав людині, яка хоче почати бігати?",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_008",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Порадь, як краще організувати свій робочий час.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_009",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Що порадиш людині, яка хоче навчитися готувати?",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_010",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо підготовки до співбесіди на роботу.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_011",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий вірш про весну.",
+        "min_tokens": 30,
+        "max_tokens": 150
+      },
+      {
+        "id": "gen_012",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши початок оповідання про пригоди кота.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_013",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Склади казку для дітей про дружбу.",
+        "min_tokens": 150,
+        "max_tokens": 500
+      },
+      {
+        "id": "gen_014",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий монолог літньої людини про зміни в житті.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_015",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Опиши захід сонця над морем.",
+        "min_tokens": 50,
+        "max_tokens": 200
+      },
+      {
+        "id": "gen_016",
+        "type": "free_generation",
+        "category": "business",
+        "prompt": "Напиши лист-подяку клієнту за співпрацю.",
+        "min_tokens": 80,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_017",
+        "type": "free_generation",
+        "category": "business",
+        "prompt": "Склади короткий звіт про результати роботи за місяць.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_018",
+        "type": "free_generation",
+        "category": "business",
+        "prompt": "Напиши запрошення на корпоративний захід.",
+        "min_tokens": 60,
+        "max_tokens": 250
+      },
+      {
+        "id": "gen_019",
+        "type": "free_generation",
+        "category": "business",
+        "prompt": "Склади коротку презентацію нового продукту.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_020",
+        "type": "free_generation",
+        "category": "business",
+        "prompt": "Напиши відповідь на скаргу клієнта.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_021",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Поясни, як працює Git для початківця.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_022",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес створення веб-сайту.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_023",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Поясни, що таке база даних і для чого вона потрібна.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_024",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Розкажи про основні принципи кібербезпеки.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_025",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Поясни різницю між фронтендом та бекендом.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_026",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи рецепт українського борщу.",
+        "min_tokens": 100,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_027",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Опиши, як правильно прати речі.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_028",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Дай поради щодо догляду за кімнатними рослинами.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_029",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи, як підготуватися до подорожі.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_030",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Опиши типовий ранок українця.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0100",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке інтернет.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0101",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо інтернет.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0102",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про інтернет.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0103",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес інтернет.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0104",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про інтернет.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0105",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке екологія.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0106",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо екологія.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0107",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про екологія.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0108",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес екологія.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0109",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про екологія.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0110",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке здоров'я.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0111",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо здоров'я.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0112",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про здоров'я.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0113",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес здоров'я.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0114",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про здоров'я.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0115",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке освіта.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0116",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо освіта.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0117",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про освіта.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0118",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес освіта.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0119",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про освіта.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0120",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке технології.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0121",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо технології.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0122",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про технології.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0123",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес технології.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0124",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про технології.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0125",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке культура.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0126",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо культура.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0127",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про культура.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0128",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес культура.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0129",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про культура.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0130",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке спорт.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0131",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо спорт.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0132",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про спорт.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0133",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес спорт.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0134",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про спорт.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0135",
+        "type": "free_generation",
+        "category": "explanation",
+        "prompt": "Поясни, що таке мистецтво.",
+        "min_tokens": 50,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0136",
+        "type": "free_generation",
+        "category": "advice",
+        "prompt": "Дай поради щодо мистецтво.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      },
+      {
+        "id": "gen_synth_0137",
+        "type": "free_generation",
+        "category": "creative",
+        "prompt": "Напиши короткий текст про мистецтво.",
+        "min_tokens": 80,
+        "max_tokens": 400
+      },
+      {
+        "id": "gen_synth_0138",
+        "type": "free_generation",
+        "category": "technical",
+        "prompt": "Опиши процес мистецтво.",
+        "min_tokens": 80,
+        "max_tokens": 350
+      },
+      {
+        "id": "gen_synth_0139",
+        "type": "free_generation",
+        "category": "everyday",
+        "prompt": "Розкажи про мистецтво.",
+        "min_tokens": 60,
+        "max_tokens": 300
+      }
+    ],
+    "adversarial": [
+      {
+        "id": "adv_001",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Напиши відповідь на лист. В листі говориться що треба прийняти участь в міроприємстві і отримати досвід. Відповідай літературною українською мовою.",
+        "traps_in_prompt": [
+          "прийняти участь",
+          "міроприємстві",
+          "отримати досвід"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми з промпту"
+      },
+      {
+        "id": "adv_002",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "На протязі цього тижня я повинен був прийняти рішення по відношенню до цього питання. Перефразуй це речення правильною українською.",
+        "traps_in_prompt": [
+          "На протязі",
+          "повинен був",
+          "прийняти рішення",
+          "по відношенню до"
+        ],
+        "instruction": "Модель повинна виправити всі русизми"
+      },
+      {
+        "id": "adv_003",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Згідно закону це являється виключенням. Дай більш детальне пояснення цього правила.",
+        "traps_in_prompt": [
+          "Згідно закону",
+          "являється",
+          "виключенням"
+        ],
+        "instruction": "Модель не повинна повторювати русизми у відповіді"
+      },
+      {
+        "id": "adv_004",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Самий важливий етап — це заключення договору. Розкажи детальніше про процес.",
+        "traps_in_prompt": [
+          "Самий важливий",
+          "заключення договору"
+        ],
+        "instruction": "Модель повинна використовувати правильні форми"
+      },
+      {
+        "id": "adv_005",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "В даному випадку треба приймати міри. Напиши план дій.",
+        "traps_in_prompt": [
+          "В даному випадку",
+          "приймати міри"
+        ],
+        "instruction": "Модель повинна уникати русизмів у плані"
+      },
+      {
+        "id": "adv_006",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Дякуючи цьому рішенню збори будуть мати місце в п'ятницю. Напиши офіційне повідомлення про це.",
+        "traps_in_prompt": [
+          "Дякуючи цьому",
+          "мати місце"
+        ],
+        "instruction": "Офіційний стиль без русизмів"
+      },
+      {
+        "id": "adv_007",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Він говорить по українськи дуже добре і в значній мірі це завдяки практиці. Напиши про це статтю.",
+        "traps_in_prompt": [
+          "по українськи",
+          "в значній мірі"
+        ],
+        "instruction": "Стаття повинна бути написана правильною українською"
+      },
+      {
+        "id": "adv_008",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Приводжу до вашого відома слідуючу інформацію. Продовж цей офіційний лист.",
+        "traps_in_prompt": [
+          "Приводжу до вашого відома",
+          "слідуючу"
+        ],
+        "instruction": "Офіційний лист правильною українською"
+      },
+      {
+        "id": "adv_009",
+        "type": "adversarial",
+        "category": "anglicism_trap",
+        "prompt": "Цей мітинг буде мати сенс тільки якщо ми зробимо правильний фідбек. Опиши очікувані результати.",
+        "traps_in_prompt": [
+          "мітинг",
+          "мати сенс",
+          "фідбек"
+        ],
+        "instruction": "Модель повинна уникати зайвих англіцизмів"
+      },
+      {
+        "id": "adv_010",
+        "type": "adversarial",
+        "category": "anglicism_trap",
+        "prompt": "Треба імплементувати цю фічу до дедлайну. Напиши технічне завдання.",
+        "traps_in_prompt": [
+          "імплементувати",
+          "фічу",
+          "дедлайну"
+        ],
+        "instruction": "Технічне завдання українською мовою"
+      },
+      {
+        "id": "adv_011",
+        "type": "adversarial",
+        "category": "code_switching",
+        "prompt": "Напиши пост для social media про наш новий product launch. Текст повинен бути українською.",
+        "traps_in_prompt": [
+          "social media",
+          "product launch"
+        ],
+        "instruction": "Модель повинна писати повністю українською"
+      },
+      {
+        "id": "adv_012",
+        "type": "adversarial",
+        "category": "code_switching",
+        "prompt": "Наш team хоче organize a workshop для new employees. Напиши план заходу.",
+        "traps_in_prompt": [
+          "team",
+          "organize",
+          "workshop",
+          "employees"
+        ],
+        "instruction": "План повністю українською мовою"
+      },
+      {
+        "id": "adv_013",
+        "type": "adversarial",
+        "category": "user_mimicry",
+        "prompt": "Я пишу так: 'прийняв участь в міроприємстві'. Пиши як я і розкажи про свій досвід.",
+        "traps_in_prompt": [
+          "прийняв участь",
+          "міроприємстві"
+        ],
+        "instruction": "Модель НЕ повинна копіювати стиль користувача"
+      },
+      {
+        "id": "adv_014",
+        "type": "adversarial",
+        "category": "user_mimicry",
+        "prompt": "Мій стиль письма: 'на протязі дня я являюсь зайнятим'. Напиши мій розпорядок дня в моєму стилі.",
+        "traps_in_prompt": [
+          "на протязі",
+          "являюсь"
+        ],
+        "instruction": "Модель повинна ігнорувати поганий стиль"
+      },
+      {
+        "id": "adv_015",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Не дивлячись на те, що в кінці кінців все вийшло добре, ми повинні більш уважно слідити за процесом. Напиши висновки.",
+        "traps_in_prompt": [
+          "Не дивлячись на",
+          "в кінці кінців",
+          "повинні",
+          "більш уважно"
+        ],
+        "instruction": "Висновки правильною українською"
+      },
+      {
+        "id": "adv_synth_0100",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Користувач написав: 'прийняти участь в міроприємстві'. Допоможи йому правильно сформулювати думку.",
+        "traps_in_prompt": [
+          "прийняти участь",
+          "міроприємство"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми"
+      },
+      {
+        "id": "adv_synth_0101",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Користувач написав: 'на протязі всього часу'. Допоможи йому правильно сформулювати думку.",
+        "traps_in_prompt": [
+          "на протязі"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми"
+      },
+      {
+        "id": "adv_synth_0102",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Користувач написав: 'являється головним фактором'. Допоможи йому правильно сформулювати думку.",
+        "traps_in_prompt": [
+          "являється"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми"
+      },
+      {
+        "id": "adv_synth_0103",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Користувач написав: 'слідуючим чином'. Допоможи йому правильно сформулювати думку.",
+        "traps_in_prompt": [
+          "слідуючий"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми"
+      },
+      {
+        "id": "adv_synth_0104",
+        "type": "adversarial",
+        "category": "russism_trap",
+        "prompt": "Користувач написав: 'приймати міри'. Допоможи йому правильно сформулювати думку.",
+        "traps_in_prompt": [
+          "приймати міри"
+        ],
+        "instruction": "Модель НЕ повинна копіювати русизми"
+      }
+    ],
+    "long_context": [
+      {
+        "id": "lc_001",
+        "type": "long_context",
+        "category": "dialogue",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Звісно! Історія України надзвичайно багата та цікава. Вона охоплює тисячоліття — від часів Київської Русі до сучасності."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи детальніше про Київську Русь."
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була могутньою середньовічною державою, що існувала з IX по XIII століття. Її столицею був Київ."
+          },
+          {
+            "role": "user",
+            "content": "Хто був найвідомішим князем?"
+          },
+          {
+            "role": "assistant",
+            "content": "Найвідомішими були Володимир Великий, який охрестив Русь у 988 році, та Ярослав Мудрий, за правління якого держава досягла найбільшого розквіту."
+          },
+          {
+            "role": "user",
+            "content": "А що сталося після занепаду Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Після монгольської навали українські землі перейшли під владу різних держав: Великого князівства Литовського, Речі Посполитої, згодом — Російської та Австро-Угорської імперій."
+          },
+          {
+            "role": "user",
+            "content": "Коли Україна стала незалежною?"
+          },
+          {
+            "role": "assistant",
+            "content": "Україна проголосила незалежність 24 серпня 1991 року після розпаду Радянського Союзу. Цей день став головним державним святом."
+          },
+          {
+            "role": "user",
+            "content": "Які найважливіші події відбулися після незалежності?"
+          },
+          {
+            "role": "assistant",
+            "content": "Серед ключових подій: прийняття Конституції у 1996 році, Помаранчева революція 2004 року, Революція Гідності 2013-2014 років."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про Революцію Гідності."
+          },
+          {
+            "role": "assistant",
+            "content": "Революція Гідності, або Євромайдан, почалася в листопаді 2013 року після відмови уряду підписати Угоду про асоціацію з ЄС."
+          },
+          {
+            "role": "user",
+            "content": "Дякую за інформацію. Тепер розкажи про українську культуру."
+          },
+          {
+            "role": "assistant",
+            "content": "Українська культура неймовірно різноманітна: традиційна вишиванка, козацькі пісні, петриківський розпис, писанкарство, народні танці."
+          },
+          {
+            "role": "user",
+            "content": "А які відомі українські письменники?"
+          },
+          {
+            "role": "assistant",
+            "content": "Серед найвідоміших: Тарас Шевченко, Леся Українка, Іван Франко, Михайло Коцюбинський, а з сучасних — Ліна Костенко, Сергій Жадан, Юрій Андрухович."
+          },
+          {
+            "role": "user",
+            "content": "Напиши підсумок нашої розмови українською мовою."
+          }
+        ],
+        "total_tokens": 4500,
+        "checkpoints": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "style_consistency",
+          "vocabulary_diversity"
+        ]
+      },
+      {
+        "id": "lc_002",
+        "type": "long_context",
+        "category": "summarization",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Прочитай цей текст і зроби детальний аналіз:\n\nУкраїнська мова — одна з найбагатших і наймелодійніших мов світу. Вона має давню історію, що сягає часів Київської Русі. Протягом століть українська мова розвивалася, збагачувалася новими словами та виразами, зберігаючи при цьому свою унікальну мелодику та граматичну структуру.\n\nОсобливістю української мови є її фонетика — м'який, співучий характер звучання. Наявність семи голосних фонем, специфічних приголосних звуків створює неповторний звуковий образ мови.\n\nЛексика української мови надзвичайно багата. Вона включає численні синоніми, які дозволяють точно передавати найтонші відтінки значень. Наприклад, для позначення поняття 'говорити' існують десятки слів: казати, мовити, промовляти, балакати, гуторити тощо.\n\nГраматична система української мови характеризується розвиненою системою відмінювання іменників (сім відмінків), складною системою дієслівних форм, багатством словотвірних засобів.\n\nВажливою особливістю є кличний відмінок, який зберігся в українській мові краще, ніж у більшості інших слов'янських мов. Він використовується для звертання: 'Друже!', 'Брате!', 'Пане професоре!'.\n\nУкраїнська мова також відзначається багатством частко — 'же', 'бо', 'хіба', 'невже', які надають мовленню особливої експресивності та емоційності.\n\nСучасна українська літературна мова базується на середньонаддніпрянських говорах і була кодифікована в XIX столітті завдяки творчості Тараса Шевченка, Івана Котляревського та інших письменників.\n\nНині українська мова є державною мовою України, нею розмовляють близько 45 мільйонів людей у світі. Вона визнана однією з офіційних мов Європейського Союзу."
+          },
+          {
+            "role": "assistant",
+            "content": "Дякую за цікавий текст про українську мову. Проаналізую його за кількома аспектами."
+          },
+          {
+            "role": "user",
+            "content": "Спочатку виділи головні тези тексту."
+          },
+          {
+            "role": "assistant",
+            "content": "Головні тези тексту:\n1. Українська мова має давню історію та унікальну мелодику\n2. Фонетична система характеризується м'якістю звучання\n3. Лексика надзвичайно багата на синоніми\n4. Граматика включає сім відмінків і складну систему дієслів\n5. Кличний відмінок — важлива особливість\n6. Частки надають експресивності\n7. Мова кодифікована в XIX столітті"
+          },
+          {
+            "role": "user",
+            "content": "Тепер напиши розгорнутий аналіз кожної тези."
+          },
+          {
+            "role": "assistant",
+            "content": "Розгорнутий аналіз:\n\n1. Історія та мелодика: Українська мова справді має коріння в давньоруській мові, однак розвинулася як окрема мовна система. Її мелодійність відзначали багато лінгвістів.\n\n2. Фонетика: Сім голосних фонем та специфічні приголосні (як-от м'який 'л') створюють характерне звучання.\n\n3. Лексичне багатство: Синонімічні ряди в українській мові дуже розвинені.\n\n4. Граматика: Сім відмінків (включно з кличним) — більше, ніж у багатьох слов'янських мовах.\n\n5. Кличний відмінок: Унікальна риса, що зберігається в активному вжитку.\n\n6. Частки: Додають емоційності та є важливим стилістичним засобом.\n\n7. Кодифікація: Шевченко справді відіграв ключову роль у становленні літературної мови."
+          },
+          {
+            "role": "user",
+            "content": "Напиши загальний висновок про значення української мови."
+          }
+        ],
+        "total_tokens": 5000,
+        "checkpoints": [
+          0.0,
+          0.33,
+          0.66,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "gender_consistency",
+          "terminology_consistency"
+        ]
+      },
+      {
+        "id": "lc_003",
+        "type": "long_context",
+        "category": "multi_turn",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Допоможи мені написати есе про екологічні проблеми України."
+          },
+          {
+            "role": "assistant",
+            "content": "Залюбки допоможу! Почнімо з визначення головних екологічних проблем України."
+          },
+          {
+            "role": "user",
+            "content": "Які основні екологічні проблеми ти виділяєш?"
+          },
+          {
+            "role": "assistant",
+            "content": "Основні екологічні проблеми України:\n1. Забруднення повітря від промисловості та транспорту\n2. Забруднення водних ресурсів\n3. Деградація ґрунтів\n4. Проблема поводження з відходами\n5. Наслідки Чорнобильської катастрофи\n6. Вирубка лісів\n7. Втрата біорізноманіття"
+          },
+          {
+            "role": "user",
+            "content": "Напиши вступ до есе."
+          },
+          {
+            "role": "assistant",
+            "content": "Вступ:\n\nЕкологічна ситуація в Україні є однією з найскладніших у Європі. Десятиліття промислового розвитку без належної уваги до охорони довкілля призвели до серйозних екологічних проблем, які потребують негайного вирішення."
+          },
+          {
+            "role": "user",
+            "content": "Тепер опиши проблему забруднення повітря."
+          },
+          {
+            "role": "assistant",
+            "content": "Забруднення повітря:\n\nПромислові регіони України, особливо Донбас і Придніпров'я, характеризуються високим рівнем забруднення атмосфери. Металургійні заводи, хімічні підприємства та теплові електростанції викидають значну кількість шкідливих речовин."
+          },
+          {
+            "role": "user",
+            "content": "Додай інформацію про забруднення води."
+          },
+          {
+            "role": "assistant",
+            "content": "Забруднення водних ресурсів:\n\nРіки та водойми України потерпають від промислових стоків, сільськогосподарських добрив та побутових відходів. Дніпро, головна водна артерія країни, переживає значне антропогенне навантаження."
+          },
+          {
+            "role": "user",
+            "content": "Напиши про проблему відходів."
+          },
+          {
+            "role": "assistant",
+            "content": "Проблема відходів:\n\nУкраїна накопичила мільярди тонн промислових та побутових відходів. Сміттєзвалища переповнені, а система переробки практично не розвинена. Це створює загрозу для здоров'я населення та довкілля."
+          },
+          {
+            "role": "user",
+            "content": "Тепер напиши висновок есе."
+          },
+          {
+            "role": "assistant",
+            "content": "Висновок:\n\nЕкологічні проблеми України потребують комплексного підходу до вирішення. Необхідні модернізація промисловості, впровадження зелених технологій, розвиток системи поводження з відходами та підвищення екологічної свідомості населення."
+          },
+          {
+            "role": "user",
+            "content": "Об'єднай усе в одне есе."
+          }
+        ],
+        "total_tokens": 3500,
+        "checkpoints": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "style_consistency",
+          "coherence"
+        ]
+      },
+      {
+        "id": "lc_004",
+        "type": "long_context",
+        "category": "dialogue",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Я хочу вивчати програмування. Порадь, з чого почати."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Чудове рішення! Для початку варто визначитися з напрямком: веб-розробка, мобільні додатки, аналіз даних чи щось інше?"
+          },
+          {
+            "role": "user",
+            "content": "Мені цікава веб-розробка."
+          },
+          {
+            "role": "assistant",
+            "content": "Веб-розробка — чудовий вибір! Рекомендую почати з основ: HTML для структури сторінок, CSS для стилізації, а потім JavaScript для інтерактивності."
+          },
+          {
+            "role": "user",
+            "content": "Скільки часу потрібно для вивчення основ?"
+          },
+          {
+            "role": "assistant",
+            "content": "При регулярному навчанні (по кілька годин на день) базові концепції можна опанувати за 3-4 місяці. Головне — практикуватися щодня."
+          },
+          {
+            "role": "user",
+            "content": "Які ресурси ти порадиш?"
+          },
+          {
+            "role": "assistant",
+            "content": "Рекомендую:\n- freeCodeCamp — безкоштовний інтерактивний курс\n- MDN Web Docs — документація від Mozilla\n- YouTube-канали з українськомовними уроками\n- Codecademy для практики"
+          },
+          {
+            "role": "user",
+            "content": "А що вивчати після JavaScript?"
+          },
+          {
+            "role": "assistant",
+            "content": "Після JavaScript є два шляхи:\n1. Фронтенд: React, Vue або Angular\n2. Бекенд: Node.js, Python з Django, або PHP\n\nБільшість обирають спочатку фронтенд-фреймворк."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про React."
+          },
+          {
+            "role": "assistant",
+            "content": "React — це JavaScript-бібліотека для створення інтерфейсів. Її розробив Facebook. Вона використовує компонентний підхід та віртуальний DOM для ефективного оновлення сторінки."
+          },
+          {
+            "role": "user",
+            "content": "Які переваги React?"
+          },
+          {
+            "role": "assistant",
+            "content": "Переваги React:\n1. Велика спільнота та багато ресурсів\n2. Компонентна архітектура\n3. Віртуальний DOM для продуктивності\n4. Багато вакансій на ринку праці\n5. Можна створювати мобільні додатки з React Native"
+          },
+          {
+            "role": "user",
+            "content": "Дякую за інформацію! Підсумуй наш план навчання."
+          }
+        ],
+        "total_tokens": 3000,
+        "checkpoints": [
+          0.0,
+          0.33,
+          0.66,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "terminology_consistency",
+          "style_consistency"
+        ]
+      },
+      {
+        "id": "lc_005",
+        "type": "long_context",
+        "category": "dialogue",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Розкажи про українську кухню."
+          },
+          {
+            "role": "assistant",
+            "content": "Українська кухня — одна з найбагатших у Європі! Вона славиться стравами з натуральних продуктів: борщ, вареники, голубці, сало."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи детальніше про борщ."
+          },
+          {
+            "role": "assistant",
+            "content": "Борщ — справжня візитівка української кухні. Це суп на основі буряка з капустою, картоплею, морквою та м'ясом. Подають з пампушками та сметаною."
+          },
+          {
+            "role": "user",
+            "content": "А які є різновиди борщу?"
+          },
+          {
+            "role": "assistant",
+            "content": "Різновиди борщу:\n- Полтавський — з галушками\n- Чернігівський — з квасолею\n- Львівський — з сосисками\n- Холодний — літній варіант\n- Зелений — на щавлі"
+          },
+          {
+            "role": "user",
+            "content": "Тепер про вареники."
+          },
+          {
+            "role": "assistant",
+            "content": "Вареники — улюблена страва українців. Тісто начиняють картоплею, сиром, капустою, вишнями чи іншими начинками. Подають з маслом, сметаною або шкварками."
+          },
+          {
+            "role": "user",
+            "content": "Які ще є традиційні страви?"
+          },
+          {
+            "role": "assistant",
+            "content": "Інші традиційні страви:\n- Голубці — рис з м'ясом у капустяному листі\n- Деруни — картопляні оладки\n- Налисники — тонкі млинці з начинкою\n- Котлета по-київськи — курка з маслом\n- Банош — кукурудзяна каша з бринзою"
+          },
+          {
+            "role": "user",
+            "content": "Розкажи про святкові страви."
+          },
+          {
+            "role": "assistant",
+            "content": "Святкові страви:\nНа Різдво готують 12 пісних страв: кутю, узвар, вареники з капустою, рибу.\nНа Великдень — паску, крашанки, ковбаси.\nНа весілля — коровай, традиційний святковий хліб."
+          },
+          {
+            "role": "user",
+            "content": "А що таке кутя?"
+          },
+          {
+            "role": "assistant",
+            "content": "Кутя — ритуальна страва з пшениці, маку, меду та горіхів. Її готують на Святвечір. Це символ достатку та родинного благополуччя. Перша ложка куті — святковий обов'язок."
+          },
+          {
+            "role": "user",
+            "content": "Напиши підсумок про українську кухню."
+          }
+        ],
+        "total_tokens": 3200,
+        "checkpoints": [
+          0.0,
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "vocabulary_diversity",
+          "cultural_accuracy"
+        ]
+      },
+      {
+        "id": "lc_synth_0000",
+        "type": "long_context",
+        "category": "consistency",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Історія України багата та цікава. Вона охоплює тисячоліття..."
+          },
+          {
+            "role": "user",
+            "content": "А що було в часи Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була потужною середньовічною державою..."
+          },
+          {
+            "role": "user",
+            "content": "Продовж, будь ласка."
+          },
+          {
+            "role": "assistant",
+            "content": "Після занепаду Київської Русі український народ..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 1."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 2."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 3."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 4."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 5."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 6."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 7."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 8."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 9."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 10."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          }
+        ],
+        "total_tokens": 2000,
+        "checkpoints": [
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "fertility",
+          "vocative_usage"
+        ]
+      },
+      {
+        "id": "lc_synth_0001",
+        "type": "long_context",
+        "category": "consistency",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Історія України багата та цікава. Вона охоплює тисячоліття..."
+          },
+          {
+            "role": "user",
+            "content": "А що було в часи Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була потужною середньовічною державою..."
+          },
+          {
+            "role": "user",
+            "content": "Продовж, будь ласка."
+          },
+          {
+            "role": "assistant",
+            "content": "Після занепаду Київської Русі український народ..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 1."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 2."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 3."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 4."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 5."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 6."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 7."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 8."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 9."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 10."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          }
+        ],
+        "total_tokens": 2500,
+        "checkpoints": [
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "fertility",
+          "vocative_usage"
+        ]
+      },
+      {
+        "id": "lc_synth_0002",
+        "type": "long_context",
+        "category": "consistency",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Історія України багата та цікава. Вона охоплює тисячоліття..."
+          },
+          {
+            "role": "user",
+            "content": "А що було в часи Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була потужною середньовічною державою..."
+          },
+          {
+            "role": "user",
+            "content": "Продовж, будь ласка."
+          },
+          {
+            "role": "assistant",
+            "content": "Після занепаду Київської Русі український народ..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 1."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 2."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 3."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 4."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 5."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 6."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 7."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 8."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 9."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 10."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          }
+        ],
+        "total_tokens": 3000,
+        "checkpoints": [
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "fertility",
+          "vocative_usage"
+        ]
+      },
+      {
+        "id": "lc_synth_0003",
+        "type": "long_context",
+        "category": "consistency",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Історія України багата та цікава. Вона охоплює тисячоліття..."
+          },
+          {
+            "role": "user",
+            "content": "А що було в часи Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була потужною середньовічною державою..."
+          },
+          {
+            "role": "user",
+            "content": "Продовж, будь ласка."
+          },
+          {
+            "role": "assistant",
+            "content": "Після занепаду Київської Русі український народ..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 1."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 2."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 3."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 4."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 5."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 6."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 7."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 8."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 9."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 10."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          }
+        ],
+        "total_tokens": 3500,
+        "checkpoints": [
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "fertility",
+          "vocative_usage"
+        ]
+      },
+      {
+        "id": "lc_synth_0004",
+        "type": "long_context",
+        "category": "consistency",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Привіт! Розкажи мені про історію України."
+          },
+          {
+            "role": "assistant",
+            "content": "Вітаю! Історія України багата та цікава. Вона охоплює тисячоліття..."
+          },
+          {
+            "role": "user",
+            "content": "А що було в часи Київської Русі?"
+          },
+          {
+            "role": "assistant",
+            "content": "Київська Русь була потужною середньовічною державою..."
+          },
+          {
+            "role": "user",
+            "content": "Продовж, будь ласка."
+          },
+          {
+            "role": "assistant",
+            "content": "Після занепаду Київської Русі український народ..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 1."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 2."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 3."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 4."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 5."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 6."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 7."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 8."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 9."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          },
+          {
+            "role": "user",
+            "content": "Розкажи більше про подію 10."
+          },
+          {
+            "role": "assistant",
+            "content": "Ця подія була важливою для розвитку..."
+          }
+        ],
+        "total_tokens": 4000,
+        "checkpoints": [
+          0.25,
+          0.5,
+          0.75,
+          1.0
+        ],
+        "metrics": [
+          "russism_rate",
+          "fertility",
+          "vocative_usage"
+        ]
+      }
+    ]
+  }
+}

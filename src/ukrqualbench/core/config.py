@@ -99,6 +99,17 @@ class Config(BaseSettings):
         ),
     )
 
+    # HuggingFace (for gated datasets)
+    huggingface_token: str | None = Field(  # type: ignore[pydantic-alias]
+        default=None,
+        description="HuggingFace token for accessing gated datasets",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_HUGGINGFACE_TOKEN",
+            "HUGGINGFACE_TOKEN",
+            "HF_TOKEN",
+        ),
+    )
+
     # Local models
     ollama_base_url: str = Field(
         default="http://localhost:11434",

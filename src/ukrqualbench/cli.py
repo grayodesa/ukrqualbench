@@ -679,7 +679,10 @@ def benchmark(
         raise typer.Exit(1)
 
     config = Config()
-    assembler = BenchmarkAssembler(data_dir=config.data_dir)
+    assembler = BenchmarkAssembler(
+        data_dir=config.data_dir,
+        hf_token=config.huggingface_token,
+    )
 
     rprint(f"[blue]Assembling {version} benchmark...[/blue]")
 

@@ -1017,7 +1017,10 @@ class Evaluator:
         """Load benchmark tasks using BenchmarkAssembler."""
         from ukrqualbench.datasets import BenchmarkAssembler
 
-        assembler = BenchmarkAssembler(data_dir=self._config.data_dir)
+        assembler = BenchmarkAssembler(
+            data_dir=self._config.data_dir,
+            hf_token=self._config.huggingface_token,
+        )
         benchmark = assembler.assemble(self._eval_config.benchmark_version)  # type: ignore[arg-type]
 
         tasks: list[BenchmarkTask] = []
