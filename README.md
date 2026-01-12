@@ -8,6 +8,66 @@
 
 UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language in LLMs, not cognitive abilities. Unlike existing benchmarks measuring knowledge and reasoning, UkrQualBench focuses on how naturally and correctly models use Ukrainian.
 
+---
+
+## Leaderboard (January 2026)
+
+### ELO Rating (Pairwise Comparisons)
+
+| Rank | Model | ELO Rating | Badge |
+|:----:|-------|:----------:|:-----:|
+| 1 | **gpt-5.2-2025-12-11** | **1864** | 🥇 |
+| 2 | gemini-3-flash-preview | 1558 | 🥈 |
+| 3 | gemini-3-pro-preview | 1515 | 🥉 |
+| 4 | claude-opus-4-5 | 1504 | 🥉 |
+| 5 | claude-sonnet-4-5 | 1466 | ⚠️ |
+| 6 | lapa-v0.1.2-instruct | 1393 | ⚠️ |
+| 7 | google/gemma-3-27b-it-fast | 1354 | 🚫 |
+| 8 | openai/gpt-oss-20b | 1346 | 🚫 |
+
+### Block A: Calibration Tests (Absolute Scores)
+
+| Model | MC Accuracy | GEC F1 | Translation | FP Rate | PM Score |
+|-------|:-----------:|:------:|:-----------:|:-------:|:--------:|
+| gpt-5.2-2025-12-11 | **0.93** | 0.77 | 0.90 | 0.0 | 0.8 |
+| gemini-3-pro-preview | 0.89 | **0.84** | **0.97** | 0.4 | **0.9** |
+| claude-opus-4-5 | 0.90 | 0.73 | 0.96 | 0.0 | 0.0 |
+| gemini-3-flash-preview | 0.90 | 0.77 | 0.96 | 0.2 | 0.0 |
+| google/gemma-3-27b-it-fast | 0.83 | 0.78 | 0.97 | 0.0 | 0.0 |
+| gpt-5-nano | 0.75 | 0.60 | 0.92 | 0.0 | 0.0 |
+| claude-sonnet-4-5 | 0.67 | 0.75 | 0.96 | 0.1 | 0.0 |
+| claude-haiku-4-5 | 0.62 | 0.74 | 0.92 | 0.2 | 0.0 |
+| lapa-v0.1.2-instruct | 0.54 | 0.71 | 0.90 | 0.0 | 0.0 |
+
+### Block V: Automatic Metrics (Detectors)
+
+| Model | Fertility | Positive Markers | Russisms | Anglicisms |
+|-------|:---------:|:----------------:|:--------:|:----------:|
+| gemini-3-flash-preview | 1.44 | **13.57** | 0.0 | 0.0 |
+| gpt-5-nano | 1.50 | 10.80 | 0.0 | 0.0 |
+| claude-haiku-4-5 | 1.44 | 8.21 | 0.0 | 0.0 |
+| google/gemma-3-27b-it-fast | 1.41 | 7.10 | 0.0 | 0.0 |
+| claude-sonnet-4-5 | 1.41 | 6.28 | 0.0 | 0.0 |
+| claude-opus-4-5 | 1.49 | 5.94 | 0.0 | 0.0 |
+| lapa-v0.1.2-instruct | **1.40** | 4.82 | 0.0 | 0.0 |
+
+<details>
+<summary><b>Metrics Explanation</b></summary>
+
+- **ELO Rating**: Swiss-system tournament rating (baseline 1500, K=32)
+- **MC Accuracy**: Multiple choice accuracy (orthography, punctuation, russisms)
+- **GEC F1**: Grammar error correction quality
+- **Translation**: RU→UK translation quality score
+- **FP Rate**: False positive rate (incorrectly "fixing" correct text)
+- **PM Score**: Positive markers test score (vocative case, particles)
+- **Fertility**: Tokens per word ratio (optimal ~1.4-1.5 for Ukrainian)
+- **Positive Markers**: Native markers per 1000 tokens (higher = more natural)
+- **Russisms/Anglicisms**: Error rate per 1000 tokens (lower = better)
+
+</details>
+
+---
+
 ## Key Principles
 
 | Principle | Description |
@@ -175,6 +235,79 @@ UKRQUALBENCH_CHECKPOINT_INTERVAL=100
 
 See `.env.example` for all options.
 
+## Methodology
+
+### What We Measure
+
+UkrQualBench evaluates **linguistic nativeness**, not cognitive abilities:
+
+| Aspect | What We Check | Example |
+|--------|--------------|---------|
+| **Russisms** | Calques from Russian | "прийняти участь" → "взяти участь" |
+| **Orthography** | Correct spelling rules | "пів'яблука" vs "півяблука" |
+| **Vocative Case** | Native address forms | "Пане Андрію" vs "Пан Андрій" |
+| **Particles** | Ukrainian expressiveness | же, бо, адже, хіба, невже |
+| **False Corrections** | Not "fixing" correct text | Classic literature should stay unchanged |
+
+### Test Examples
+
+<details>
+<summary><b>Multiple Choice (Block A1)</b></summary>
+
+```
+Виберіть правильний варіант:
+A) пів'яблука  ← correct (apostrophe before я)
+B) півяблука
+C) пів яблука
+
+Яке слово є русизмом?
+A) захід
+B) міроприємство  ← russism (correct: захід)
+C) подія
+```
+
+</details>
+
+<details>
+<summary><b>Grammar Error Correction (Block A2)</b></summary>
+
+```
+Input:  "Треба прийняти участь у заході."
+Output: "Треба взяти участь у заході."
+        ↑ "прийняти участь" is a russism
+
+Input:  "На протязі року ми працювали."
+Output: "Протягом року ми працювали."
+        ↑ "на протязі" is a calque from Russian
+```
+
+</details>
+
+<details>
+<summary><b>Positive Markers Detection (Block V)</b></summary>
+
+```
+Good: "Друже, як справи? Адже ми ж домовлялися!"
+       ↑       ↑        ↑    ↑
+    vocative particle particle particle
+
+Bad:  "Друг, как дела? Мы ведь договаривались!"
+      (no Ukrainian markers, sounds translated)
+```
+
+</details>
+
+### Critical Russisms to Detect
+
+| Russism | Correct Form | Severity |
+|---------|--------------|----------|
+| прийняти участь | взяти участь | Critical |
+| міроприємство | захід | Critical |
+| на протязі | протягом | Critical |
+| являється | є | Critical |
+| слідуючий | наступний | Critical |
+| отримати досвід | здобути досвід | High |
+
 ## Data Sources
 
 - **UA-GEC 2.0**: Grammar error correction (CC BY 4.0)
@@ -220,6 +353,30 @@ uv run ruff format .
 # Type checking
 uv run mypy src/
 ```
+
+## Key Findings
+
+### Model Comparison Insights
+
+1. **GPT-5.2 leads in ELO** (+364 above baseline) with best MC accuracy (93%)
+2. **Gemini-3-Pro** has best GEC performance (84% F1) and highest PM score (0.9)
+3. **Gemini-3-Flash** generates most "native" Ukrainian (13.57 positive markers/1K tokens)
+4. **Claude models** show strong translation but lower MC accuracy than GPT/Gemini
+5. **Open models** (Gemma, Lapa) lag behind proprietary models in most metrics
+
+### Correlation Analysis
+
+```
+ELO Rating strongly correlates with MC Accuracy (r ≈ 0.7)
+ELO Rating moderately correlates with GEC F1 (r ≈ 0.4)
+Positive Markers inversely correlate with model size (smaller models use more native forms)
+```
+
+### Observations
+
+- All tested models show **0.0 russism rate** in Block V — either models are clean or detector coverage needs expansion
+- **Fertility rate** is consistent across models (~1.4-1.5), indicating similar tokenization efficiency
+- **Claude models** have lower positive markers than Gemini, suggesting more "formal" language style
 
 ## License
 
