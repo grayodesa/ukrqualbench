@@ -25,6 +25,7 @@ from ukrqualbench.models.local import (
     create_nebius_client,
     create_ollama_client,
     create_vllm_client,
+    strip_thinking_tags,
 )
 from ukrqualbench.models.openai import (
     AzureOpenAIClient,
@@ -517,6 +518,30 @@ class TestCreateGoogleClient:
 # ============================================================================
 # Nebius Token Factory Tests
 # ============================================================================
+
+
+class TestStripThinkingTags:
+    """Tests for strip_thinking_tags helper function."""
+
+    def test_strips_thinking_block(self) -> None:
+        text = "<think>\nSome reasoning...\n</think>\n\nA"
+        assert strip_thinking_tags(text) == "A"
+
+    def test_preserves_text_without_tags(self) -> None:
+        text = "Just a normal response"
+        assert strip_thinking_tags(text) == "Just a normal response"
+
+    def test_handles_multiline_after_thinking(self) -> None:
+        text = "<think>Reasoning</think>\n\nLine 1\nLine 2"
+        assert strip_thinking_tags(text) == "Line 1\nLine 2"
+
+    def test_handles_empty_thinking(self) -> None:
+        text = "<think></think>Answer"
+        assert strip_thinking_tags(text) == "Answer"
+
+    def test_handles_no_content_after_thinking(self) -> None:
+        text = "<think>Just thinking</think>"
+        assert strip_thinking_tags(text) == ""
 
 
 class TestNebiusClient:

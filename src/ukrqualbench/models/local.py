@@ -10,6 +10,7 @@ Supports locally running LLMs and OpenAI-compatible cloud providers:
 from __future__ import annotations
 
 import os
+import re
 from typing import TYPE_CHECKING, Any
 
 from ukrqualbench.models.base import (
@@ -21,6 +22,23 @@ from ukrqualbench.models.base import (
 
 if TYPE_CHECKING:
     import httpx
+
+
+def strip_thinking_tags(text: str) -> str:
+    """Strip <think>...</think> reasoning blocks from model output.
+
+    Some models (Qwen3, DeepSeek-R1) include reasoning in <think> tags
+    before the actual response. This function extracts just the answer.
+
+    Args:
+        text: Raw model output potentially containing <think> blocks.
+
+    Returns:
+        Text with thinking blocks removed, stripped of whitespace.
+    """
+    pattern = r"<think>.*?</think>"
+    result = re.sub(pattern, "", text, flags=re.DOTALL)
+    return result.strip()
 
 
 class OllamaClient(BaseModelClient):
@@ -503,10 +521,9 @@ class NebiusClient(BaseModelClient):
 
         data = response.json()
 
-        # Extract response content (OpenAI format)
         text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        text = strip_thinking_tags(text)
 
-        # Get token counts
         usage = data.get("usage", {})
         prompt_tokens = usage.get("prompt_tokens", 0)
         completion_tokens = usage.get("completion_tokens", 0)
