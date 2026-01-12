@@ -182,9 +182,9 @@ class TestPairwiseEngine:
         round_ = engine.schedule_round(["p1", "p2"], round_number=1)
 
         assert round_.round_number == 1
-        # Swiss pairs models by rating (all equal), should create 2 pairs
-        # Each pair gets 2 prompts = 4 comparisons
-        assert len(round_.comparisons) == 4
+        # Swiss distributes prompts across all possible pairs
+        # 4 models = 6 possible pairs, 2 prompts = 2 comparisons (one per prompt)
+        assert len(round_.comparisons) == 2
 
     def test_schedule_round_round_robin(self):
         """Test scheduling a round with round-robin pairing."""
@@ -193,8 +193,9 @@ class TestPairwiseEngine:
 
         round_ = engine.schedule_round(["p1"], round_number=1)
 
-        # Round robin: 3 models = 3 pairs, 1 prompt = 3 comparisons
-        assert len(round_.comparisons) == 3
+        # Round robin distributes prompts across all possible pairs
+        # 3 models = 3 possible pairs, 1 prompt = 1 comparison
+        assert len(round_.comparisons) == 1
 
     def test_schedule_round_auto_number(self):
         """Test automatic round numbering."""

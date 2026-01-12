@@ -885,6 +885,12 @@ class Evaluator:
                     self._progress.errors += 1
 
             combined_text = " ".join(all_texts)
+            logger.info(
+                "[BLOCK_V] %s: generated %d texts, combined_text len=%d",
+                model_id,
+                len(all_texts),
+                len(combined_text),
+            )
 
             # Run detectors
             results: dict[str, float] = {
@@ -898,29 +904,42 @@ class Evaluator:
                 try:
                     fertility_result = self._detectors["fertility"].calculate(combined_text)
                     results["fertility_rate"] = fertility_result.fertility_rate
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("[BLOCK_V] %s fertility calculation failed: %s", model_id, e)
 
             if "russism" in self._detectors:
                 try:
                     russism_result = self._detectors["russism"].detect(combined_text)
                     results["russism_rate"] = russism_result.rate_per_1k
-                except Exception:
-                    pass
+                    logger.debug(
+                        "[BLOCK_V] %s russism detection: %d matches, rate=%.2f, text_len=%d",
+                        model_id,
+                        russism_result.count,
+                        russism_result.rate_per_1k,
+                        len(combined_text),
+                    )
+                except Exception as e:
+                    logger.warning("[BLOCK_V] %s russism detection failed: %s", model_id, e)
 
             if "anglicism" in self._detectors:
                 try:
                     anglicism_result = self._detectors["anglicism"].detect(combined_text)
                     results["anglicism_rate"] = anglicism_result.rate_per_1k
-                except Exception:
-                    pass
+                    logger.debug(
+                        "[BLOCK_V] %s anglicism detection: %d matches, rate=%.2f",
+                        model_id,
+                        anglicism_result.count,
+                        anglicism_result.rate_per_1k,
+                    )
+                except Exception as e:
+                    logger.warning("[BLOCK_V] %s anglicism detection failed: %s", model_id, e)
 
             if "markers" in self._detectors:
                 try:
                     markers_result = self._detectors["markers"].detect(combined_text)
                     results["positive_markers"] = markers_result.rate_per_1k
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("[BLOCK_V] %s markers detection failed: %s", model_id, e)
 
             self._block_v_results[model_id] = results
 
@@ -1216,11 +1235,13 @@ class Evaluator:
         await self._run_block_a()
 
         try:
-            await asyncio.wait_for(self._run_block_v(), timeout=120.0)
+            # Block V generates 10 sample texts, each can take up to 60s
+            # Total timeout: 10 * 60 + 60 buffer = 660s
+            await asyncio.wait_for(self._run_block_v(), timeout=660.0)
         except TimeoutError:
-            pass  # Block V timeout, use defaults
-        except Exception:
-            pass  # Block V failed, use defaults
+            logger.warning("[BLOCK_V] %s: Block V timed out after 660s", model_id)
+        except Exception as e:
+            logger.warning("[BLOCK_V] %s: Block V failed: %s: %s", model_id, type(e).__name__, e)
 
         block_a = self._block_a_results.get(model_id, {})
         block_v = self._block_v_results.get(model_id, {})

@@ -162,6 +162,7 @@ class PairwiseEngine:
         self._comparison_history: list[ComparisonResult] = []
         self._rounds: list[TournamentRound] = []
         self._model_pair_counts: dict[tuple[str, str], int] = {}
+        self._max_pair_comparisons = 10
         self._registry = registry
         self._run_id: str | None = None
         self._benchmark_version: str | None = None
@@ -260,16 +261,17 @@ class PairwiseEngine:
             model_ids,
         )
 
-        # Generate pairs based on strategy
-        all_pairs = self._generate_pairs(model_ids)
-        if not all_pairs:
-            all_pairs = [(model_ids[0], model_ids[1])] if len(model_ids) >= 2 else []
+        all_possible_pairs = [
+            (model_ids[i], model_ids[j])
+            for i in range(len(model_ids))
+            for j in range(i + 1, len(model_ids))
+        ]
+        self._rng.shuffle(all_possible_pairs)
 
-        # Create scheduled comparisons - distribute prompts across pairs round-robin
         comparisons = []
         for i, prompt_id in enumerate(prompt_ids):
-            pair_idx = i % len(all_pairs)
-            model_a, model_b = all_pairs[pair_idx]
+            pair_idx = i % len(all_possible_pairs)
+            model_a, model_b = all_possible_pairs[pair_idx]
             position = self._rng.choice([PositionOrder.AB, PositionOrder.BA])
             comparison = ScheduledComparison(
                 model_a=model_a,
@@ -285,13 +287,33 @@ class PairwiseEngine:
             comparisons=comparisons,
         )
         self._rounds.append(tournament_round)
+        unique_pairs = set((c.model_a, c.model_b) for c in comparisons)
         logger.info(
             "[ROUND %d] Scheduled %d comparisons from %d pairs",
             round_number,
             len(comparisons),
-            len(all_pairs),
+            len(unique_pairs),
         )
         return tournament_round
+
+    def _get_next_pair(self, model_ids: list[str]) -> tuple[str, str] | None:
+        """Get next pair based on strategy (single pair for one comparison)."""
+        if len(model_ids) < 2:
+            return None
+
+        if self.strategy == PairingStrategy.RANDOM:
+            shuffled = list(model_ids)
+            self._rng.shuffle(shuffled)
+            return (shuffled[0], shuffled[1])
+
+        for i, model_a in enumerate(model_ids):
+            for model_b in model_ids[i + 1 :]:
+                pair_key = (min(model_a, model_b), max(model_a, model_b))
+                if self._model_pair_counts.get(pair_key, 0) < self._max_pair_comparisons:
+                    return (model_a, model_b)
+
+        self._model_pair_counts.clear()
+        return (model_ids[0], model_ids[1])
 
     def _generate_pairs(self, model_ids: list[str]) -> list[tuple[str, str]]:
         """Generate model pairs based on strategy.
