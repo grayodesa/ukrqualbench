@@ -10,6 +10,7 @@ Implements Swiss-system tournament logic for efficient model comparison:
 from __future__ import annotations
 
 import hashlib
+import logging
 import random
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -17,6 +18,8 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
 from ukrqualbench.core.elo import ELOCalculator
+
+logger = logging.getLogger(__name__)
 from ukrqualbench.core.elo_registry import ELORegistry
 from ukrqualbench.core.schemas import (
     ComparisonRecordData,
@@ -166,7 +169,7 @@ class PairwiseEngine:
     @property
     def ratings(self) -> dict[str, float]:
         """Current ELO ratings for all models."""
-        if self._registry:
+        if self._registry is not None:
             return {m: e.rating for m, e in self._registry.models.items()}
         return dict(self.elo_calculator.ratings)
 
@@ -197,15 +200,25 @@ class PairwiseEngine:
             model_ids: List of model identifiers.
         """
         for model_id in model_ids:
-            if self._registry:
+            if self._registry is not None:
                 entry = self._registry.get_model(model_id)
                 if entry:
                     self.elo_calculator.ratings[model_id] = entry.rating
+                    logger.info("[REGISTER] %s from registry (rating=%.0f)", model_id, entry.rating)
                 else:
                     self._registry.register_model(model_id)
-                    self.elo_calculator.ratings[model_id] = self._registry.get_rating(model_id)
+                    rating = self._registry.get_rating(model_id)
+                    self.elo_calculator.ratings[model_id] = rating
+                    logger.info("[REGISTER] %s new in registry (rating=%.0f)", model_id, rating)
             else:
                 self.elo_calculator.ensure_registered(model_id)
+                logger.info("[REGISTER] %s in calculator only", model_id)
+
+        logger.info(
+            "[REGISTER] Total models in elo_calculator: %d -> %s",
+            len(self.elo_calculator.ratings),
+            list(self.elo_calculator.ratings.keys()),
+        )
 
     def get_recommended_rounds(self, num_models: int) -> int:
         """Get recommended number of tournament rounds.
@@ -240,32 +253,44 @@ class PairwiseEngine:
         # Get models sorted by rating
         rankings = self.elo_calculator.get_rankings()
         model_ids = [model_id for model_id, _ in rankings]
+        logger.info(
+            "[SCHEDULE] Round %d: ELO calculator has %d models: %s",
+            round_number,
+            len(model_ids),
+            model_ids,
+        )
 
         # Generate pairs based on strategy
-        pairs = self._generate_pairs(model_ids)
+        all_pairs = self._generate_pairs(model_ids)
+        if not all_pairs:
+            all_pairs = [(model_ids[0], model_ids[1])] if len(model_ids) >= 2 else []
 
-        # Create scheduled comparisons
+        # Create scheduled comparisons - distribute prompts across pairs round-robin
         comparisons = []
-        for model_a, model_b in pairs:
-            for prompt_id in prompt_ids:
-                # Randomize position order
-                position = self._rng.choice([PositionOrder.AB, PositionOrder.BA])
-                comparison = ScheduledComparison(
-                    model_a=model_a,
-                    model_b=model_b,
-                    prompt_id=prompt_id,
-                    position_order=position,
-                )
-
-                # Skip if already completed
-                if comparison.comparison_id not in self._completed_comparison_ids:
-                    comparisons.append(comparison)
+        for i, prompt_id in enumerate(prompt_ids):
+            pair_idx = i % len(all_pairs)
+            model_a, model_b = all_pairs[pair_idx]
+            position = self._rng.choice([PositionOrder.AB, PositionOrder.BA])
+            comparison = ScheduledComparison(
+                model_a=model_a,
+                model_b=model_b,
+                prompt_id=prompt_id,
+                position_order=position,
+            )
+            if comparison.comparison_id not in self._completed_comparison_ids:
+                comparisons.append(comparison)
 
         tournament_round = TournamentRound(
             round_number=round_number,
             comparisons=comparisons,
         )
         self._rounds.append(tournament_round)
+        logger.info(
+            "[ROUND %d] Scheduled %d comparisons from %d pairs",
+            round_number,
+            len(comparisons),
+            len(all_pairs),
+        )
         return tournament_round
 
     def _generate_pairs(self, model_ids: list[str]) -> list[tuple[str, str]]:
@@ -296,6 +321,13 @@ class PairwiseEngine:
         Returns:
             List of pairs.
         """
+        logger.info(
+            "[SWISS] Generating pairs for %d models: %s",
+            len(model_ids),
+            model_ids,
+        )
+        logger.info("[SWISS] Current pair counts: %s", dict(self._model_pair_counts))
+
         pairs = []
         used = set()
 
@@ -317,8 +349,22 @@ class PairwiseEngine:
                     pairs.append((model_a, model_b))
                     used.add(model_a)
                     used.add(model_b)
+                    logger.debug(
+                        "[SWISS] Paired %s vs %s (count=%d)",
+                        model_a,
+                        model_b,
+                        pair_count,
+                    )
                     break
+                else:
+                    logger.debug(
+                        "[SWISS] Skipping %s vs %s (count=%d >= 3)",
+                        model_a,
+                        model_b,
+                        pair_count,
+                    )
 
+        logger.info("[SWISS] Generated %d pairs: %s", len(pairs), pairs)
         return pairs
 
     def _round_robin_pairs(self, model_ids: list[str]) -> list[tuple[str, str]]:
@@ -482,7 +528,7 @@ class PairwiseEngine:
             prompt_id=result.scheduled.prompt_id,
         )
 
-        if self._registry:
+        if self._registry is not None:
             self._registry.record_comparison(
                 model_a=result.scheduled.model_a,
                 model_b=result.scheduled.model_b,

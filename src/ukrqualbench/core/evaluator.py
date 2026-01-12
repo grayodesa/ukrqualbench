@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -39,9 +40,10 @@ from ukrqualbench.core.schemas import (
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from ukrqualbench.detectors.base import BaseDetector
     from ukrqualbench.judges.base import BaseJudge
     from ukrqualbench.models.base import BaseModelClient
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -147,7 +149,7 @@ class Evaluator:
 
         self._model_clients: dict[str, BaseModelClient] = {}
         self._judge: BaseJudge | None = None
-        self._detectors: dict[str, BaseDetector] = {}
+        self._detectors: dict[str, Any] = {}
 
         self._pairwise_engine = PairwiseEngine(
             initial_rating=self._config.elo_initial_rating,
@@ -312,6 +314,23 @@ class Evaluator:
                 )
             )
 
+        for pm in block_a.get("positive_marker", []):
+            pm_prompt = (
+                f"Напишіть речення, використовуючи кличний відмінок або українські "
+                f"частки (бо, ж, же, хіба, невже). Контекст: {pm.get('context', '')}\n\n"
+                f"Приклад: {pm.get('native_form', '')}\n\nВаше речення:"
+            )
+            tasks.append(
+                BenchmarkTask(
+                    id=pm["id"],
+                    type="positive_marker",
+                    category=pm.get("category", "vocative"),
+                    prompt=pm_prompt,
+                    reference=pm.get("native_form"),
+                    metadata={"marker_regex": pm.get("marker_regex")},
+                )
+            )
+
         block_b = data.get("block_b", {})
         for gen in block_b.get("generation", []):
             tasks.append(
@@ -471,11 +490,12 @@ class Evaluator:
         """
         mc_correct = 0
         mc_total = 0
-        gec_correct = 0
+        gec_scores: list[float] = []
         gec_total = 0
         translation_scores: list[float] = []
         false_positives = 0
         false_positive_total = 0
+        positive_marker_scores: list[float] = []
         task_results: list[dict[str, Any]] = []
         checkpoint_interval = 20
 
@@ -495,29 +515,40 @@ class Evaluator:
 
                 if task.type == "multiple_choice" and task.reference:
                     mc_total += 1
-                    correct = task.reference.upper() in response.text.upper()[:10]
+                    # Extract answer letter more robustly - look for A/B/C/D patterns
+                    correct = self._check_mc_answer(response.text, task.reference)
                     if correct:
                         mc_correct += 1
                     task_result["correct"] = correct
 
                 elif task.type == "gec" and task.reference:
                     gec_total += 1
-                    correct = response.text.strip() == task.reference.strip()
-                    if correct:
-                        gec_correct += 1
-                    task_result["correct"] = correct
+                    # Calculate word-level F1 instead of exact match
+                    f1_score = self._calculate_gec_f1(response.text.strip(), task.reference.strip())
+                    gec_scores.append(f1_score)
+                    task_result["f1_score"] = f1_score
+                    task_result["correct"] = f1_score >= 0.9  # For backward compatibility
 
                 elif task.type == "translation" and task.reference:
-                    score = self._simple_translation_score(response.text, task.reference)
+                    score = self._calculate_translation_similarity(response.text, task.reference)
                     translation_scores.append(score)
                     task_result["score"] = score
 
                 elif task.type == "false_positive":
                     false_positive_total += 1
-                    flagged = "помилк" in response.text.lower() or "error" in response.text.lower()
+                    flagged = self._check_false_positive_flagged(response.text)
                     if flagged:
                         false_positives += 1
                     task_result["flagged"] = flagged
+
+                elif task.type == "positive_marker":
+                    marker_regex = task.metadata.get("marker_regex")
+                    if marker_regex:
+                        import re
+
+                        has_marker = bool(re.search(marker_regex, response.text, re.IGNORECASE))
+                        positive_marker_scores.append(1.0 if has_marker else 0.0)
+                        task_result["has_marker"] = has_marker
 
                 task_results.append(task_result)
                 self._progress.completed_tasks += 1
@@ -543,12 +574,15 @@ class Evaluator:
 
         return {
             "mc_accuracy": mc_correct / mc_total if mc_total > 0 else 0.0,
-            "gec_f1": gec_correct / gec_total if gec_total > 0 else 0.0,
+            "gec_f1": sum(gec_scores) / len(gec_scores) if gec_scores else 0.0,
             "translation_comet": sum(translation_scores) / len(translation_scores)
             if translation_scores
             else 0.0,
             "false_positive_rate": false_positives / false_positive_total
             if false_positive_total > 0
+            else 0.0,
+            "positive_markers_score": sum(positive_marker_scores) / len(positive_marker_scores)
+            if positive_marker_scores
             else 0.0,
         }
 
@@ -576,23 +610,94 @@ class Evaluator:
             json.dump(data, f, indent=2, ensure_ascii=False)
         temp_file.rename(checkpoint_file)
 
-    def _simple_translation_score(self, hypothesis: str, reference: str) -> float:
-        """Simple translation quality score (placeholder for COMET).
+    def _check_mc_answer(self, response: str, correct: str) -> bool:
+        """Check if MC response contains the correct answer letter."""
+        import re
 
-        Args:
-            hypothesis: Model translation.
-            reference: Reference translation.
+        response_upper = response.upper().strip()
+        correct_upper = correct.upper().strip()
 
-        Returns:
-            Score between 0 and 1.
-        """
-        # Very simple overlap-based score
-        hyp_words = set(hypothesis.lower().split())
-        ref_words = set(reference.lower().split())
+        first_char = response_upper[0] if response_upper else ""
+        if first_char == correct_upper:
+            return True
+
+        pattern = r"\b([A-DА-Г])\b"
+        matches = re.findall(pattern, response_upper[:50])
+        if matches and matches[0] == correct_upper:
+            return True
+
+        return correct_upper in response_upper[:10]
+
+    def _calculate_gec_f1(self, hypothesis: str, reference: str) -> float:
+        """Calculate word-level F1 between hypothesis and reference."""
+        hyp_words = hypothesis.lower().split()
+        ref_words = reference.lower().split()
+
+        if not ref_words:
+            return 1.0 if not hyp_words else 0.0
+        if not hyp_words:
+            return 0.0
+
+        hyp_set = set(hyp_words)
+        ref_set = set(ref_words)
+
+        common = len(hyp_set & ref_set)
+        precision = common / len(hyp_set) if hyp_set else 0.0
+        recall = common / len(ref_set) if ref_set else 0.0
+
+        if precision + recall == 0:
+            return 0.0
+        f1 = 2 * precision * recall / (precision + recall)
+
+        len_ratio = min(len(hyp_words), len(ref_words)) / max(len(hyp_words), len(ref_words))
+        adjusted_f1 = f1 * (0.7 + 0.3 * len_ratio)
+
+        return min(adjusted_f1, 1.0)
+
+    def _calculate_translation_similarity(self, hypothesis: str, reference: str) -> float:
+        """Calculate translation similarity score (word overlap with order bonus)."""
+        hyp_words = hypothesis.lower().split()
+        ref_words = reference.lower().split()
+
         if not ref_words:
             return 0.0
-        overlap = len(hyp_words & ref_words) / len(ref_words)
-        return min(overlap * 1.2, 1.0)  # Scale up slightly
+        if not hyp_words:
+            return 0.0
+
+        hyp_set = set(hyp_words)
+        ref_set = set(ref_words)
+        overlap = len(hyp_set & ref_set) / len(ref_set)
+
+        order_bonus = 0.0
+        if len(hyp_words) >= 2 and len(ref_words) >= 2:
+            from itertools import pairwise
+
+            bigrams_hyp = set(pairwise(hyp_words))
+            bigrams_ref = set(pairwise(ref_words))
+            if bigrams_ref:
+                order_bonus = len(bigrams_hyp & bigrams_ref) / len(bigrams_ref) * 0.2
+
+        return min(overlap + order_bonus, 1.0)
+
+    def _check_false_positive_flagged(self, response: str) -> bool:
+        """Check if model incorrectly flagged valid text as having errors."""
+        response_lower = response.lower()
+
+        correct_indicators = [
+            "correct",
+            "правильн",
+            "помилок немає",
+            "без помилок",
+            "текст правильний",
+            "граматично правильн",
+            "помилки відсутні",
+        ]
+        for indicator in correct_indicators:
+            if indicator in response_lower:
+                return False
+
+        error_indicators = ["помилк", "неправильн", "виправлен", "error", "виправити"]
+        return any(indicator in response_lower for indicator in error_indicators)
 
     async def _run_block_b(self, num_rounds: int) -> None:
         """Run Block B generation tests with pairwise comparisons.
@@ -612,6 +717,17 @@ class Evaluator:
         prompt_ids = [t.id for t in generation_tasks]
         prompt_texts = {t.id: t.prompt for t in generation_tasks}
 
+        logger.info(
+            "[BLOCK_B] Starting: current_round=%d, num_rounds=%d, prompts=%d",
+            self._progress.current_round,
+            num_rounds,
+            len(prompt_ids),
+        )
+        # DEBUG: Print to console
+        print(
+            f"[BLOCK_B DEBUG] Models in elo_calculator: {list(self._pairwise_engine.elo_calculator.ratings.keys())}"
+        )
+
         for round_num in range(self._progress.current_round + 1, num_rounds + 1):
             self._progress.current_round = round_num
 
@@ -619,6 +735,16 @@ class Evaluator:
             tournament_round = self._pairwise_engine.schedule_round(
                 prompt_ids=prompt_ids,
                 round_number=round_num,
+            )
+            logger.info(
+                "[BLOCK_B] Round %d: scheduled %d comparisons",
+                round_num,
+                len(tournament_round.comparisons),
+            )
+            # DEBUG: Print scheduled pairs
+            pairs = set((c.model_a, c.model_b) for c in tournament_round.comparisons)
+            print(
+                f"[BLOCK_B DEBUG] Round {round_num}: {len(tournament_round.comparisons)} comparisons, pairs: {pairs}"
             )
 
             # Execute comparisons with concurrency control
@@ -628,7 +754,6 @@ class Evaluator:
                 async with sem:
                     await self._execute_single_comparison(scheduled, prompt_texts)
 
-            # Run comparisons concurrently
             await asyncio.gather(
                 *[
                     run_comparison(scheduled, semaphore)
@@ -636,9 +761,15 @@ class Evaluator:
                 ]
             )
 
-            # Checkpoint after each round
-            if self._progress.completed_comparisons % self._eval_config.checkpoint_interval == 0:
-                await self._save_checkpoint()
+            await self._save_checkpoint()
+            logger.info(
+                "[ROUND %d/%d] completed=%d errors=%d ratings=%s",
+                round_num,
+                num_rounds,
+                self._progress.completed_comparisons,
+                self._progress.errors,
+                {k: f"{v:.0f}" for k, v in self._pairwise_engine.ratings.items()},
+            )
 
             self._notify_progress()
 
@@ -676,12 +807,23 @@ class Evaluator:
             # Update costs
             self._total_cost_usd += result.response_a.cost_usd + result.response_b.cost_usd
 
-            # Record result
             self._pairwise_engine.record_result(result)
             self._progress.completed_comparisons += 1
             self._notify_progress()
 
-            # Record metrics
+            logger.info(
+                "[COMPARE] %s vs %s on %s -> winner=%s (completed=%d, errors=%d)",
+                scheduled.model_a,
+                scheduled.model_b,
+                scheduled.prompt_id,
+                result.verdict.winner.value,
+                self._progress.completed_comparisons,
+                self._progress.errors,
+            )
+
+            if self._elo_registry is not None:
+                self._elo_registry.save()
+
             self._metrics.record_comparison(
                 judge=self._judge.model_id,
                 status="success",
@@ -695,14 +837,31 @@ class Evaluator:
         except Exception as e:
             self._progress.errors += 1
             self._metrics.record_error(str(type(e).__name__))
+            print(f"[ERROR] {scheduled.model_a} vs {scheduled.model_b}: {type(e).__name__}: {e}")
+            logger.error(
+                "[COMPARE] %s vs %s on %s FAILED: %s: %s",
+                scheduled.model_a,
+                scheduled.model_b,
+                scheduled.prompt_id,
+                type(e).__name__,
+                str(e),
+            )
 
     async def _run_block_v(self) -> None:
         """Run Block V automatic metrics using detectors."""
-        sample_prompts = [
-            "Поясніть, що таке штучний інтелект простими словами.",
-            "Напишіть короткий лист-подяку колезі за допомогу.",
-            "Опишіть переваги здорового способу життя.",
+        generation_tasks = [
+            t for t in self._tasks if t.type in ("generation", "free_generation", "adversarial")
         ]
+
+        sample_prompts = (
+            [t.prompt for t in generation_tasks[:10]]
+            if generation_tasks
+            else [
+                "Поясніть, що таке штучний інтелект простими словами.",
+                "Напишіть короткий лист-подяку колезі за допомогу.",
+                "Опишіть переваги здорового способу життя.",
+            ]
+        )
 
         self._progress.block_v_status = "generating"
         self._notify_progress()
@@ -737,8 +896,8 @@ class Evaluator:
 
             if "fertility" in self._detectors:
                 try:
-                    fertility_result = self._detectors["fertility"].detect(combined_text)
-                    results["fertility_rate"] = fertility_result.metadata.get("fertility_rate", 1.5)
+                    fertility_result = self._detectors["fertility"].calculate(combined_text)
+                    results["fertility_rate"] = fertility_result.fertility_rate
                 except Exception:
                     pass
 
@@ -861,11 +1020,19 @@ class Evaluator:
             return Badge.NOT_RECOMMENDED
 
     async def _save_checkpoint(self, final: bool = False) -> None:
-        """Save checkpoint to disk.
+        comparison_history = [
+            {
+                "comparison_id": r.scheduled.comparison_id,
+                "prompt_id": r.scheduled.prompt_id,
+                "model_a": r.scheduled.model_a,
+                "model_b": r.scheduled.model_b,
+                "winner": r.verdict.winner.value,
+                "confidence": r.verdict.confidence.value,
+                "timestamp": r.timestamp.isoformat(),
+            }
+            for r in self._pairwise_engine._comparison_history
+        ]
 
-        Args:
-            final: Whether this is the final checkpoint.
-        """
         checkpoint_data = {
             "run_id": self._run_id,
             "timestamp": datetime.now().isoformat(),
@@ -877,14 +1044,25 @@ class Evaluator:
                 "errors": self._progress.errors,
             },
             "ratings": self._pairwise_engine.ratings,
+            "comparison_history": comparison_history,
             "block_a_results": self._block_a_results,
             "block_v_results": self._block_v_results,
             "total_cost_usd": self._total_cost_usd,
             "final": final,
         }
 
+        block_b_checkpoint_dir = self._config.data_dir / "checkpoints" / "block_b"
+        block_b_checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
         suffix = "final" if final else f"round_{self._progress.current_round}"
-        self._checkpoint_manager.save_raw(f"{self._run_id}_{suffix}", checkpoint_data)
+        checkpoint_path = block_b_checkpoint_dir / f"{self._run_id}_{suffix}.json"
+        temp_path = checkpoint_path.with_suffix(".json.tmp")
+
+        with open(temp_path, "w", encoding="utf-8") as f:
+            json.dump(checkpoint_data, f, indent=2, ensure_ascii=False)
+        temp_path.rename(checkpoint_path)
+
+        logger.debug("[CHECKPOINT] Saved to %s", checkpoint_path)
 
     async def _try_resume(self) -> bool:
         """Try to resume from a previous checkpoint.
@@ -1092,9 +1270,10 @@ class Evaluator:
         """
         from ukrqualbench.judges import PairwiseJudge
 
+        self._run_id = self._generate_run_id()
         all_model_ids = list(model_ids)
 
-        if self._elo_registry:
+        if self._elo_registry is not None:
             new_models = self._elo_registry.get_new_models(model_ids)
             if new_models and self._elo_registry.model_count > 0:
                 anchors = self._elo_registry.get_anchor_models(anchor_count)
@@ -1125,7 +1304,7 @@ class Evaluator:
 
         await self._run_block_b(rounds)
 
-        if self._elo_registry:
+        if self._elo_registry is not None:
             self._elo_registry.save()
 
         return self._pairwise_engine.ratings

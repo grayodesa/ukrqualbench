@@ -566,9 +566,7 @@ def compare(
     benchmark: Annotated[
         BenchmarkVersion, typer.Option("--benchmark", "-b", help="Benchmark version")
     ] = BenchmarkVersion.LITE,
-    judge: Annotated[
-        str, typer.Option("--judge", "-j", help="Judge model")
-    ] = "claude-3-5-haiku-latest",
+    judge: Annotated[str | None, typer.Option("--judge", "-j", help="Judge model")] = None,
     rounds: Annotated[int | None, typer.Option("--rounds", help="Tournament rounds")] = None,
     output: Annotated[Path, typer.Option("--output", "-o", help="Output directory")] = Path(
         "results"
@@ -650,8 +648,12 @@ def compare(
 
     evaluator.set_progress_callback(on_progress)
 
+    actual_judge = judge if judge else config.default_judge
+
     async def run_comparison() -> dict[str, float]:
-        return await evaluator.compare_models(model_ids=model_list, judge_id=judge, rounds=rounds)
+        return await evaluator.compare_models(
+            model_ids=model_list, judge_id=actual_judge, rounds=rounds
+        )
 
     rprint(f"[cyan]Running {rounds} rounds of comparison (Block B only)...[/cyan]")
     elo_ratings = asyncio.run(run_comparison())
@@ -1132,6 +1134,376 @@ def benchmark(
     loader.save_benchmark(benchmark_data, output_path)
 
     rprint(f"\n[green]Benchmark saved to: {output_path}[/green]")
+
+
+@app.command()
+def recalculate(
+    model: Annotated[str, typer.Argument(help="Model to recalculate (or 'all' for all)")],
+    benchmark: Annotated[
+        BenchmarkVersion, typer.Option("--benchmark", "-b", help="Benchmark version")
+    ] = BenchmarkVersion.LITE,
+    output: Annotated[Path, typer.Option("--output", "-o", help="Output directory")] = Path(
+        "results/evaluations"
+    ),
+) -> None:
+    """Recalculate Block A metrics from existing checkpoints (no new API calls)."""
+    import re
+
+    config = Config()
+    output.mkdir(parents=True, exist_ok=True)
+
+    checkpoint_dir = config.data_dir / "checkpoints" / "block_a"
+    benchmark_file = config.data_dir / "benchmarks" / f"{benchmark.value}.json"
+
+    if not benchmark_file.exists():
+        rprint(f"[red]Benchmark file not found: {benchmark_file}[/red]")
+        raise typer.Exit(1)
+
+    with open(benchmark_file) as f:
+        benchmark_data = json.load(f)
+
+    task_refs: dict[str, dict[str, Any]] = {}
+    for mc in benchmark_data.get("block_a", {}).get("mc", []):
+        task_refs[mc["id"]] = {"type": "multiple_choice", "reference": mc.get("correct")}
+    for gec in benchmark_data.get("block_a", {}).get("gec", []):
+        task_refs[gec["id"]] = {
+            "type": "gec",
+            "reference": gec.get("expected_output", gec.get("reference")),
+        }
+    for trans in benchmark_data.get("block_a", {}).get("translation", []):
+        task_refs[trans["id"]] = {"type": "translation", "reference": trans.get("reference")}
+    for fp in benchmark_data.get("block_a", {}).get("false_positive", []):
+        task_refs[fp["id"]] = {"type": "false_positive", "reference": None}
+    for pm in benchmark_data.get("block_a", {}).get("positive_marker", []):
+        task_refs[pm["id"]] = {
+            "type": "positive_marker",
+            "reference": pm.get("native_form"),
+            "marker_regex": pm.get("marker_regex"),
+        }
+
+    if model == "all":
+        checkpoint_files = list(checkpoint_dir.glob("*_checkpoint.json"))
+    else:
+        safe_name = model.replace("/", "_")
+        checkpoint_file = checkpoint_dir / f"{safe_name}_checkpoint.json"
+        checkpoint_files = [checkpoint_file] if checkpoint_file.exists() else []
+
+    if not checkpoint_files:
+        rprint(f"[yellow]No checkpoint files found for model: {model}[/yellow]")
+        raise typer.Exit(1)
+
+    def check_mc_answer(response: str, correct: str) -> bool:
+        response_upper = response.upper().strip()
+        correct_upper = correct.upper().strip()
+        first_char = response_upper[0] if response_upper else ""
+        if first_char == correct_upper:
+            return True
+        pattern = r"\b([A-DА-Г])\b"
+        matches = re.findall(pattern, response_upper[:50])
+        if matches and matches[0] == correct_upper:
+            return True
+        return correct_upper in response_upper[:10]
+
+    def calculate_gec_f1(hypothesis: str, reference: str) -> float:
+        hyp_words = hypothesis.lower().split()
+        ref_words = reference.lower().split()
+        if not ref_words:
+            return 1.0 if not hyp_words else 0.0
+        if not hyp_words:
+            return 0.0
+        hyp_set = set(hyp_words)
+        ref_set = set(ref_words)
+        common = len(hyp_set & ref_set)
+        precision = common / len(hyp_set) if hyp_set else 0.0
+        recall = common / len(ref_set) if ref_set else 0.0
+        if precision + recall == 0:
+            return 0.0
+        f1 = 2 * precision * recall / (precision + recall)
+        len_ratio = min(len(hyp_words), len(ref_words)) / max(len(hyp_words), len(ref_words))
+        return min(f1 * (0.7 + 0.3 * len_ratio), 1.0)
+
+    def calculate_translation_similarity(hypothesis: str, reference: str) -> float:
+        from itertools import pairwise
+
+        hyp_words = hypothesis.lower().split()
+        ref_words = reference.lower().split()
+        if not ref_words or not hyp_words:
+            return 0.0
+        hyp_set = set(hyp_words)
+        ref_set = set(ref_words)
+        overlap = len(hyp_set & ref_set) / len(ref_set)
+        order_bonus = 0.0
+        if len(hyp_words) >= 2 and len(ref_words) >= 2:
+            bigrams_hyp = set(pairwise(hyp_words))
+            bigrams_ref = set(pairwise(ref_words))
+            if bigrams_ref:
+                order_bonus = len(bigrams_hyp & bigrams_ref) / len(bigrams_ref) * 0.2
+        return min(overlap + order_bonus, 1.0)
+
+    def check_false_positive_flagged(response: str) -> bool:
+        response_lower = response.lower()
+        correct_indicators = [
+            "correct",
+            "правильн",
+            "помилок немає",
+            "без помилок",
+            "текст правильний",
+            "граматично правильн",
+            "помилки відсутні",
+        ]
+        for indicator in correct_indicators:
+            if indicator in response_lower:
+                return False
+        error_indicators = ["помилк", "неправильн", "виправлен", "error", "виправити"]
+        return any(indicator in response_lower for indicator in error_indicators)
+
+    for checkpoint_file in checkpoint_files:
+        with open(checkpoint_file) as f:
+            checkpoint = json.load(f)
+
+        model_id = checkpoint["model_id"]
+        rprint(f"\n[blue]Recalculating metrics for {model_id}...[/blue]")
+
+        mc_correct = 0
+        mc_total = 0
+        gec_scores: list[float] = []
+        translation_scores: list[float] = []
+        false_positives = 0
+        false_positive_total = 0
+        positive_marker_scores: list[float] = []
+
+        for result in checkpoint.get("results", []):
+            task_id = result.get("task_id", "")
+            response = result.get("response", "")
+            task_info = task_refs.get(task_id, {})
+            task_type = task_info.get("type") or result.get("type", "")
+            reference = task_info.get("reference")
+
+            if task_type == "multiple_choice" and reference:
+                mc_total += 1
+                if check_mc_answer(response, reference):
+                    mc_correct += 1
+
+            elif task_type == "gec" and reference:
+                f1 = calculate_gec_f1(response.strip(), reference.strip())
+                gec_scores.append(f1)
+
+            elif task_type == "translation" and reference:
+                score = calculate_translation_similarity(response, reference)
+                translation_scores.append(score)
+
+            elif task_type == "false_positive":
+                false_positive_total += 1
+                if check_false_positive_flagged(response):
+                    false_positives += 1
+
+            elif task_type == "positive_marker":
+                marker_regex = task_info.get("marker_regex")
+                if marker_regex:
+                    has_marker = bool(re.search(marker_regex, response, re.IGNORECASE))
+                    positive_marker_scores.append(1.0 if has_marker else 0.0)
+
+        new_block_a = {
+            "mc_accuracy": mc_correct / mc_total if mc_total > 0 else 0.0,
+            "gec_f1": sum(gec_scores) / len(gec_scores) if gec_scores else 0.0,
+            "translation_comet": sum(translation_scores) / len(translation_scores)
+            if translation_scores
+            else 0.0,
+            "false_positive_rate": false_positives / false_positive_total
+            if false_positive_total > 0
+            else 0.0,
+            "positive_markers_score": sum(positive_marker_scores) / len(positive_marker_scores)
+            if positive_marker_scores
+            else 0.0,
+        }
+
+        rprint(f"  MC Accuracy: {new_block_a['mc_accuracy']:.1%} ({mc_correct}/{mc_total})")
+        rprint(f"  GEC F1: {new_block_a['gec_f1']:.1%} ({len(gec_scores)} tasks)")
+        rprint(
+            f"  Translation: {new_block_a['translation_comet']:.3f} ({len(translation_scores)} tasks)"
+        )
+        rprint(
+            f"  False Positive Rate: {new_block_a['false_positive_rate']:.1%} "
+            f"({false_positives}/{false_positive_total})"
+        )
+        rprint(
+            f"  Positive Markers: {new_block_a['positive_markers_score']:.1%} "
+            f"({len(positive_marker_scores)} tasks)"
+        )
+
+        safe_model_id = model_id.replace("/", "_")
+        eval_file = output / f"{safe_model_id}.json"
+
+        if eval_file.exists():
+            with open(eval_file) as f:
+                eval_data = json.load(f)
+            eval_data["block_a"] = new_block_a
+        else:
+            eval_data = {
+                "model_id": model_id,
+                "block_a": new_block_a,
+                "block_v": {
+                    "fertility_rate": 1.5,
+                    "positive_markers": 0.0,
+                    "russism_rate": 0.0,
+                    "anglicism_rate": 0.0,
+                },
+                "benchmark_version": benchmark.value,
+                "timestamp": checkpoint.get("timestamp"),
+                "runtime_minutes": 0.0,
+                "cost_usd": checkpoint.get("cost_usd", 0.0),
+            }
+
+        with open(eval_file, "w") as f:
+            json.dump(eval_data, f, indent=2, default=str)
+
+        rprint(f"  [green]Saved: {eval_file}[/green]")
+
+    rprint("\n[green]Done! Block A metrics recalculated from checkpoints.[/green]")
+
+
+@app.command()
+def metrics(
+    model: Annotated[str, typer.Argument(help="Model to evaluate (or 'all' for all models)")],
+    output: Annotated[Path, typer.Option("--output", "-o", help="Output directory")] = Path(
+        "results/evaluations"
+    ),
+) -> None:
+    """Recalculate Block V metrics (fertility, russisms, anglicisms, markers) for a model."""
+    from rich.live import Live
+    from rich.progress import Progress, SpinnerColumn, TextColumn
+
+    from ukrqualbench.detectors import (
+        AnglicismDetector,
+        FertilityCalculator,
+        PositiveMarkerDetector,
+        RussismDetector,
+    )
+
+    config = Config()
+    output.mkdir(parents=True, exist_ok=True)
+
+    if model == "all":
+        eval_files = list(output.glob("*.json"))
+        if not eval_files:
+            rprint("[yellow]No evaluation files found in results/evaluations/[/yellow]")
+            raise typer.Exit(1)
+        models_to_process = [f.stem for f in eval_files]
+    else:
+        models_to_process = [model.replace("/", "_")]
+
+    sample_prompts = [
+        "Поясніть, що таке штучний інтелект простими словами.",
+        "Напишіть короткий лист-подяку колезі за допомогу.",
+        "Опишіть переваги здорового способу життя.",
+    ]
+
+    russism_detector = RussismDetector()
+    anglicism_detector = AnglicismDetector()
+    markers_detector = PositiveMarkerDetector()
+    fertility_calc = FertilityCalculator()
+
+    async def run_metrics(model_id: str, client: Any) -> dict[str, float]:
+        all_texts: list[str] = []
+        for prompt in sample_prompts:
+            try:
+                response = await asyncio.wait_for(
+                    client.generate(prompt),
+                    timeout=60.0,
+                )
+                all_texts.append(response.text)
+            except Exception as e:
+                rprint(f"[yellow]Warning: {e}[/yellow]")
+
+        combined_text = " ".join(all_texts)
+
+        results: dict[str, float] = {
+            "fertility_rate": 1.5,
+            "positive_markers": 0.0,
+            "russism_rate": 0.0,
+            "anglicism_rate": 0.0,
+        }
+
+        try:
+            fertility_result = fertility_calc.calculate(combined_text)
+            results["fertility_rate"] = fertility_result.fertility_rate
+        except Exception:
+            pass
+
+        try:
+            russism_result = russism_detector.detect(combined_text)
+            results["russism_rate"] = russism_result.rate_per_1k
+        except Exception:
+            pass
+
+        try:
+            anglicism_result = anglicism_detector.detect(combined_text)
+            results["anglicism_rate"] = anglicism_result.rate_per_1k
+        except Exception:
+            pass
+
+        try:
+            markers_result = markers_detector.detect(combined_text)
+            results["positive_markers"] = markers_result.rate_per_1k
+        except Exception:
+            pass
+
+        return results
+
+    for model_name in models_to_process:
+        eval_file = output / f"{model_name}.json"
+
+        if not eval_file.exists():
+            rprint(f"[yellow]Evaluation file not found: {eval_file}[/yellow]")
+            continue
+
+        with open(eval_file) as f:
+            eval_data = json.load(f)
+
+        original_model_id = eval_data.get("model_id", model_name)
+
+        rprint(f"\n[blue]Recalculating Block V metrics for {original_model_id}...[/blue]")
+
+        try:
+            client = create_model_client(original_model_id, config)
+        except Exception as e:
+            rprint(f"[red]Failed to create client for {original_model_id}: {e}[/red]")
+            continue
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task(
+                f"Generating responses from {original_model_id}...", total=None
+            )
+            new_metrics = asyncio.run(run_metrics(original_model_id, client))
+            progress.update(task, completed=True)
+
+        old_block_v = eval_data.get("block_v", {})
+        rprint(
+            f"  [dim]Old:[/dim] fertility={old_block_v.get('fertility_rate', 'N/A')}, "
+            f"russisms={old_block_v.get('russism_rate', 'N/A')}, "
+            f"anglicisms={old_block_v.get('anglicism_rate', 'N/A')}, "
+            f"markers={old_block_v.get('positive_markers', 'N/A')}"
+        )
+
+        eval_data["block_v"] = new_metrics
+
+        rprint(
+            f"  [green]New:[/green] fertility={new_metrics['fertility_rate']:.2f}, "
+            f"russisms={new_metrics['russism_rate']:.2f}, "
+            f"anglicisms={new_metrics['anglicism_rate']:.2f}, "
+            f"markers={new_metrics['positive_markers']:.2f}"
+        )
+
+        with open(eval_file, "w") as f:
+            json.dump(eval_data, f, indent=2, default=str)
+
+        rprint(f"  [green]Updated: {eval_file}[/green]")
+
+    rprint("\n[green]Done![/green]")
 
 
 if __name__ == "__main__":
