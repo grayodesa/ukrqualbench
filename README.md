@@ -16,14 +16,17 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 | Rank | Model | ELO Rating | Badge |
 |:----:|-------|:----------:|:-----:|
-| 1 | **gpt-5.2-2025-12-11** | **1864** | 🥇 |
-| 2 | gemini-3-flash-preview | 1558 | 🥈 |
-| 3 | gemini-3-pro-preview | 1515 | 🥉 |
-| 4 | claude-opus-4-5 | 1504 | 🥉 |
-| 5 | claude-sonnet-4-5 | 1466 | ⚠️ |
-| 6 | lapa-v0.1.2-instruct | 1393 | ⚠️ |
-| 7 | google/gemma-3-27b-it-fast | 1354 | 🚫 |
-| 8 | openai/gpt-oss-20b | 1346 | 🚫 |
+| 1 | **gpt-5.2-2025-12-11** | **1873** | 🥇 |
+| 2 | claude-opus-4-5 | 1726 | 🥇 |
+| 3 | gemini-3-flash-preview | 1681 | 🥇 |
+| 4 | gemini-3-pro-preview | 1593 | 🥈 |
+| 5 | mamaylm-gemma-3-12b-it-v1.0 | 1462 | 🥉 |
+| 6 | google/gemma-3-27b-it-fast | 1422 | ⚠️ |
+| 7 | claude-sonnet-4-5 | 1420 | ⚠️ |
+| 8 | lapa-v0.1.2-instruct | 1393 | ⚠️ |
+| 9 | claude-haiku-4-5 | 1367 | ⚠️ |
+| 10 | openai/gpt-oss-20b | 1329 | 🚫 |
+| 11 | Qwen/Qwen3-32B-fast | 1236 | 🚫 |
 
 ### Block A: Calibration Tests (Absolute Scores)
 
@@ -33,10 +36,13 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 | gemini-3-pro-preview | 0.89 | **0.84** | **0.97** | 0.4 | **0.9** |
 | claude-opus-4-5 | 0.90 | 0.73 | 0.96 | 0.0 | 0.0 |
 | gemini-3-flash-preview | 0.90 | 0.77 | 0.96 | 0.2 | 0.0 |
-| google/gemma-3-27b-it-fast | 0.83 | 0.78 | 0.97 | 0.0 | 0.0 |
+| google/gemma-3-27b-it-fast | 0.83 | 0.78 | **0.97** | 0.0 | 0.0 |
+| Qwen/Qwen3-32B-fast | 0.78 | 0.70 | 0.77 | 0.1 | **0.9** |
 | gpt-5-nano | 0.75 | 0.60 | 0.92 | 0.0 | 0.0 |
+| mamaylm-gemma-3-12b-it-v1.0 | 0.74 | 0.64 | **0.97** | 0.0 | 0.8 |
 | claude-sonnet-4-5 | 0.67 | 0.75 | 0.96 | 0.1 | 0.0 |
 | claude-haiku-4-5 | 0.62 | 0.74 | 0.92 | 0.2 | 0.0 |
+| openai/gpt-oss-20b | 0.60 | 0.61 | 0.80 | 0.0 | **0.9** |
 | lapa-v0.1.2-instruct | 0.54 | 0.71 | 0.90 | 0.0 | 0.0 |
 
 ### Block V: Automatic Metrics (Detectors)
@@ -44,12 +50,17 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 | Model | Fertility | Positive Markers | Russisms | Anglicisms |
 |-------|:---------:|:----------------:|:--------:|:----------:|
 | gemini-3-flash-preview | 1.44 | **13.57** | 0.0 | 0.0 |
-| gpt-5-nano | 1.50 | 10.80 | 0.0 | 0.0 |
+| mamaylm-gemma-3-12b-it-v1.0 | 1.45 | 12.56 | 0.0 | 0.0 |
+| Qwen/Qwen3-32B-fast | 1.55 | 11.06 | 0.0 | 0.0 |
+| gemini-3-pro-preview | 1.46 | 9.27 | 0.0 | 0.0 |
+| openai/gpt-oss-20b | 1.60 | 8.78 | 0.0 | **0.30** |
+| gpt-5.2-2025-12-11 | 1.44 | 8.51 | 0.0 | 0.0 |
 | claude-haiku-4-5 | 1.44 | 8.21 | 0.0 | 0.0 |
 | google/gemma-3-27b-it-fast | 1.41 | 7.10 | 0.0 | 0.0 |
 | claude-sonnet-4-5 | 1.41 | 6.28 | 0.0 | 0.0 |
 | claude-opus-4-5 | 1.49 | 5.94 | 0.0 | 0.0 |
 | lapa-v0.1.2-instruct | **1.40** | 4.82 | 0.0 | 0.0 |
+| gpt-5-nano | 1.47 | 3.01 | 0.0 | 0.0 |
 
 <details>
 <summary><b>Metrics Explanation</b></summary>
