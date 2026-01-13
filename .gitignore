@@ -58,6 +58,12 @@ results/
 *.jsonl
 *.parquet
 
+# Generated outputs
+leaderboard.html
+data/elo_registry*.json
+data/checkpoints/
+logs/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -68,5 +74,11 @@ Thumbs.db
 # Serena MCP (local project memory)
 .serena/
 
-# Claude sessions (optional, remove if you want to track)
-# .claude/sessions/
+# Claude Code (local development)
+.claude/
+.session/
+CLAUDE.md
+AGENTS.md
+
+# Internal docs
+docs/
