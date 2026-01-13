@@ -16,16 +16,16 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 | Rank | Model | ELO Rating | Badge |
 |:----:|-------|:----------:|:-----:|
-| 1 | **gpt-5.2-2025-12-11** | **1873** | 🥇 |
-| 2 | claude-opus-4-5 | 1726 | 🥇 |
+| 1 | **gpt-5.2-2025-12-11** | **1726** | 🥇 |
+| 2 | claude-opus-4-5 | 1722 | 🥇 |
 | 3 | gemini-3-flash-preview | 1681 | 🥇 |
 | 4 | gemini-3-pro-preview | 1593 | 🥈 |
-| 5 | mamaylm-gemma-3-12b-it-v1.0 | 1462 | 🥉 |
-| 6 | google/gemma-3-27b-it-fast | 1422 | ⚠️ |
-| 7 | claude-sonnet-4-5 | 1420 | ⚠️ |
+| 5 | claude-sonnet-4-5 | 1553 | 🥈 |
+| 6 | mamaylm-gemma-3-12b-it-v1.0 | 1503 | 🥈 |
+| 7 | google/gemma-3-27b-it-fast | 1422 | ⚠️ |
 | 8 | lapa-v0.1.2-instruct | 1393 | ⚠️ |
 | 9 | claude-haiku-4-5 | 1367 | ⚠️ |
-| 10 | openai/gpt-oss-20b | 1329 | 🚫 |
+| 10 | openai/gpt-oss-20b | 1305 | 🚫 |
 | 11 | Qwen/Qwen3-32B-fast | 1236 | 🚫 |
 
 ### Block A: Calibration Tests (Absolute Scores)
@@ -47,20 +47,21 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 ### Block V: Automatic Metrics (Detectors)
 
-| Model | Fertility | Positive Markers | Russisms | Anglicisms |
+| Model | Fertility | Positive Markers | Calques* | Anglicisms |
 |-------|:---------:|:----------------:|:--------:|:----------:|
-| gemini-3-flash-preview | 1.44 | **13.57** | 0.0 | 0.0 |
-| mamaylm-gemma-3-12b-it-v1.0 | 1.45 | 12.56 | 0.0 | 0.0 |
-| Qwen/Qwen3-32B-fast | 1.55 | 11.06 | 0.0 | 0.0 |
-| gemini-3-pro-preview | 1.46 | 9.27 | 0.0 | 0.0 |
-| openai/gpt-oss-20b | 1.60 | 8.78 | 0.0 | **0.30** |
-| gpt-5.2-2025-12-11 | 1.44 | 8.51 | 0.0 | 0.0 |
-| claude-haiku-4-5 | 1.44 | 8.21 | 0.0 | 0.0 |
-| google/gemma-3-27b-it-fast | 1.41 | 7.10 | 0.0 | 0.0 |
-| claude-sonnet-4-5 | 1.41 | 6.28 | 0.0 | 0.0 |
-| claude-opus-4-5 | 1.49 | 5.94 | 0.0 | 0.0 |
-| lapa-v0.1.2-instruct | **1.40** | 4.82 | 0.0 | 0.0 |
-| gpt-5-nano | 1.47 | 3.01 | 0.0 | 0.0 |
+| Qwen/Qwen3-32B-fast | 1.47 | **13.7** | 3.9 | 0.0 |
+| gemini-3-flash-preview | 1.44 | 13.0 | 2.3 | 0.0 |
+| claude-haiku-4-5 | 1.43 | 9.9 | 1.7 | 0.0 |
+| gemini-3-pro-preview | 1.46 | 9.3 | 1.6 | 0.0 |
+| mamaylm-gemma-3-12b-it-v1.0 | **1.40** | 7.3 | 1.6 | 0.0 |
+| gpt-5.2-2025-12-11 | 1.43 | 6.9 | 6.0 | 0.0 |
+| claude-sonnet-4-5 | 1.41 | 6.3 | 1.8 | 0.0 |
+| claude-opus-4-5 | 1.49 | 6.0 | **0.0** | 0.0 |
+| lapa-v0.1.2-instruct | **1.40** | 4.8 | 7.0 | 0.0 |
+| google/gemma-3-27b-it-fast | 1.41 | 4.5 | 1.0 | 0.0 |
+| openai/gpt-oss-20b | 1.50 | 4.4 | 1.9 | 0.0 |
+
+*\*Calques = Russian calques detected by LLM judge (lexical, syntactic, morphological)*
 
 <details>
 <summary><b>Metrics Explanation</b></summary>
@@ -73,7 +74,8 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 - **PM Score**: Positive markers test score (vocative case, particles)
 - **Fertility**: Tokens per word ratio (optimal ~1.4-1.5 for Ukrainian)
 - **Positive Markers**: Native markers per 1000 tokens (higher = more natural)
-- **Russisms/Anglicisms**: Error rate per 1000 tokens (lower = better)
+- **Calques**: Russian calques per 1000 tokens detected by LLM judge (lower = better)
+- **Anglicisms**: English calques per 1000 tokens (lower = better)
 
 </details>
 
@@ -163,10 +165,11 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 - **B2**: Adversarial (100 prompts) — test resistance to mimicking bad Ukrainian
 - **B3**: Long context (50 prompts) — check language degradation over long contexts
 
-### Block V: Objective Metrics (automatic, no judge)
+### Block V: Objective Metrics (automatic)
 - Fertility rate (tokens/word ratio)
 - Positive markers detection (regex-based)
-- Russism/anglicism auto-detection
+- Calque detection (LLM judge-based for lexical, syntactic, morphological calques)
+- Anglicism auto-detection (regex-based)
 
 ## Benchmark Versions
 
@@ -369,11 +372,12 @@ uv run mypy src/
 
 ### Model Comparison Insights
 
-1. **GPT-5.2 leads in ELO** (+364 above baseline) with best MC accuracy (93%)
-2. **Gemini-3-Pro** has best GEC performance (84% F1) and highest PM score (0.9)
-3. **Gemini-3-Flash** generates most "native" Ukrainian (13.57 positive markers/1K tokens)
-4. **Claude models** show strong translation but lower MC accuracy than GPT/Gemini
-5. **Open models** (Gemma, Lapa) lag behind proprietary models in most metrics
+1. **GPT-5.2 and Claude Opus** tied at top ELO (~1720) with best MC accuracy (90-93%)
+2. **Claude Opus 4.5** is the only model with **zero calques** detected — cleanest Ukrainian
+3. **Gemini-3-Pro** has best GEC performance (84% F1) and highest PM score (0.9)
+4. **Qwen3/Gemini-Flash** generate most "native" Ukrainian (13+ positive markers/1K tokens)
+5. **GPT-5.2 and Lapa** have highest calque rates (6-7 per 1K), despite strong ELO scores
+6. **Open models** (Gemma, MamaLyM) competitive with proprietary in linguistic quality
 
 ### Correlation Analysis
 
@@ -385,8 +389,10 @@ Positive Markers inversely correlate with model size (smaller models use more na
 
 ### Observations
 
-- All tested models show **0.0 russism rate** in Block V — either models are clean or detector coverage needs expansion
+- **Claude Opus 4.5** is the only model with **0.0 calque rate** — cleanest Ukrainian among tested models
+- **GPT-5.2** and **Lapa** show highest calque rates (6.0-7.0 per 1K tokens), indicating more Russian influence
 - **Fertility rate** is consistent across models (~1.4-1.5), indicating similar tokenization efficiency
+- **Qwen3** has most positive markers (13.7/1K) but also elevated calque rate (3.9), suggesting mixed quality
 - **Claude models** have lower positive markers than Gemini, suggesting more "formal" language style
 
 ## License
