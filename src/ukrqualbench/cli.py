@@ -1368,20 +1368,38 @@ def metrics(
     output: Annotated[Path, typer.Option("--output", "-o", help="Output directory")] = Path(
         "results/evaluations"
     ),
+    detector: Annotated[
+        str,
+        typer.Option(
+            "--detector", "-d", help="Russism detector: 'judge' (LLM-based) or 'dict' (regex)"
+        ),
+    ] = "judge",
+    judge: Annotated[
+        str | None, typer.Option("--judge", "-j", help="Judge model for calque detection")
+    ] = None,
 ) -> None:
-    """Recalculate Block V metrics (fertility, russisms, anglicisms, markers) for a model."""
-    from rich.live import Live
+    """Recalculate Block V metrics (fertility, russisms, anglicisms, markers) for a model.
+
+    By default uses LLM judge-based calque detection (--detector judge) which is more
+    accurate than dictionary-based regex matching. Use --detector dict for the old behavior.
+    """
     from rich.progress import Progress, SpinnerColumn, TextColumn
 
     from ukrqualbench.detectors import (
         AnglicismDetector,
         FertilityCalculator,
+        JudgeBasedCalqueDetector,
         PositiveMarkerDetector,
         RussismDetector,
     )
 
     config = Config()
     output.mkdir(parents=True, exist_ok=True)
+
+    # Validate detector option
+    if detector not in ("judge", "dict"):
+        rprint(f"[red]Invalid detector: {detector}. Use 'judge' or 'dict'.[/red]")
+        raise typer.Exit(1)
 
     if model == "all":
         eval_files = list(output.glob("*.json"))
@@ -1392,13 +1410,51 @@ def metrics(
     else:
         models_to_process = [model.replace("/", "_")]
 
-    sample_prompts = [
+    # Load prompts from benchmark file (same as evaluator _run_block_v)
+    fallback_prompts = [
         "Поясніть, що таке штучний інтелект простими словами.",
         "Напишіть короткий лист-подяку колезі за допомогу.",
         "Опишіть переваги здорового способу життя.",
     ]
 
-    russism_detector = RussismDetector()
+    sample_prompts: list[str] = []
+    benchmark_version = config.benchmark_version
+    benchmark_file = config.data_dir / "benchmarks" / f"{benchmark_version}.json"
+
+    if benchmark_file.exists():
+        try:
+            with open(benchmark_file) as f:
+                benchmark_data = json.load(f)
+            block_b = benchmark_data.get("block_b", {})
+            generation_tasks = block_b.get("generation", [])
+            # Use up to 10 generation prompts
+            sample_prompts = [t["prompt"] for t in generation_tasks[:10] if "prompt" in t]
+            rprint(
+                f"[dim]Loaded {len(sample_prompts)} prompts from {benchmark_version} benchmark[/dim]"
+            )
+        except Exception as e:
+            rprint(f"[yellow]Failed to load benchmark: {e}[/yellow]")
+
+    if not sample_prompts:
+        sample_prompts = fallback_prompts
+        rprint("[dim]Using fallback prompts[/dim]")
+
+    # Initialize detectors
+    russism_detector: RussismDetector | None = RussismDetector() if detector == "dict" else None
+    calque_detector: JudgeBasedCalqueDetector | None = None
+
+    if detector == "judge":
+        judge_model = judge or config.default_judge
+        rprint(f"[cyan]Using judge-based calque detection with {judge_model}[/cyan]")
+        try:
+            judge_client = create_model_client(judge_model, config)
+            calque_detector = JudgeBasedCalqueDetector(judge_client)
+        except Exception as e:
+            rprint(f"[red]Failed to create judge client: {e}[/red]")
+            rprint("[yellow]Falling back to dictionary-based detection[/yellow]")
+            russism_detector = RussismDetector()
+            calque_detector = None
+
     anglicism_detector = AnglicismDetector()
     markers_detector = PositiveMarkerDetector()
     fertility_calc = FertilityCalculator()
@@ -1430,11 +1486,23 @@ def metrics(
         except Exception:
             pass
 
-        try:
-            russism_result = russism_detector.detect(combined_text)
-            results["russism_rate"] = russism_result.rate_per_1k
-        except Exception:
-            pass
+        # Use judge-based or dictionary-based detection
+        if calque_detector is not None:
+            try:
+                calque_result = await calque_detector.detect(combined_text)
+                results["russism_rate"] = calque_result.rate_per_1k
+                if calque_result.count > 0:
+                    rprint(f"    [dim]Found {calque_result.count} calques[/dim]")
+                    for match in calque_result.matches[:3]:  # Show first 3
+                        rprint(f'      [dim]- "{match.matched_text}" → {match.correction}[/dim]')
+            except Exception as e:
+                rprint(f"[yellow]Calque detection failed: {e}[/yellow]")
+        elif russism_detector is not None:
+            try:
+                russism_result = russism_detector.detect(combined_text)
+                results["russism_rate"] = russism_result.rate_per_1k
+            except Exception:
+                pass
 
         try:
             anglicism_result = anglicism_detector.detect(combined_text)

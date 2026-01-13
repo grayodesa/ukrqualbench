@@ -1271,7 +1271,7 @@ class Evaluator:
     async def compare_models(
         self,
         model_ids: list[str],
-        judge_id: str = "claude-3-5-haiku-latest",
+        judge_id: str | None = None,
         rounds: int | None = None,
         anchor_count: int = 2,
     ) -> dict[str, float]:
@@ -1282,7 +1282,7 @@ class Evaluator:
 
         Args:
             model_ids: List of model IDs to compare.
-            judge_id: Judge model ID.
+            judge_id: Judge model ID (uses config.default_judge if None).
             rounds: Number of tournament rounds (auto if None).
             anchor_count: Number of anchor models to include for new models.
 
@@ -1307,7 +1307,9 @@ class Evaluator:
                 client = self._create_model_client(model_id)
                 self.add_model(model_id, client)
 
-        judge_client = self._create_model_client(judge_id)
+        # Use config default if judge_id not specified
+        actual_judge_id = judge_id or self._config.default_judge
+        judge_client = self._create_model_client(actual_judge_id)
         judge = PairwiseJudge(judge_client)
         self.set_judge(judge)
 

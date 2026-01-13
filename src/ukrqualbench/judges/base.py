@@ -68,7 +68,7 @@ class JudgeConfig:
     """Configuration for judge behavior."""
 
     temperature: float = 0.0
-    max_tokens: int = 1024
+    max_tokens: int = 8192
     json_mode: bool = True
     max_retries: int = 3
     retry_delay: float = 1.0

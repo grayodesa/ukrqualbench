@@ -207,7 +207,7 @@ class TestJudgeConfig:
         """Test default configuration values."""
         config = JudgeConfig()
         assert config.temperature == 0.0
-        assert config.max_tokens == 1024
+        assert config.max_tokens == 8192
         assert config.json_mode is True
         assert config.max_retries == 3
         assert config.retry_delay == 1.0

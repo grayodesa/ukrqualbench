@@ -19,6 +19,11 @@ from ukrqualbench.detectors.base import (
     DetectionResult,
     DetectionSeverity,
 )
+from ukrqualbench.detectors.calque_detector import (
+    CalqueDetectionConfig,
+    JudgeBasedCalqueDetector,
+    create_calque_detector,
+)
 from ukrqualbench.detectors.fertility import (
     FertilityCalculator,
     FertilityResult,
@@ -38,16 +43,19 @@ __all__ = [
     "SEVERITY_WEIGHTS",
     "AnglicismDetector",
     "BaseDetector",
+    "CalqueDetectionConfig",
     "CompiledPattern",
     "DetectionMatch",
     "DetectionResult",
     "DetectionSeverity",
     "FertilityCalculator",
     "FertilityResult",
+    "JudgeBasedCalqueDetector",
     "PositiveMarkerDetector",
     "RussismDetector",
     "calculate_fertility",
     "create_anglicism_detector",
+    "create_calque_detector",
     "create_positive_marker_detector",
     "create_russism_detector",
     "evaluate_fertility_quality",
