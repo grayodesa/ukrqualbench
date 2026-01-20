@@ -61,7 +61,7 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 | google/gemma-3-27b-it-fast | 1.41 | 4.5 | 1.0 | 0.0 |
 | openai/gpt-oss-20b | 1.50 | 4.4 | 1.9 | 0.0 |
 
-*\*Calques = Russian calques detected by LLM judge (lexical, syntactic, morphological)*
+*\*Calques = Russian calques detected by LLM judge (lexical, syntactic, morphological)*  
 **Note:** mamaylm-gemma-3-12b-it-v1.0 and lapa-v0.1.2-instruct were used with quantization (Q4_K_S)
 
 <details>
