@@ -17,12 +17,10 @@ from ukrqualbench.models import (
 from ukrqualbench.models.anthropic import AnthropicClient, create_anthropic_client
 from ukrqualbench.models.google import GoogleClient, create_google_client
 from ukrqualbench.models.local import (
-    NebiusClient,
     OllamaChatClient,
     OllamaClient,
     OpenAICompatibleClient,
     VLLMClient,
-    create_nebius_client,
     create_ollama_client,
     create_vllm_client,
     strip_thinking_tags,
@@ -213,11 +211,6 @@ class TestModelPricing:
         # Google Gemini 3 family
         assert "gemini-3-pro-preview" in MODEL_PRICING
         assert "gemini-3-flash-preview" in MODEL_PRICING
-        # Nebius Token Factory models
-        assert "nebius/deepseek-ai/DeepSeek-R1-0528" in MODEL_PRICING
-        assert "nebius/deepseek-ai/DeepSeek-V3" in MODEL_PRICING
-        assert "nebius/Qwen/Qwen3-235B-Instruct" in MODEL_PRICING
-        assert "nebius/meta-llama/Llama-3.3-70B-Instruct" in MODEL_PRICING
 
     def test_legacy_models_included(self) -> None:
         """Test that legacy models are still included in pricing."""
@@ -451,6 +444,71 @@ class TestCreateAnthropicClient:
             assert client.model_id == "claude-3-5-haiku-20241022"
 
 
+class TestAnthropicTemperatureHandling:
+    """Regression tests for the request payload Anthropic receives.
+
+    Anthropic deprecated `temperature` for thinking-by-default models starting
+    with claude-opus-4-7 (see anthropic.py:_TEMPERATURE_DEPRECATED_PREFIXES).
+    Sending it returns HTTP 400 invalid_request_error.
+    """
+
+    @staticmethod
+    def _fake_anthropic_response() -> object:
+        """Build a minimal stand-in for anthropic.types.Message."""
+        from unittest.mock import MagicMock
+
+        block = MagicMock()
+        block.type = "text"
+        block.text = "ok"
+        usage = MagicMock(input_tokens=1, output_tokens=1)
+        response = MagicMock(content=[block], usage=usage)
+        return response
+
+    @pytest.mark.asyncio
+    async def test_temperature_sent_for_legacy_model(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        client = AnthropicClient(model_id="claude-opus-4-5", api_key="test")
+        mock_sdk = MagicMock()
+        mock_sdk.messages.create = AsyncMock(return_value=self._fake_anthropic_response())
+        client._client = mock_sdk
+
+        await client._call_api(
+            prompt="hi",
+            system_prompt=None,
+            temperature=0.0,
+            max_tokens=100,
+            json_mode=False,
+        )
+
+        kwargs = mock_sdk.messages.create.call_args.kwargs
+        assert "temperature" in kwargs
+        assert kwargs["temperature"] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_temperature_omitted_for_opus_4_7(self) -> None:
+        """`claude-opus-4-7` must NOT receive `temperature` — Anthropic 400s on it."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        client = AnthropicClient(model_id="claude-opus-4-7", api_key="test")
+        mock_sdk = MagicMock()
+        mock_sdk.messages.create = AsyncMock(return_value=self._fake_anthropic_response())
+        client._client = mock_sdk
+
+        await client._call_api(
+            prompt="hi",
+            system_prompt=None,
+            temperature=0.0,
+            max_tokens=100,
+            json_mode=False,
+        )
+
+        kwargs = mock_sdk.messages.create.call_args.kwargs
+        assert "temperature" not in kwargs, (
+            "temperature must be omitted for claude-opus-4-7 — it is deprecated by the API"
+        )
+
+
 # ============================================================================
 # Google Client Tests
 # ============================================================================
@@ -516,7 +574,7 @@ class TestCreateGoogleClient:
 
 
 # ============================================================================
-# Nebius Token Factory Tests
+# Local helper Tests
 # ============================================================================
 
 
@@ -542,116 +600,6 @@ class TestStripThinkingTags:
     def test_handles_no_content_after_thinking(self) -> None:
         text = "<think>Just thinking</think>"
         assert strip_thinking_tags(text) == ""
-
-
-class TestNebiusClient:
-    """Tests for Nebius Token Factory client."""
-
-    def test_requires_api_key(self) -> None:
-        """Test that API key is required."""
-        with (
-            patch.dict("os.environ", {}, clear=True),
-            pytest.raises(ValueError, match="API key required"),
-        ):
-            NebiusClient()
-
-    def test_accepts_api_key_param(self) -> None:
-        """Test API key from parameter."""
-        client = NebiusClient(api_key="test-key")
-        assert client._api_key == "test-key"
-
-    def test_accepts_api_key_from_env(self) -> None:
-        """Test API key from environment."""
-        with patch.dict("os.environ", {"NEBIUS_API_KEY": "env-key"}):
-            client = NebiusClient()
-            assert client._api_key == "env-key"
-
-    def test_model_id_property(self) -> None:
-        """Test model_id property has nebius prefix."""
-        client = NebiusClient(model_id="deepseek-ai/DeepSeek-V3", api_key="test")
-        assert client.model_id == "nebius/deepseek-ai/DeepSeek-V3"
-
-    def test_default_base_url(self) -> None:
-        """Test default base URL."""
-        client = NebiusClient(api_key="test")
-        assert client._base_url == "https://api.tokenfactory.nebius.com/v1"
-
-    def test_custom_base_url(self) -> None:
-        """Test custom base URL."""
-        client = NebiusClient(api_key="test", base_url="https://custom.api.com/v1")
-        assert client._base_url == "https://custom.api.com/v1"
-
-
-class TestCreateNebiusClient:
-    """Tests for factory function."""
-
-    def test_factory_creates_client(self) -> None:
-        """Test factory function creates client."""
-        with patch.dict("os.environ", {"NEBIUS_API_KEY": "test-key"}):
-            client = create_nebius_client(
-                model_id="deepseek-ai/DeepSeek-R1-0528",
-                temperature=0.5,
-            )
-
-            assert isinstance(client, NebiusClient)
-            assert client.model_id == "nebius/deepseek-ai/DeepSeek-R1-0528"
-            assert client._config.default_temperature == 0.5
-
-    def test_factory_default_model(self) -> None:
-        """Test factory uses default model."""
-        with patch.dict("os.environ", {"NEBIUS_API_KEY": "test-key"}):
-            client = create_nebius_client()
-
-            assert "DeepSeek-R1-0528" in client.model_id
-
-
-class TestNebiusCostCalculation:
-    """Tests for Nebius model cost calculation."""
-
-    def test_deepseek_r1_cost(self) -> None:
-        """Test DeepSeek-R1 cost calculation."""
-        # DeepSeek-R1-0528: $0.80/1M input, $2.40/1M output
-        cost = calculate_cost(
-            "nebius/deepseek-ai/DeepSeek-R1-0528",
-            input_tokens=10000,
-            output_tokens=5000,
-        )
-
-        expected_input = (10000 / 1_000_000) * 0.80
-        expected_output = (5000 / 1_000_000) * 2.40
-        expected_total = expected_input + expected_output
-
-        assert cost == pytest.approx(expected_total)
-
-    def test_qwen_cost(self) -> None:
-        """Test Qwen model cost calculation."""
-        # Qwen3-235B-Instruct: $0.20/1M input, $0.60/1M output
-        cost = calculate_cost(
-            "nebius/Qwen/Qwen3-235B-Instruct",
-            input_tokens=5000,
-            output_tokens=2000,
-        )
-
-        expected_input = (5000 / 1_000_000) * 0.20
-        expected_output = (2000 / 1_000_000) * 0.60
-        expected_total = expected_input + expected_output
-
-        assert cost == pytest.approx(expected_total)
-
-    def test_llama_cost(self) -> None:
-        """Test Llama model cost calculation."""
-        # Llama-3.3-70B: $0.13/1M input, $0.40/1M output
-        cost = calculate_cost(
-            "nebius/meta-llama/Llama-3.3-70B-Instruct",
-            input_tokens=8000,
-            output_tokens=4000,
-        )
-
-        expected_input = (8000 / 1_000_000) * 0.13
-        expected_output = (4000 / 1_000_000) * 0.40
-        expected_total = expected_input + expected_output
-
-        assert cost == pytest.approx(expected_total)
 
 
 # ============================================================================
@@ -795,12 +743,186 @@ class TestProtocolConformance:
         assert hasattr(client, "model_id")
         assert isinstance(client.model_id, str)
 
-    def test_nebius_client_has_model_id(self) -> None:
-        """Test NebiusClient has model_id property."""
-        client = NebiusClient(api_key="test")
-        assert hasattr(client, "model_id")
-        assert isinstance(client.model_id, str)
-        assert client.model_id.startswith("nebius/")
+# ============================================================================
+# OpenRouter Client Tests
+# ============================================================================
+
+
+class _FakeHTTPResponse:
+    """Minimal stand-in for httpx.Response used in unit tests."""
+
+    def __init__(self, payload: dict) -> None:
+        self._payload = payload
+
+    def json(self) -> dict:
+        return self._payload
+
+    def raise_for_status(self) -> None:
+        return None
+
+
+class _CapturingAsyncClient:
+    """httpx.AsyncClient stub that records calls and returns canned data."""
+
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        timeout: float,
+        headers: dict[str, str],
+        payload: dict,
+    ) -> None:
+        self.base_url = base_url
+        self.timeout = timeout
+        self.headers = headers
+        self._payload = payload
+        self.last_post: tuple[str, dict] | None = None
+
+    async def post(self, url: str, json: dict) -> _FakeHTTPResponse:
+        self.last_post = (url, json)
+        return _FakeHTTPResponse(self._payload)
+
+    async def aclose(self) -> None:
+        return None
+
+
+class TestOpenRouterClient:
+    """Tests for OpenRouterClient."""
+
+    def test_model_id_carries_openrouter_prefix(self) -> None:
+        """model_id is namespaced so it doesn't collide with local-served models."""
+        from ukrqualbench.models.openrouter import OpenRouterClient
+
+        client = OpenRouterClient(model_id="openai/gpt-5.2", api_key="sk-or-test")
+        assert client.model_id == "openrouter/openai/gpt-5.2"
+
+    def test_missing_api_key_raises(self) -> None:
+        from ukrqualbench.models.openrouter import OpenRouterClient
+
+        with patch.dict("os.environ", {}, clear=True):
+            with pytest.raises(ValueError, match="OpenRouter API key required"):
+                OpenRouterClient(model_id="openai/gpt-5.2")
+
+    def test_default_headers_and_base_url(self) -> None:
+        from ukrqualbench.models.openrouter import (
+            OPENROUTER_DEFAULT_BASE_URL,
+            OPENROUTER_DEFAULT_REFERER,
+            OPENROUTER_DEFAULT_TITLE,
+            OpenRouterClient,
+        )
+
+        client = OpenRouterClient(model_id="openai/gpt-5.2", api_key="sk-or-test")
+        # _get_client builds the httpx.AsyncClient lazily — patch httpx so we can
+        # introspect the kwargs it would receive without doing network IO.
+        captured: dict = {}
+
+        class _Spy:
+            def __init__(self, **kwargs: object) -> None:
+                captured.update(kwargs)
+
+            async def aclose(self) -> None:
+                return None
+
+        with patch("httpx.AsyncClient", _Spy):
+            client._get_client()
+
+        assert captured["base_url"] == OPENROUTER_DEFAULT_BASE_URL
+        headers = captured["headers"]
+        assert headers["Authorization"] == "Bearer sk-or-test"
+        assert headers["HTTP-Referer"] == OPENROUTER_DEFAULT_REFERER
+        assert headers["X-OpenRouter-Title"] == OPENROUTER_DEFAULT_TITLE
+
+    @pytest.mark.asyncio
+    async def test_call_api_uses_usage_cost_from_response(self) -> None:
+        """Cost must come from usage.cost — OpenRouter is the source of truth."""
+        from ukrqualbench.models.openrouter import OpenRouterClient
+
+        client = OpenRouterClient(model_id="openai/gpt-5.2", api_key="sk-or-test")
+
+        stub = _CapturingAsyncClient(
+            base_url="https://openrouter.ai/api/v1",
+            timeout=60.0,
+            headers={},
+            payload={
+                "id": "gen-test",
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"role": "assistant", "content": "Привіт!"},
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 10,
+                    "completion_tokens": 4,
+                    "total_tokens": 14,
+                    "cost": 0.00014,
+                },
+                "model": "openai/gpt-5.2",
+            },
+        )
+        client._client = stub  # bypass lazy construction
+
+        response = await client._call_api(
+            prompt="Hi",
+            system_prompt="System",
+            temperature=0.0,
+            max_tokens=128,
+            json_mode=False,
+        )
+
+        assert response.text == "Привіт!"
+        assert response.tokens_used == 14
+        assert response.cost_usd == pytest.approx(0.00014)
+
+        # Verify upstream payload preserved the original (un-prefixed) model id.
+        assert stub.last_post is not None
+        url, body = stub.last_post
+        assert url == "/chat/completions"
+        assert body["model"] == "openai/gpt-5.2"
+        assert body["messages"][0] == {"role": "system", "content": "System"}
+        assert body["messages"][1] == {"role": "user", "content": "Hi"}
+
+    @pytest.mark.asyncio
+    async def test_missing_usage_cost_falls_back_to_zero(self) -> None:
+        from ukrqualbench.models.openrouter import OpenRouterClient
+
+        client = OpenRouterClient(model_id="openai/gpt-5.2", api_key="sk-or-test")
+        stub = _CapturingAsyncClient(
+            base_url="https://openrouter.ai/api/v1",
+            timeout=60.0,
+            headers={},
+            payload={
+                "choices": [{"message": {"role": "assistant", "content": "ok"}}],
+                "usage": {"prompt_tokens": 3, "completion_tokens": 1, "total_tokens": 4},
+            },
+        )
+        client._client = stub
+
+        response = await client._call_api(
+            prompt="hi", system_prompt=None, temperature=0.0, max_tokens=8, json_mode=False
+        )
+        assert response.cost_usd == 0.0
+        assert response.tokens_used == 4
+
+    @pytest.mark.asyncio
+    async def test_json_mode_sets_response_format(self) -> None:
+        from ukrqualbench.models.openrouter import OpenRouterClient
+
+        client = OpenRouterClient(model_id="openai/gpt-5.2", api_key="sk-or-test")
+        stub = _CapturingAsyncClient(
+            base_url="https://openrouter.ai/api/v1",
+            timeout=60.0,
+            headers={},
+            payload={"choices": [{"message": {"content": "{}"}}], "usage": {}},
+        )
+        client._client = stub
+
+        await client._call_api(
+            prompt="hi", system_prompt=None, temperature=0.0, max_tokens=8, json_mode=True
+        )
+        assert stub.last_post is not None
+        _, body = stub.last_post
+        assert body["response_format"] == {"type": "json_object"}
 
 
 # ============================================================================

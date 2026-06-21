@@ -72,6 +72,22 @@ class Config(BaseSettings):
             "GOOGLE_API_KEY",
         ),
     )
+    openrouter_api_key: str | None = Field(  # type: ignore[pydantic-alias]
+        default=None,
+        description="OpenRouter API key — unified gateway for many upstream providers",
+        validation_alias=AliasChoices(
+            "UKRQUALBENCH_OPENROUTER_API_KEY",
+            "OPENROUTER_API_KEY",
+        ),
+    )
+    openrouter_referer: str = Field(
+        default="https://github.com/UkrQualBench/UkrQualBench",
+        description="HTTP-Referer header used for OpenRouter app attribution",
+    )
+    openrouter_title: str = Field(
+        default="UkrQualBench",
+        description="X-OpenRouter-Title header used for OpenRouter app attribution",
+    )
 
     # Azure OpenAI (optional)
     azure_openai_api_key: str | None = Field(
@@ -87,16 +103,6 @@ class Config(BaseSettings):
     google_cloud_project: str | None = Field(
         default=None,
         description="Google Cloud project ID for Vertex AI",
-    )
-
-    # Nebius Token Factory (optional)
-    nebius_api_key: str | None = Field(  # type: ignore[pydantic-alias]
-        default=None,
-        description="Nebius API key for Token Factory models",
-        validation_alias=AliasChoices(
-            "UKRQUALBENCH_NEBIUS_API_KEY",
-            "NEBIUS_API_KEY",
-        ),
     )
 
     # HuggingFace (for gated datasets)

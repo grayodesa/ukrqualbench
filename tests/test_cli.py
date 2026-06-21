@@ -148,6 +148,13 @@ class TestCompareCommand:
         result = runner.invoke(app, ["compare"])
         assert result.exit_code != 0
 
+    def test_compare_help_exposes_anchor_flags(self):
+        """Anchor management flags must be discoverable via --help."""
+        result = runner.invoke(app, ["compare", "--help"])
+        assert result.exit_code == 0
+        assert "--anchors" in result.stdout
+        assert "--anchor-count" in result.stdout
+
 
 class TestLeaderboardCommand:
     def test_leaderboard_help(self):
@@ -218,17 +225,129 @@ class TestCreateModelClient:
             create_model_client("gemini-3-flash-preview")
             mock.assert_called_once()
 
-    def test_nebius_model(self):
-        with patch("ukrqualbench.models.create_nebius_client") as mock:
-            mock.return_value = MagicMock()
-            create_model_client("deepseek-ai/DeepSeek-R1")
-            mock.assert_called_once()
-
     def test_local_fallback(self):
         with patch("ukrqualbench.models.create_local_client") as mock:
             mock.return_value = MagicMock()
             create_model_client("llama3.2")
             mock.assert_called_once()
+
+    def test_gemma_routes_to_local(self):
+        """Gemma ids (incl. HF-style with slash) must hit the local backend."""
+        with patch("ukrqualbench.models.create_local_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("google/gemma-4-26b-a4b")
+            mock.assert_called_once()
+
+    def test_slash_id_routes_to_local(self):
+        """After Nebius removal, any slash-bearing id falls through to local."""
+        with patch("ukrqualbench.models.create_local_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("org/some-other-model")
+            mock.assert_called_once()
+
+
+class TestExplicitProviderPrefix:
+    """Explicit ``provider:`` prefix routing — disambiguates HF-style ids."""
+
+    def test_openrouter_prefix_routes_to_openrouter(self):
+        """``openrouter:openai/gpt-5.2`` must reach the OpenRouter factory."""
+        with patch("ukrqualbench.models.create_openrouter_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("openrouter:openai/gpt-5.2")
+            mock.assert_called_once()
+            kwargs = mock.call_args.kwargs
+            assert kwargs["model_id"] == "openai/gpt-5.2"
+
+    def test_openrouter_prefix_handles_ambiguous_gemma(self):
+        """openrouter:google/gemma-3-27b-it overrides the legacy 'gemma → local' rule."""
+        with patch("ukrqualbench.models.create_openrouter_client") as mock_or:
+            with patch("ukrqualbench.models.create_local_client") as mock_local:
+                mock_or.return_value = MagicMock()
+                mock_local.return_value = MagicMock()
+                create_model_client("openrouter:google/gemma-3-27b-it")
+                mock_or.assert_called_once()
+                mock_local.assert_not_called()
+
+    def test_local_prefix_forces_local_for_cloud_id(self):
+        """``local:google/gemma-3-27b-it`` reaches the local backend explicitly."""
+        with patch("ukrqualbench.models.create_local_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("local:google/gemma-3-27b-it")
+            mock.assert_called_once()
+            assert mock.call_args.kwargs["model_id"] == "google/gemma-3-27b-it"
+
+    def test_local_prefix_for_otherwise_openai_id(self):
+        """``local:gpt-4o-clone`` keeps a self-hosted clone off the OpenAI path."""
+        with patch("ukrqualbench.models.create_local_client") as mock_local:
+            with patch("ukrqualbench.models.create_openai_client") as mock_oa:
+                mock_local.return_value = MagicMock()
+                mock_oa.return_value = MagicMock()
+                create_model_client("local:gpt-4o-clone")
+                mock_local.assert_called_once()
+                mock_oa.assert_not_called()
+
+    def test_unknown_prefix_falls_through_to_heuristic(self):
+        """``unknown:gpt-5.2`` keeps the colon as part of the id and lands in local fallback."""
+        with patch("ukrqualbench.models.create_local_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("unknown:gpt-5.2")
+            mock.assert_called_once()
+            assert mock.call_args.kwargs["model_id"] == "unknown:gpt-5.2"
+
+    def test_openai_prefix(self):
+        with patch("ukrqualbench.models.create_openai_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("openai:gpt-5.2")
+            mock.assert_called_once()
+            assert mock.call_args.kwargs["model_id"] == "gpt-5.2"
+
+    def test_anthropic_prefix(self):
+        with patch("ukrqualbench.models.create_anthropic_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("anthropic:claude-haiku-4")
+            mock.assert_called_once()
+            assert mock.call_args.kwargs["model_id"] == "claude-haiku-4"
+
+    def test_google_prefix(self):
+        with patch("ukrqualbench.models.create_google_client") as mock:
+            mock.return_value = MagicMock()
+            create_model_client("google:gemini-3-pro-preview")
+            mock.assert_called_once()
+            assert mock.call_args.kwargs["model_id"] == "gemini-3-pro-preview"
+
+
+class TestSplitProviderPrefix:
+    """Unit tests for the prefix parser."""
+
+    def test_no_prefix(self):
+        from ukrqualbench.models.routing import split_provider_prefix
+        assert split_provider_prefix("gpt-5.2") == (None, "gpt-5.2")
+
+    def test_openrouter_prefix_kept_intact(self):
+        from ukrqualbench.models.routing import split_provider_prefix
+        assert split_provider_prefix("openrouter:openai/gpt-5.2") == (
+            "openrouter",
+            "openai/gpt-5.2",
+        )
+
+    def test_slash_id_without_prefix(self):
+        """vendor/model is ambiguous → no provider identified."""
+        from ukrqualbench.models.routing import split_provider_prefix
+        assert split_provider_prefix("google/gemma-3-27b-it") == (
+            None,
+            "google/gemma-3-27b-it",
+        )
+
+    def test_unknown_prefix_treated_as_id(self):
+        from ukrqualbench.models.routing import split_provider_prefix
+        assert split_provider_prefix("nebius:llama-3") == (None, "nebius:llama-3")
+
+    def test_case_insensitive_provider(self):
+        from ukrqualbench.models.routing import split_provider_prefix
+        assert split_provider_prefix("OpenRouter:openai/gpt-5.2") == (
+            "openrouter",
+            "openai/gpt-5.2",
+        )
 
 
 class TestCLIFormats:

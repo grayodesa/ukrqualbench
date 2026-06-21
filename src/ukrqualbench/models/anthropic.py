@@ -1,6 +1,6 @@
 """Anthropic model client.
 
-Supports Claude Opus 4.5, Claude Sonnet 4, Claude Haiku 4, and legacy Claude 3.5 models.
+Supports Claude Opus 4.5/4.7, Claude Sonnet 4, Claude Haiku 4, and legacy Claude 3.5 models.
 """
 
 from __future__ import annotations
@@ -17,6 +17,14 @@ from ukrqualbench.models.base import (
 
 if TYPE_CHECKING:
     import anthropic
+
+
+# Anthropic deprecated `temperature` for thinking-by-default models starting
+# with claude-opus-4-7. Sending it returns HTTP 400 invalid_request_error.
+# Extend this tuple as Anthropic deprecates the parameter on more models.
+_TEMPERATURE_DEPRECATED_PREFIXES: tuple[str, ...] = (
+    "claude-opus-4-7",
+)
 
 
 class AnthropicClient(BaseModelClient):
@@ -125,13 +133,16 @@ class AnthropicClient(BaseModelClient):
             actual_prompt = f"{prompt}\n\nRespond with valid JSON only."
             messages = [{"role": "user", "content": actual_prompt}]
 
-        # Build request kwargs
+        # Build request kwargs.
+        # `temperature` is omitted for models that deprecated it (opus-4-7+);
+        # those models manage sampling internally via extended thinking.
         request_kwargs: dict[str, Any] = {
             "model": self._model_id,
             "messages": messages,
-            "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if not self._model_id.startswith(_TEMPERATURE_DEPRECATED_PREFIXES):
+            request_kwargs["temperature"] = temperature
 
         # Add system prompt if provided
         if system_prompt:

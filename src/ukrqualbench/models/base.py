@@ -83,27 +83,6 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     # Google legacy
     "gemini-1.5-pro": (1.25, 5.00),
     "gemini-1.5-flash": (0.075, 0.30),
-    # Nebius Token Factory - DeepSeek models
-    "nebius/deepseek-ai/DeepSeek-R1-0528": (0.80, 2.40),
-    "nebius/deepseek-ai/DeepSeek-V3": (0.50, 1.50),
-    # Nebius Token Factory - Qwen models
-    "nebius/Qwen/Qwen3-Coder-480B": (0.40, 1.80),
-    "nebius/Qwen/Qwen3-235B-Thinking": (0.20, 0.80),
-    "nebius/Qwen/Qwen3-235B-Instruct": (0.20, 0.60),
-    "nebius/Qwen/Qwen3-30B-Thinking": (0.10, 0.30),
-    "nebius/Qwen/Qwen3-30B-Instruct": (0.10, 0.30),
-    "nebius/Qwen/Qwen3-32B": (0.10, 0.30),
-    "nebius/Qwen/QwQ-32B": (0.15, 0.45),
-    # Nebius Token Factory - Llama models
-    "nebius/meta-llama/Llama-3.3-70B-Instruct": (0.13, 0.40),
-    "nebius/meta-llama/Llama-3.1-8B-Instruct": (0.02, 0.06),
-    "nebius/meta-llama/Llama-3.1-405B-Instruct": (1.00, 3.00),
-    # Nebius Token Factory - Other models
-    "nebius/gpt-oss-120b": (0.15, 0.60),
-    "nebius/gpt-oss-20b": (0.05, 0.20),
-    "nebius/THUDM/GLM-4.5": (0.60, 2.20),
-    "nebius/Kimi-K2-Instruct": (0.50, 2.40),
-    "nebius/NousResearch/Hermes-4-405B": (1.00, 3.00),
     # Local models - free
     "ollama/*": (0.00, 0.00),
     "vllm/*": (0.00, 0.00),

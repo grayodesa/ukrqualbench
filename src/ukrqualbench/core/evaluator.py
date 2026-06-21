@@ -1142,14 +1142,15 @@ class Evaluator:
 
     def _get_provider(self, model_id: str) -> str:
         """Extract provider from model ID."""
-        if "gpt" in model_id.lower():
+        model_lower = model_id.lower()
+        if "gemma" in model_lower:
+            return "local"
+        elif "gpt" in model_lower:
             return "openai"
-        elif "claude" in model_id.lower():
+        elif "claude" in model_lower:
             return "anthropic"
-        elif "gemini" in model_id.lower():
+        elif "gemini" in model_lower:
             return "google"
-        elif "nebius" in model_id.lower() or "/" in model_id:
-            return "nebius"
         else:
             return "unknown"
 
@@ -1274,17 +1275,23 @@ class Evaluator:
         judge_id: str | None = None,
         rounds: int | None = None,
         anchor_count: int = 2,
+        anchor_models: list[str] | None = None,
     ) -> dict[str, float]:
         """Run pairwise comparisons (Block B only) and update ELO ratings.
 
-        If persistent registry is configured, automatically includes anchor
-        models for new model calibration.
+        Anchor models calibrate the ELO of new models against existing leaderboard
+        positions. Resolution order:
+          1. Explicit `anchor_models` argument — used as-is (override).
+          2. `anchor_count == 0` — no anchors injected.
+          3. Otherwise — auto-pick top/median/bottom from persistent registry,
+             but only when at least one model in `model_ids` is new.
 
         Args:
             model_ids: List of model IDs to compare.
             judge_id: Judge model ID (uses config.default_judge if None).
             rounds: Number of tournament rounds (auto if None).
-            anchor_count: Number of anchor models to include for new models.
+            anchor_count: Number of anchors for auto-selection (0 disables).
+            anchor_models: Explicit anchor list. Overrides auto-selection.
 
         Returns:
             Dict mapping model_id to final ELO rating.
@@ -1294,13 +1301,9 @@ class Evaluator:
         self._run_id = self._generate_run_id()
         all_model_ids = list(model_ids)
 
-        if self._elo_registry is not None:
-            new_models = self._elo_registry.get_new_models(model_ids)
-            if new_models and self._elo_registry.model_count > 0:
-                anchors = self._elo_registry.get_anchor_models(anchor_count)
-                for anchor in anchors:
-                    if anchor not in all_model_ids:
-                        all_model_ids.append(anchor)
+        for anchor in self._resolve_anchors(model_ids, anchor_count, anchor_models):
+            if anchor not in all_model_ids:
+                all_model_ids.append(anchor)
 
         for model_id in all_model_ids:
             if model_id not in self._model_clients:
@@ -1332,52 +1335,38 @@ class Evaluator:
 
         return self._pairwise_engine.ratings
 
+    def _resolve_anchors(
+        self,
+        model_ids: list[str],
+        anchor_count: int,
+        anchor_models: list[str] | None,
+    ) -> list[str]:
+        """Decide which anchor models to add for ELO calibration.
+
+        Resolution order:
+          1. Explicit `anchor_models` (incl. empty list = disabled).
+          2. `anchor_count == 0` → no anchors.
+          3. Auto-pick from registry, only when at least one of `model_ids` is new.
+        """
+        if anchor_models is not None:
+            return list(anchor_models)
+        if anchor_count <= 0 or self._elo_registry is None:
+            return []
+        new_models = self._elo_registry.get_new_models(model_ids)
+        if not new_models or self._elo_registry.model_count == 0:
+            return []
+        return self._elo_registry.get_anchor_models(anchor_count)
+
     def _create_model_client(self, model_id: str) -> BaseModelClient:
-        """Create model client from model ID."""
-        from ukrqualbench.models import (
-            create_anthropic_client,
-            create_google_client,
-            create_local_client,
-            create_nebius_client,
-            create_openai_client,
-        )
+        """Create model client from model ID.
 
-        model_lower = model_id.lower()
+        Delegates to :func:`ukrqualbench.models.routing.create_model_client`
+        so routing rules (explicit ``provider:`` prefix + legacy heuristic)
+        live in one place.
+        """
+        from ukrqualbench.models.routing import create_model_client
 
-        if "/" in model_id:
-            return create_nebius_client(
-                model_id=model_id,
-                api_key=self._config.nebius_api_key,
-                temperature=self._config.temperature,
-            )
-        elif (
-            model_lower.startswith("gpt-")
-            or model_lower.startswith("o1")
-            or model_lower.startswith("o3")
-        ):
-            return create_openai_client(
-                model_id=model_id,
-                api_key=self._config.openai_api_key,
-                temperature=self._config.temperature,
-            )
-        elif model_lower.startswith("claude-"):
-            return create_anthropic_client(
-                model_id=model_id,
-                api_key=self._config.anthropic_api_key,
-                temperature=self._config.temperature,
-            )
-        elif model_lower.startswith("gemini-"):
-            return create_google_client(
-                model_id=model_id,
-                api_key=self._config.google_api_key,
-                temperature=self._config.temperature,
-            )
-        else:
-            return create_local_client(
-                model_id=model_id,
-                base_url=self._config.local_base_url,
-                temperature=self._config.temperature,
-            )
+        return create_model_client(model_id, self._config)
 
     def _setup_detectors(self) -> None:
         """Setup default detectors for Block V."""

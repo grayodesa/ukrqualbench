@@ -29,52 +29,15 @@ console = Console()
 
 
 def create_model_client(model_id: str, config: Config | None = None) -> Any:
-    """Create model client from model ID string."""
-    from ukrqualbench.models import (
-        create_anthropic_client,
-        create_google_client,
-        create_local_client,
-        create_nebius_client,
-        create_openai_client,
-    )
+    """Create model client from model ID string.
 
-    config = config or Config()
-    model_lower = model_id.lower()
+    Thin shim over :func:`ukrqualbench.models.routing.create_model_client`
+    for CLI callers that don't already have a Config instance handy.
+    Supports explicit ``provider:model_id`` prefixes (e.g. ``openrouter:openai/gpt-5.2``).
+    """
+    from ukrqualbench.models.routing import create_model_client as _create
 
-    if "/" in model_id:
-        return create_nebius_client(
-            model_id=model_id,
-            api_key=config.nebius_api_key,
-            temperature=config.temperature,
-            max_retries=config.max_retries,
-        )
-    elif model_lower.startswith(("gpt-", "o1", "o3")):
-        return create_openai_client(
-            model_id=model_id,
-            api_key=config.openai_api_key,
-            temperature=config.temperature,
-            max_retries=config.max_retries,
-        )
-    elif model_lower.startswith("claude-"):
-        return create_anthropic_client(
-            model_id=model_id,
-            api_key=config.anthropic_api_key,
-            temperature=config.temperature,
-            max_retries=config.max_retries,
-        )
-    elif model_lower.startswith("gemini-"):
-        return create_google_client(
-            model_id=model_id,
-            api_key=config.google_api_key,
-            temperature=config.temperature,
-            max_retries=config.max_retries,
-        )
-    else:
-        return create_local_client(
-            model_id=model_id,
-            base_url=config.local_base_url,
-            temperature=config.temperature,
-        )
+    return _create(model_id, config or Config())
 
 
 def version_callback(value: bool) -> None:
@@ -575,6 +538,24 @@ def compare(
     persistent: Annotated[
         bool, typer.Option("--persistent/--no-persistent", help="Use persistent ELO registry")
     ] = True,
+    anchors: Annotated[
+        str | None,
+        typer.Option(
+            "--anchors",
+            help=(
+                "Comma-separated explicit anchor models (overrides auto-selection). "
+                "Use empty string '' to disable injection."
+            ),
+        ),
+    ] = None,
+    anchor_count: Annotated[
+        int,
+        typer.Option(
+            "--anchor-count",
+            help="How many anchors to auto-pick from registry when --anchors is not set (0 disables).",
+            min=0,
+        ),
+    ] = 2,
 ) -> None:
     """Compare multiple models using pairwise evaluation."""
     import math
@@ -595,6 +576,11 @@ def compare(
 
     output.mkdir(parents=True, exist_ok=True)
 
+    explicit_anchors: list[str] | None = None
+    if anchors is not None:
+        explicit_anchors = [a.strip() for a in anchors.split(",") if a.strip()]
+
+    effective_anchors: list[str] = []
     registry: ELORegistry | None = None
     if persistent:
         registry_path = config.data_dir / "elo_registry.json"
@@ -604,7 +590,6 @@ def compare(
             k_factor=config.elo_k_factor,
         )
         new_models = registry.get_new_models(model_list)
-        existing_models = registry.get_existing_models(model_list)
 
         status_lines = [f"[bold]Comparing Models[/bold]\n\nModels: [cyan]{n_models}[/cyan]"]
         for m in model_list:
@@ -615,12 +600,18 @@ def compare(
                 rating = entry.rating if entry else config.elo_initial_rating
                 status_lines.append(f"  \u2022 {m} [dim](ELO: {rating:.0f})[/dim]")
 
-        if existing_models and new_models:
-            anchors = registry.get_anchor_models(min(3, len(existing_models)))
-            if anchors:
-                status_lines.append(
-                    f"\n[dim]Anchor models for calibration: {', '.join(anchors)}[/dim]"
-                )
+        if explicit_anchors is not None:
+            effective_anchors = [a for a in explicit_anchors if a not in model_list]
+        elif anchor_count > 0 and new_models and registry.model_count > 0:
+            auto = registry.get_anchor_models(anchor_count)
+            effective_anchors = [a for a in auto if a not in model_list]
+
+        if effective_anchors:
+            status_lines.append(
+                f"\n[dim]Anchor models for calibration: {', '.join(effective_anchors)}[/dim]"
+            )
+        elif explicit_anchors == [] or anchor_count == 0:
+            status_lines.append("\n[dim]Anchor injection disabled[/dim]")
 
         status_lines.append(f"\nBenchmark: [yellow]{benchmark.value}[/yellow]")
         status_lines.append(f"Rounds: [yellow]{rounds}[/yellow]")
@@ -650,9 +641,19 @@ def compare(
 
     actual_judge = judge if judge else config.default_judge
 
+    # Always pass an explicit list to evaluator: this is what we displayed in the
+    # status panel, so the user sees exactly what runs. Empty list disables injection.
+    anchors_for_run: list[str] | None = (
+        effective_anchors if registry is not None else explicit_anchors
+    )
+
     async def run_comparison() -> dict[str, float]:
         return await evaluator.compare_models(
-            model_ids=model_list, judge_id=actual_judge, rounds=rounds
+            model_ids=model_list,
+            judge_id=actual_judge,
+            rounds=rounds,
+            anchor_count=anchor_count,
+            anchor_models=anchors_for_run,
         )
 
     rprint(f"[cyan]Running {rounds} rounds of comparison (Block B only)...[/cyan]")
@@ -885,12 +886,6 @@ def info() -> None:
         "Google",
         "[green]\u2713 Configured[/green]"
         if config.google_api_key
-        else "[red]\u2717 Not set[/red]",
-    )
-    api_table.add_row(
-        "Nebius",
-        "[green]\u2713 Configured[/green]"
-        if config.nebius_api_key
         else "[red]\u2717 Not set[/red]",
     )
     local_url = config.local_base_url or "Not configured"

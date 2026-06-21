@@ -1,10 +1,9 @@
 """Local and OpenAI-compatible model clients.
 
-Supports locally running LLMs and OpenAI-compatible cloud providers:
+Supports locally running LLMs and OpenAI-compatible endpoints:
 - Ollama (local)
 - vLLM (local)
-- Nebius Token Factory (cloud)
-- Generic OpenAI-compatible endpoints
+- LM Studio / LocalAI / llama.cpp server / generic OpenAI-compatible
 """
 
 from __future__ import annotations
@@ -17,7 +16,6 @@ from ukrqualbench.models.base import (
     BaseModelClient,
     ModelConfig,
     ModelResponse,
-    calculate_cost,
 )
 
 if TYPE_CHECKING:
@@ -410,143 +408,6 @@ class VLLMClient(BaseModelClient):
             self._client = None
 
 
-class NebiusClient(BaseModelClient):
-    """Nebius Token Factory API client.
-
-    Supports OpenAI-compatible API for cloud-hosted open-source models:
-    - DeepSeek-R1-0528, DeepSeek-V3
-    - Qwen3-235B, Qwen3-30B, QwQ-32B
-    - Meta/Llama-3.3-70B, Meta/Llama-3.1-8B, Meta/Llama-3.1-405B
-    - gpt-oss-120b, gpt-oss-20b
-    - And more
-
-    See https://docs.tokenfactory.nebius.com for full model list.
-
-    Example:
-        >>> client = NebiusClient("deepseek-ai/DeepSeek-R1-0528")
-        >>> response = await client.generate("Поясніть фотосинтез")
-        >>> print(response.text)
-    """
-
-    # Default API endpoint
-    DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1"
-
-    def __init__(
-        self,
-        model_id: str = "deepseek-ai/DeepSeek-R1-0528",
-        config: ModelConfig | None = None,
-        api_key: str | None = None,
-        base_url: str | None = None,
-    ) -> None:
-        """Initialize Nebius Token Factory client.
-
-        Args:
-            model_id: Model identifier (e.g., "deepseek-ai/DeepSeek-R1-0528").
-            config: Optional configuration.
-            api_key: API key (defaults to NEBIUS_API_KEY env var).
-            base_url: Optional custom base URL.
-        """
-        super().__init__(f"nebius/{model_id}", config)
-        self._nebius_model = model_id
-
-        # Resolve API key
-        self._api_key = api_key or self._config.api_key or os.getenv("NEBIUS_API_KEY")
-        if not self._api_key:
-            raise ValueError(
-                "Nebius API key required. Set UKRQUALBENCH_NEBIUS_API_KEY (or NEBIUS_API_KEY) "
-                "environment variable or pass api_key parameter. "
-                "Get your key at https://tokenfactory.nebius.com/"
-            )
-
-        # Resolve base URL
-        self._base_url = base_url or self._config.base_url or self.DEFAULT_BASE_URL
-
-        self._client: httpx.AsyncClient | None = None
-
-    def _get_client(self) -> httpx.AsyncClient:
-        """Get or create the HTTP client."""
-        if self._client is None:
-            import httpx
-
-            self._client = httpx.AsyncClient(
-                base_url=self._base_url,
-                timeout=self._config.timeout,
-                headers={"Authorization": f"Bearer {self._api_key}"},
-            )
-        return self._client
-
-    async def _call_api(
-        self,
-        prompt: str,
-        system_prompt: str | None,
-        temperature: float,
-        max_tokens: int,
-        json_mode: bool,
-    ) -> ModelResponse:
-        """Make Nebius Token Factory API call.
-
-        Args:
-            prompt: User prompt.
-            system_prompt: Optional system prompt.
-            temperature: Sampling temperature.
-            max_tokens: Maximum tokens to generate.
-            json_mode: Whether to enforce JSON output.
-
-        Returns:
-            Model response.
-
-        Raises:
-            httpx.HTTPError: If API call fails.
-        """
-        client = self._get_client()
-
-        # Build messages (OpenAI format)
-        messages: list[dict[str, Any]] = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
-
-        payload: dict[str, Any] = {
-            "model": self._nebius_model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-        }
-
-        if json_mode:
-            payload["response_format"] = {"type": "json_object"}
-
-        response = await client.post("/chat/completions", json=payload)
-        response.raise_for_status()
-
-        data = response.json()
-
-        text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        text = strip_thinking_tags(text)
-
-        usage = data.get("usage", {})
-        prompt_tokens = usage.get("prompt_tokens", 0)
-        completion_tokens = usage.get("completion_tokens", 0)
-        total_tokens = prompt_tokens + completion_tokens
-
-        # Calculate cost using pricing from base.py
-        cost = calculate_cost(self._model_id, prompt_tokens, completion_tokens)
-
-        return ModelResponse(
-            text=text,
-            tokens_used=total_tokens,
-            latency_ms=0.0,
-            model_id=self._model_id,
-            cost_usd=cost,
-        )
-
-    async def close(self) -> None:
-        """Close the HTTP client."""
-        if self._client:
-            await self._client.aclose()
-            self._client = None
-
-
 class OpenAICompatibleClient(BaseModelClient):
     """Generic OpenAI-compatible API client.
 
@@ -744,37 +605,3 @@ def create_local_client(
     return OpenAICompatibleClient(model_id=model_id, base_url=resolved_url, config=config)
 
 
-def create_nebius_client(
-    model_id: str = "deepseek-ai/DeepSeek-R1-0528",
-    api_key: str | None = None,
-    temperature: float = 0.0,
-    max_retries: int = 3,
-) -> NebiusClient:
-    """Factory function to create a Nebius Token Factory client.
-
-    Args:
-        model_id: Model identifier (e.g., "deepseek-ai/DeepSeek-R1-0528").
-        api_key: Optional API key (defaults to NEBIUS_API_KEY env var).
-        temperature: Default sampling temperature.
-        max_retries: Maximum retry attempts.
-
-    Returns:
-        Configured NebiusClient instance.
-
-    Available models include:
-        - deepseek-ai/DeepSeek-R1-0528 (reasoning)
-        - deepseek-ai/DeepSeek-V3 (general)
-        - Qwen/Qwen3-235B-Instruct
-        - Qwen/Qwen3-30B-Instruct
-        - meta-llama/Llama-3.3-70B-Instruct
-        - meta-llama/Llama-3.1-405B-Instruct
-        - gpt-oss-120b
-
-    See https://docs.tokenfactory.nebius.com for full model list.
-    """
-    config = ModelConfig(
-        api_key=api_key,
-        default_temperature=temperature,
-        max_retries=max_retries,
-    )
-    return NebiusClient(model_id=model_id, config=config)

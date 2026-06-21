@@ -544,8 +544,106 @@ class TestEvaluator:
         assert evaluator._get_provider("gpt-4o") == "openai"
         assert evaluator._get_provider("claude-3.5-sonnet") == "anthropic"
         assert evaluator._get_provider("gemini-pro") == "google"
-        assert evaluator._get_provider("org/model") == "nebius"
+        assert evaluator._get_provider("google/gemma-4-26b-a4b") == "local"
+        assert evaluator._get_provider("gemma-3-27b-it") == "local"
         assert evaluator._get_provider("unknown-model") == "unknown"
+
+
+class TestAnchorResolution:
+    """Tests for the anchor model resolution helper.
+
+    The helper picks which models from the ELO registry should be appended to a
+    `compare` run for calibration. Misbehavior here causes mystery models (e.g.
+    Qwen, mamaylm) to appear in comparisons unrequested.
+    """
+
+    @staticmethod
+    def _make_registry(
+        existing: list[str] | None = None,
+        anchor_picks: list[str] | None = None,
+    ) -> MagicMock:
+        reg = MagicMock()
+        reg.model_count = len(existing) if existing else 0
+        existing_set = set(existing or [])
+        reg.get_new_models = MagicMock(
+            side_effect=lambda ids: [m for m in ids if m not in existing_set]
+        )
+        reg.get_anchor_models = MagicMock(return_value=list(anchor_picks or []))
+        return reg
+
+    def test_explicit_list_overrides_registry(self):
+        """Explicit anchors win — registry auto-pick must not run."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = self._make_registry(
+            existing=["claude-haiku-4-5", "gpt-5.2"], anchor_picks=["gpt-5.2"]
+        )
+        anchors = evaluator._resolve_anchors(
+            model_ids=["new-a"],
+            anchor_count=2,
+            anchor_models=["claude-haiku-4-5", "gpt-5-nano"],
+        )
+        assert anchors == ["claude-haiku-4-5", "gpt-5-nano"]
+        evaluator._elo_registry.get_anchor_models.assert_not_called()
+
+    def test_empty_explicit_list_disables_injection(self):
+        """`anchor_models=[]` is the explicit 'no anchors' signal."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = self._make_registry(
+            existing=["claude-haiku-4-5"], anchor_picks=["claude-haiku-4-5"]
+        )
+        anchors = evaluator._resolve_anchors(
+            model_ids=["new-a"], anchor_count=2, anchor_models=[]
+        )
+        assert anchors == []
+        evaluator._elo_registry.get_anchor_models.assert_not_called()
+
+    def test_anchor_count_zero_disables_auto(self):
+        """`anchor_count=0` skips registry auto-pick when no explicit list given."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = self._make_registry(
+            existing=["claude-haiku-4-5"], anchor_picks=["claude-haiku-4-5"]
+        )
+        anchors = evaluator._resolve_anchors(
+            model_ids=["new-a"], anchor_count=0, anchor_models=None
+        )
+        assert anchors == []
+        evaluator._elo_registry.get_anchor_models.assert_not_called()
+
+    def test_auto_pick_when_new_model_present(self):
+        """Auto-pick fires when there's a new model and the registry isn't empty."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = self._make_registry(
+            existing=["claude-haiku-4-5", "gpt-5.2"],
+            anchor_picks=["claude-haiku-4-5"],
+        )
+        anchors = evaluator._resolve_anchors(
+            model_ids=["new-a"], anchor_count=2, anchor_models=None
+        )
+        assert anchors == ["claude-haiku-4-5"]
+        evaluator._elo_registry.get_anchor_models.assert_called_once_with(2)
+
+    def test_auto_pick_skipped_when_no_new_models(self):
+        """If everything is already in the registry, no anchor injection needed."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = self._make_registry(
+            existing=["claude-haiku-4-5", "gpt-5.2"],
+            anchor_picks=["claude-haiku-4-5"],
+        )
+        anchors = evaluator._resolve_anchors(
+            model_ids=["claude-haiku-4-5", "gpt-5.2"],
+            anchor_count=2,
+            anchor_models=None,
+        )
+        assert anchors == []
+
+    def test_no_registry_means_no_anchors(self):
+        """Without a persistent registry there is nothing to anchor against."""
+        evaluator = Evaluator()
+        evaluator._elo_registry = None
+        anchors = evaluator._resolve_anchors(
+            model_ids=["new-a"], anchor_count=2, anchor_models=None
+        )
+        assert anchors == []
 
 
 class TestCreateEvaluator:

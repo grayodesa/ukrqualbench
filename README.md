@@ -188,13 +188,15 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 | **OpenAI** | gpt-5.2, gpt-5.2-pro, gpt-5-mini | `UKRQUALBENCH_OPENAI_API_KEY` |
 | **Anthropic** | claude-opus-4-5-*, claude-sonnet-4-*, claude-haiku-4 | `UKRQUALBENCH_ANTHROPIC_API_KEY` |
 | **Google** | gemini-3-pro-preview, gemini-3-flash-preview | `UKRQUALBENCH_GOOGLE_API_KEY` |
-| **Nebius** | deepseek-ai/DeepSeek-R1, Qwen/*, meta-llama/* | `UKRQUALBENCH_NEBIUS_API_KEY` |
 
 ### Local Models
 | Provider | Configuration |
 |----------|---------------|
+| **LM Studio** (and any OpenAI-compatible server) | `UKRQUALBENCH_LOCAL_BASE_URL` (default: http://localhost:1234/v1) |
 | **Ollama** | `UKRQUALBENCH_OLLAMA_BASE_URL` (default: http://localhost:11434) |
 | **vLLM** | `UKRQUALBENCH_VLLM_BASE_URL` (default: http://localhost:8000) |
+
+Any model id containing `gemma` (e.g. `google/gemma-4-26b-a4b`) is routed to the local OpenAI-compatible endpoint — load the model in LM Studio and run `ukrqualbench eval --model google/gemma-4-26b-a4b`.
 
 ## Judge Calibration
 
@@ -230,7 +232,9 @@ Configuration via environment variables (prefix: `UKRQUALBENCH_`):
 UKRQUALBENCH_OPENAI_API_KEY=sk-...
 UKRQUALBENCH_ANTHROPIC_API_KEY=sk-ant-...
 UKRQUALBENCH_GOOGLE_API_KEY=...
-UKRQUALBENCH_NEBIUS_API_KEY=...
+
+# Local models (LM Studio, Ollama, vLLM, etc.)
+UKRQUALBENCH_LOCAL_BASE_URL=http://localhost:1234/v1
 
 # Settings
 UKRQUALBENCH_BENCHMARK_VERSION=base
@@ -340,7 +344,7 @@ ukrqualbench/
 │   ├── datasets/           # Data loaders (UA-GEC, ZNO, FLORES, Brown-UK)
 │   ├── detectors/          # Russism, anglicism, markers, fertility
 │   ├── judges/             # LLM judge system, calibration
-│   ├── models/             # API clients (OpenAI, Anthropic, Google, Nebius, local)
+│   ├── models/             # API clients (OpenAI, Anthropic, Google, local OpenAI-compatible)
 │   └── reports/            # Leaderboard, HTML, analysis
 ├── data/
 │   ├── benchmarks/         # lite.json, base.json, large.json
