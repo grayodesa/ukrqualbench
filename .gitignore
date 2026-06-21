@@ -60,6 +60,7 @@ results/
 
 # Generated outputs
 leaderboard.html
+leaderboard.md
 data/elo_registry*.json
 data/checkpoints/
 logs/

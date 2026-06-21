@@ -10,73 +10,67 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 ---
 
-## Leaderboard (January 2026)
+## Leaderboard (June 2026)
 
 ### ELO Rating (Pairwise Comparisons)
 
-| Rank | Model | ELO Rating | Badge |
-|:----:|-------|:----------:|:-----:|
-| 1 | **gpt-5.2-2025-12-11** | **1726** | 🥇 |
-| 2 | claude-opus-4-5 | 1722 | 🥇 |
-| 3 | gemini-3-flash-preview | 1681 | 🥇 |
-| 4 | gemini-3-pro-preview | 1593 | 🥈 |
-| 5 | claude-sonnet-4-5 | 1553 | 🥈 |
-| 6 | mamaylm-gemma-3-12b-it-v1.0 | 1503 | 🥈 |
-| 7 | google/gemma-3-27b-it-fast | 1422 | ⚠️ |
-| 8 | lapa-v0.1.2-instruct | 1393 | ⚠️ |
-| 9 | claude-haiku-4-5 | 1367 | ⚠️ |
-| 10 | openai/gpt-oss-20b | 1305 | 🚫 |
-| 11 | Qwen/Qwen3-32B-fast | 1236 | 🚫 |
+| Rank | Model | ELO |
+|:----:|-------|:---:|
+| 1 | gemini-3.5-flash | 1792.4 |
+| 2 | gemini-3.1-flash-lite-preview | 1696.2 |
+| 3 | gemini-3-flash-preview | 1680.5 |
+| 4 | gemini-3-pro-preview | 1593.0 |
+| 5 | openrouter:google/gemma-4-31b-it | 1571.9 |
+| 6 | claude-opus-4-5 | 1565.7 |
+| 7 | openrouter:openai/gpt-5.2 | 1563.1 |
+| 8 | claude-sonnet-4-5 | 1553.3 |
+| 9 | claude-opus-4-7 | 1543.8 |
+| 10 | openrouter:deepseek/deepseek-v4-flash | 1532.8 |
+| 11 | gpt-5.5 | 1508.2 |
+| 12 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 |
+| 13 | google/gemma-4-26b-a4b | 1491.2 |
+| 14 | google/gemma-3-27b-it-fast | 1421.8 |
+| 15 | lapa-v0.1.2-instruct | 1392.7 |
+| 16 | gpt-5-nano | 1343.8 |
+| 17 | openai/gpt-oss-20b | 1304.6 |
+| 18 | Qwen/Qwen3-32B-fast | 1236.3 |
+| 19 | claude-haiku-4-5 | 1132.3 |
 
-### Block A: Calibration Tests (Absolute Scores)
+### Detailed Metrics
 
-| Model | MC Accuracy | GEC F1 | Translation | FP Rate | PM Score |
-|-------|:-----------:|:------:|:-----------:|:-------:|:--------:|
-| gpt-5.2-2025-12-11 | **0.93** | 0.77 | 0.90 | 0.0 | 0.8 |
-| gemini-3-pro-preview | 0.89 | **0.84** | **0.97** | 0.4 | **0.9** |
-| claude-opus-4-5 | 0.90 | 0.73 | 0.96 | 0.0 | 0.0 |
-| gemini-3-flash-preview | 0.90 | 0.77 | 0.96 | 0.2 | 0.0 |
-| google/gemma-3-27b-it-fast | 0.83 | 0.78 | **0.97** | 0.0 | 0.0 |
-| Qwen/Qwen3-32B-fast | 0.78 | 0.70 | 0.77 | 0.1 | **0.9** |
-| gpt-5-nano | 0.75 | 0.60 | 0.92 | 0.0 | 0.0 |
-| mamaylm-gemma-3-12b-it-v1.0 | 0.74 | 0.64 | **0.97** | 0.0 | 0.8 |
-| claude-sonnet-4-5 | 0.67 | 0.75 | 0.96 | 0.1 | 0.0 |
-| claude-haiku-4-5 | 0.62 | 0.74 | 0.92 | 0.2 | 0.0 |
-| openai/gpt-oss-20b | 0.60 | 0.61 | 0.80 | 0.0 | **0.9** |
-| lapa-v0.1.2-instruct | 0.54 | 0.71 | 0.90 | 0.0 | 0.0 |
+| Model | MC Acc | GEC F1 | Fertility | Russisms | Markers |
+|-------|:------:|:------:|:---------:|:--------:|:-------:|
+| gemini-3.5-flash | 86.0% | 80.3% | 1.48 | 0.2 | 10.3 |
+| gemini-3.1-flash-lite-preview | 87.0% | 66.2% | 1.49 | 0.2 | 8.1 |
+| gemini-3-flash-preview | 90.0% | 77.2% | 1.44 | 2.3 | 13.0 |
+| gemini-3-pro-preview | 89.1% | 84.2% | 1.46 | 1.6 | 9.3 |
+| openrouter:google/gemma-4-31b-it | 78.0% | 69.7% | 1.49 | 0.2 | 11.2 |
+| claude-opus-4-5 | 90.0% | 73.0% | 1.49 | 0.0 | 6.0 |
+| openrouter:openai/gpt-5.2 | - | - | - | - | - |
+| claude-sonnet-4-5 | 67.0% | 75.0% | 1.41 | 1.8 | 6.3 |
+| claude-opus-4-7 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
+| openrouter:deepseek/deepseek-v4-flash | 87.9% | 80.6% | 1.52 | 0.0 | 8.8 |
+| gpt-5.5 | 82.0% | 73.7% | 1.48 | 0.0 | 8.3 |
+| mamaylm-gemma-3-12b-it-v1.0 | 74.0% | 64.3% | 1.40 | 1.6 | 7.3 |
+| google/gemma-4-26b-a4b | 83.1% | 74.3% | 1.48 | 0.2 | 10.1 |
+| google/gemma-3-27b-it-fast | 83.0% | 78.4% | 1.41 | 1.0 | 4.5 |
+| lapa-v0.1.2-instruct | 54.0% | 71.0% | 1.40 | 7.0 | 4.8 |
+| gpt-5-nano | 75.0% | 60.1% | 1.47 | 0.0 | 3.0 |
+| openai/gpt-oss-20b | 60.0% | 60.5% | 1.50 | 1.9 | 4.4 |
+| Qwen/Qwen3-32B-fast | 78.0% | 69.7% | 1.47 | 3.9 | 13.7 |
+| claude-haiku-4-5 | 62.0% | 74.0% | 1.43 | 1.7 | 9.9 |
 
-### Block V: Automatic Metrics (Detectors)
-
-| Model | Fertility | Positive Markers | Calques* | Anglicisms |
-|-------|:---------:|:----------------:|:--------:|:----------:|
-| Qwen/Qwen3-32B-fast | 1.47 | **13.7** | 3.9 | 0.0 |
-| gemini-3-flash-preview | 1.44 | 13.0 | 2.3 | 0.0 |
-| claude-haiku-4-5 | 1.43 | 9.9 | 1.7 | 0.0 |
-| gemini-3-pro-preview | 1.46 | 9.3 | 1.6 | 0.0 |
-| mamaylm-gemma-3-12b-it-v1.0 | **1.40** | 7.3 | 1.6 | 0.0 |
-| gpt-5.2-2025-12-11 | 1.43 | 6.9 | 6.0 | 0.0 |
-| claude-sonnet-4-5 | 1.41 | 6.3 | 1.8 | 0.0 |
-| claude-opus-4-5 | 1.49 | 6.0 | **0.0** | 0.0 |
-| lapa-v0.1.2-instruct | **1.40** | 4.8 | 7.0 | 0.0 |
-| google/gemma-3-27b-it-fast | 1.41 | 4.5 | 1.0 | 0.0 |
-| openai/gpt-oss-20b | 1.50 | 4.4 | 1.9 | 0.0 |
-
-*\*Calques = Russian calques detected by LLM judge (lexical, syntactic, morphological)*  
 **Note:** mamaylm-gemma-3-12b-it-v1.0 and lapa-v0.1.2-instruct were used with quantization (Q4_K_S)
 
 <details>
 <summary><b>Metrics Explanation</b></summary>
 
 - **ELO Rating**: Swiss-system tournament rating (baseline 1500, K=32)
-- **MC Accuracy**: Multiple choice accuracy (orthography, punctuation, russisms)
+- **MC Acc**: Multiple choice accuracy (orthography, punctuation, russisms)
 - **GEC F1**: Grammar error correction quality
-- **Translation**: RU→UK translation quality score
-- **FP Rate**: False positive rate (incorrectly "fixing" correct text)
-- **PM Score**: Positive markers test score (vocative case, particles)
 - **Fertility**: Tokens per word ratio (optimal ~1.4-1.5 for Ukrainian)
-- **Positive Markers**: Native markers per 1000 tokens (higher = more natural)
-- **Calques**: Russian calques per 1000 tokens detected by LLM judge (lower = better)
-- **Anglicisms**: English calques per 1000 tokens (lower = better)
+- **Russisms**: Russian calques per 1000 tokens detected by LLM judge (lower = better)
+- **Markers**: Native positive markers per 1000 tokens (higher = more natural)
 
 </details>
 
