@@ -140,7 +140,7 @@ class Config(BaseSettings):
         description="Benchmark version: lite (~30min), base (~2hr), large (~5hr)",
     )
     default_judge: str = Field(
-        default="claude-3-5-haiku-latest",
+        default="gemini-3.1-flash-lite",
         description="Default judge model for pairwise comparisons",
     )
 

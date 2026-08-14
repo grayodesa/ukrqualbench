@@ -10,53 +10,65 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 ---
 
-## Leaderboard (June 2026)
+## Leaderboard (August 2026)
 
 ### ELO Rating (Pairwise Comparisons)
 
 | Rank | Model | ELO |
 |:----:|-------|:---:|
-| 1 | gemini-3.5-flash | 1792.4 |
-| 2 | gemini-3.1-flash-lite-preview | 1696.2 |
-| 3 | gemini-3-flash-preview | 1680.5 |
-| 4 | gemini-3-pro-preview | 1593.0 |
-| 5 | openrouter:google/gemma-4-31b-it | 1571.9 |
-| 6 | claude-opus-4-5 | 1565.7 |
-| 7 | openrouter:openai/gpt-5.2 | 1563.1 |
-| 8 | claude-sonnet-4-5 | 1553.3 |
-| 9 | claude-opus-4-7 | 1543.8 |
-| 10 | openrouter:deepseek/deepseek-v4-flash | 1532.8 |
-| 11 | gpt-5.5 | 1508.2 |
-| 12 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 |
-| 13 | google/gemma-4-26b-a4b | 1491.2 |
-| 14 | google/gemma-3-27b-it-fast | 1421.8 |
-| 15 | lapa-v0.1.2-instruct | 1392.7 |
-| 16 | gpt-5-nano | 1343.8 |
-| 17 | openai/gpt-oss-20b | 1304.6 |
-| 18 | Qwen/Qwen3-32B-fast | 1236.3 |
-| 19 | claude-haiku-4-5 | 1132.3 |
+| 1 | claude-opus-5 | 1785.1 |
+| 2 | gemini-3.5-flash | 1712.2 |
+| 3 | gemini-3.1-flash-lite-preview | 1696.2 |
+| 4 | gemini-3.7-flash | 1683.6 |
+| 5 | gemini-3-flash-preview | 1680.5 |
+| 6 | gemini-3-pro-preview | 1593.0 |
+| 7 | openrouter:google/gemma-4-31b-it | 1582.9 |
+| 8 | gpt-5.2 | 1572.5 |
+| 9 | claude-opus-4-5 | 1565.7 |
+| 10 | claude-fable-5 | 1553.7 |
+| 11 | claude-sonnet-4-5 | 1553.3 |
+| 12 | openrouter:deepseek/deepseek-v4-flash | 1543.9 |
+| 13 | gpt-5.5 | 1518.7 |
+| 14 | gpt-5.6-sol | 1505.1 |
+| 15 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 |
+| 16 | google/gemma-4-26b-a4b | 1491.2 |
+| 17 | claude-opus-4-7 | 1470.9 |
+| 18 | google/gemma-3-27b-it-fast | 1421.8 |
+| 19 | openrouter:meta/muse-glimmer-30b | 1412.5 |
+| 20 | lapa-v0.1.2-instruct | 1392.7 |
+| 21 | gpt-5-nano | 1343.8 |
+| 22 | openai/gpt-oss-20b | 1304.6 |
+| 23 | claude-sonnet-5 | 1261.2 |
+| 24 | Qwen/Qwen3-32B-fast | 1236.3 |
+| 25 | claude-haiku-4-5 | 1115.5 |
 
 ### Detailed Metrics
 
 | Model | MC Acc | GEC F1 | Fertility | Russisms | Markers |
 |-------|:------:|:------:|:---------:|:--------:|:-------:|
+| claude-opus-5 | 90.0% | 82.1% | 1.49 | 0.0 | 8.1 |
 | gemini-3.5-flash | 86.0% | 80.3% | 1.48 | 0.2 | 10.3 |
 | gemini-3.1-flash-lite-preview | 87.0% | 66.2% | 1.49 | 0.2 | 8.1 |
+| gemini-3.7-flash | 90.0% | 82.4% | 1.50 | 0.2 | 7.3 |
 | gemini-3-flash-preview | 90.0% | 77.2% | 1.44 | 2.3 | 13.0 |
 | gemini-3-pro-preview | 89.1% | 84.2% | 1.46 | 1.6 | 9.3 |
 | openrouter:google/gemma-4-31b-it | 78.0% | 69.7% | 1.49 | 0.2 | 11.2 |
+| gpt-5.2 | 93.0% | 76.7% | 1.43 | 6.0 | 6.9 |
 | claude-opus-4-5 | 90.0% | 73.0% | 1.49 | 0.0 | 6.0 |
-| openrouter:openai/gpt-5.2 | - | - | - | - | - |
+| claude-fable-5 | 89.0% | 86.2% | 1.47 | 0.3 | 8.7 |
 | claude-sonnet-4-5 | 67.0% | 75.0% | 1.41 | 1.8 | 6.3 |
-| claude-opus-4-7 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
 | openrouter:deepseek/deepseek-v4-flash | 87.9% | 80.6% | 1.52 | 0.0 | 8.8 |
 | gpt-5.5 | 82.0% | 73.7% | 1.48 | 0.0 | 8.3 |
+| gpt-5.6-sol | 82.0% | 78.7% | 1.47 | 0.0 | 8.0 |
 | mamaylm-gemma-3-12b-it-v1.0 | 74.0% | 64.3% | 1.40 | 1.6 | 7.3 |
 | google/gemma-4-26b-a4b | 83.1% | 74.3% | 1.48 | 0.2 | 10.1 |
+| claude-opus-4-7 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
 | google/gemma-3-27b-it-fast | 83.0% | 78.4% | 1.41 | 1.0 | 4.5 |
+| openrouter:meta/muse-glimmer-30b | 89.9% | 76.3% | 1.46 | 0.0 | 7.4 |
 | lapa-v0.1.2-instruct | 54.0% | 71.0% | 1.40 | 7.0 | 4.8 |
 | gpt-5-nano | 75.0% | 60.1% | 1.47 | 0.0 | 3.0 |
 | openai/gpt-oss-20b | 60.0% | 60.5% | 1.50 | 1.9 | 4.4 |
+| claude-sonnet-5 | 93.0% | 79.0% | 1.45 | 0.0 | 5.9 |
 | Qwen/Qwen3-32B-fast | 78.0% | 69.7% | 1.47 | 3.9 | 13.7 |
 | claude-haiku-4-5 | 62.0% | 74.0% | 1.43 | 1.7 | 9.9 |
 
@@ -108,7 +120,7 @@ All commands should be run with `uv run` prefix:
 uv run ukrqualbench info
 
 # Calibrate a judge model
-uv run ukrqualbench calibrate --judge claude-3-5-haiku-latest
+uv run ukrqualbench calibrate --judge gemini-3.1-flash-lite
 
 # Evaluate a single model (lite benchmark ~30min)
 uv run ukrqualbench evaluate --model gpt-5.2 --benchmark lite
@@ -134,13 +146,13 @@ uv run ukrqualbench leaderboard --results-dir results/ --format html
 
 ```bash
 # Calibrate with custom output
-uv run ukrqualbench calibrate --judge claude-3-5-haiku-latest --output results/calibration --verbose
+uv run ukrqualbench calibrate --judge gemini-3.1-flash-lite --output results/calibration --verbose
 
 # Evaluate with budget limit
 uv run ukrqualbench evaluate --model gpt-5.2 --benchmark lite --max-cost 10.0 --resume
 
 # Compare with specific round count
-uv run ukrqualbench compare --models gpt-5.2,gemini-3-flash-preview --rounds 5 --judge claude-3-5-haiku-latest
+uv run ukrqualbench compare --models gpt-5.2,gemini-3-flash-preview --rounds 5 --judge gemini-3.1-flash-lite
 
 # Leaderboard in different formats
 uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, markdown, html
@@ -180,7 +192,7 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 | Provider | Models | Env Variable |
 |----------|--------|--------------|
 | **OpenAI** | gpt-5.2, gpt-5.2-pro, gpt-5-mini | `UKRQUALBENCH_OPENAI_API_KEY` |
-| **Anthropic** | claude-opus-4-5-*, claude-sonnet-4-*, claude-haiku-4 | `UKRQUALBENCH_ANTHROPIC_API_KEY` |
+| **Anthropic** | claude-fable-5, claude-opus-5, claude-sonnet-5, claude-opus-4-*, claude-sonnet-4-*, claude-haiku-4-5 | `UKRQUALBENCH_ANTHROPIC_API_KEY` |
 | **Google** | gemini-3-pro-preview, gemini-3-flash-preview | `UKRQUALBENCH_GOOGLE_API_KEY` |
 
 ### Local Models
@@ -232,7 +244,7 @@ UKRQUALBENCH_LOCAL_BASE_URL=http://localhost:1234/v1
 
 # Settings
 UKRQUALBENCH_BENCHMARK_VERSION=base
-UKRQUALBENCH_DEFAULT_JUDGE=claude-3-5-haiku-latest
+UKRQUALBENCH_DEFAULT_JUDGE=gemini-3.1-flash-lite
 UKRQUALBENCH_MAX_COST_USD=50.0
 UKRQUALBENCH_TEMPERATURE=0.0
 
