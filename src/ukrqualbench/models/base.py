@@ -49,7 +49,7 @@ class ModelConfig:
     default_max_tokens: int = 8192
 
 
-# Pricing per 1M tokens (input, output) as of January 2026
+# Pricing per 1M tokens (input, output); Anthropic entries verified 2026-08-14
 MODEL_PRICING: dict[str, tuple[float, float]] = {
     # OpenAI GPT-5 family
     "gpt-5.2": (5.00, 15.00),
@@ -60,15 +60,27 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     # OpenAI legacy (still available)
     "gpt-4o": (2.50, 10.00),
     "gpt-4o-mini": (0.15, 0.60),
+    # Anthropic Claude 5 family
+    "claude-fable-5": (10.00, 50.00),
+    "claude-mythos-5": (10.00, 50.00),
+    "claude-opus-5": (5.00, 25.00),
+    "claude-sonnet-5": (3.00, 15.00),  # list price; intro price ran to 2026-08-31
     # Anthropic Claude 4 family
+    "claude-opus-4-8": (5.00, 25.00),
+    "claude-opus-4-7": (5.00, 25.00),
+    "claude-opus-4-6": (5.00, 25.00),
     "claude-opus-4-5-20251101": (5.00, 25.00),
     "claude-opus-4-5": (5.00, 25.00),
+    "claude-sonnet-4-6": (3.00, 15.00),
+    "claude-sonnet-4-5": (3.00, 15.00),
     "claude-sonnet-4-20250514": (3.00, 15.00),
     "claude-sonnet-4": (3.00, 15.00),
+    "claude-haiku-4-5": (1.00, 5.00),
     "claude-haiku-4": (0.80, 4.00),
     # Anthropic legacy
     "claude-3-5-sonnet-20241022": (3.00, 15.00),
     "claude-3-5-haiku-20241022": (0.80, 4.00),
+    "claude-3-5-haiku-latest": (0.80, 4.00),  # retired model; kept for historical judge runs
     # Google Gemini 3 family (latest)
     "gemini-3-pro-preview": (2.00, 12.00),
     "gemini-3-flash-preview": (0.15, 0.60),

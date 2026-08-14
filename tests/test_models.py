@@ -204,7 +204,12 @@ class TestModelPricing:
         assert "gpt-5.2" in MODEL_PRICING
         assert "gpt-5.2-pro" in MODEL_PRICING
         assert "gpt-5-mini" in MODEL_PRICING
+        # Anthropic Claude 5 family
+        assert "claude-opus-5" in MODEL_PRICING
+        assert "claude-sonnet-5" in MODEL_PRICING
+        assert "claude-fable-5" in MODEL_PRICING
         # Anthropic Claude 4 family
+        assert "claude-opus-4-8" in MODEL_PRICING
         assert "claude-opus-4-5-20251101" in MODEL_PRICING
         assert "claude-opus-4-5" in MODEL_PRICING
         assert "claude-sonnet-4" in MODEL_PRICING
@@ -220,6 +225,23 @@ class TestModelPricing:
         assert "claude-3-5-haiku-20241022" in MODEL_PRICING
         assert "gemini-1.5-pro" in MODEL_PRICING
         assert "gemini-1.5-flash" in MODEL_PRICING
+
+    def test_benchmarked_anthropic_models_are_priced(self) -> None:
+        """Every Claude model on the published leaderboard must have a price.
+
+        Regression guard: these four ids were absent from MODEL_PRICING, so
+        `calculate_cost` silently returned 0.0 and every leaderboard run on them
+        was cost-tracked at $0. A missing entry produces no error — only a wrong
+        number — so the ids are pinned here explicitly.
+        """
+        for model_id in (
+            "claude-opus-4-7",
+            "claude-haiku-4-5",
+            "claude-sonnet-4-5",
+            "claude-3-5-haiku-latest",  # judge in the January/May runs
+        ):
+            assert model_id in MODEL_PRICING, f"{model_id} would be cost-tracked at $0"
+            assert calculate_cost(model_id, 1_000_000, 1_000_000) > 0.0
 
     def test_pricing_format(self) -> None:
         """Test pricing format is (input, output) tuple."""
@@ -447,9 +469,12 @@ class TestCreateAnthropicClient:
 class TestAnthropicTemperatureHandling:
     """Regression tests for the request payload Anthropic receives.
 
-    Anthropic deprecated `temperature` for thinking-by-default models starting
-    with claude-opus-4-7 (see anthropic.py:_TEMPERATURE_DEPRECATED_PREFIXES).
-    Sending it returns HTTP 400 invalid_request_error.
+    Anthropic removed the sampling parameters starting with claude-opus-4-7;
+    every model released since behaves the same way. The client sends
+    `temperature` only for the models on the allowlist
+    (see anthropic.py:_TEMPERATURE_SUPPORTED_PREFIXES) — anything else, known or
+    unknown, gets no `temperature`, because sending it returns HTTP 400
+    invalid_request_error.
     """
 
     @staticmethod
@@ -462,13 +487,14 @@ class TestAnthropicTemperatureHandling:
         block.text = "ok"
         usage = MagicMock(input_tokens=1, output_tokens=1)
         response = MagicMock(content=[block], usage=usage)
+        response.stop_reason = "end_turn"
         return response
 
-    @pytest.mark.asyncio
-    async def test_temperature_sent_for_legacy_model(self) -> None:
+    async def _captured_kwargs(self, model_id: str) -> dict[str, object]:
+        """Call `_call_api` against a stubbed SDK and return the request kwargs."""
         from unittest.mock import AsyncMock, MagicMock
 
-        client = AnthropicClient(model_id="claude-opus-4-5", api_key="test")
+        client = AnthropicClient(model_id=model_id, api_key="test")
         mock_sdk = MagicMock()
         mock_sdk.messages.create = AsyncMock(return_value=self._fake_anthropic_response())
         client._client = mock_sdk
@@ -481,32 +507,83 @@ class TestAnthropicTemperatureHandling:
             json_mode=False,
         )
 
-        kwargs = mock_sdk.messages.create.call_args.kwargs
-        assert "temperature" in kwargs
-        assert kwargs["temperature"] == 0.0
+        return dict(mock_sdk.messages.create.call_args.kwargs)
 
     @pytest.mark.asyncio
-    async def test_temperature_omitted_for_opus_4_7(self) -> None:
-        """`claude-opus-4-7` must NOT receive `temperature` — Anthropic 400s on it."""
-        from unittest.mock import AsyncMock, MagicMock
+    @pytest.mark.parametrize(
+        "model_id",
+        [
+            "claude-3-5-haiku-20241022",
+            "claude-opus-4-5",
+            "claude-opus-4-5-20251101",
+            "claude-opus-4-6",
+            "claude-sonnet-4-20250514",
+            "claude-sonnet-4-5",
+            "claude-sonnet-4-6",
+            "claude-haiku-4-5",
+        ],
+        ids=lambda m: m,
+    )
+    async def test_temperature_sent_for_supported_models(self, model_id: str) -> None:
+        """Models that still accept sampling params must receive `temperature`."""
+        kwargs = await self._captured_kwargs(model_id)
 
-        client = AnthropicClient(model_id="claude-opus-4-7", api_key="test")
-        mock_sdk = MagicMock()
-        mock_sdk.messages.create = AsyncMock(return_value=self._fake_anthropic_response())
-        client._client = mock_sdk
-
-        await client._call_api(
-            prompt="hi",
-            system_prompt=None,
-            temperature=0.0,
-            max_tokens=100,
-            json_mode=False,
+        assert kwargs["temperature"] == 0.0, (
+            f"{model_id} accepts temperature — omitting it loses temperature=0 reproducibility"
         )
 
-        kwargs = mock_sdk.messages.create.call_args.kwargs
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "model_id",
+        [
+            "claude-opus-4-7",
+            "claude-opus-4-8",
+            "claude-opus-5",
+            "claude-sonnet-5",
+            "claude-fable-5",
+            "claude-mythos-5",
+            "claude-opus-9-future",  # unknown id: allowlist must fail safe
+        ],
+        ids=lambda m: m,
+    )
+    async def test_temperature_omitted_for_unsupported_models(self, model_id: str) -> None:
+        """Models from opus-4-7 onward — and unknown ids — must NOT receive `temperature`."""
+        kwargs = await self._captured_kwargs(model_id)
+
         assert "temperature" not in kwargs, (
-            "temperature must be omitted for claude-opus-4-7 — it is deprecated by the API"
+            f"temperature must be omitted for {model_id} — the API rejects it with HTTP 400"
         )
+
+
+class TestAnthropicRefusalHandling:
+    """A safety-classifier decline must not be scored as an empty answer.
+
+    Claude Opus 5 / Fable 5 / Mythos 5 / Sonnet 5 return HTTP 200 with
+    `stop_reason: "refusal"` and empty content when their classifiers decline.
+    Reading `content` blindly yields text="" — a silently wrong benchmark score.
+    """
+
+    @pytest.mark.asyncio
+    async def test_refusal_raises_instead_of_returning_empty_text(self) -> None:
+        from unittest.mock import AsyncMock, MagicMock
+
+        refusal = MagicMock(content=[], usage=MagicMock(input_tokens=1, output_tokens=0))
+        refusal.stop_reason = "refusal"
+        refusal.stop_details = MagicMock(category="cyber")
+
+        client = AnthropicClient(model_id="claude-fable-5", api_key="test")
+        mock_sdk = MagicMock()
+        mock_sdk.messages.create = AsyncMock(return_value=refusal)
+        client._client = mock_sdk
+
+        with pytest.raises(RuntimeError, match="declined the request"):
+            await client._call_api(
+                prompt="hi",
+                system_prompt=None,
+                temperature=0.0,
+                max_tokens=100,
+                json_mode=False,
+            )
 
 
 # ============================================================================
@@ -742,6 +819,7 @@ class TestProtocolConformance:
         client = OllamaClient()
         assert hasattr(client, "model_id")
         assert isinstance(client.model_id, str)
+
 
 # ============================================================================
 # OpenRouter Client Tests

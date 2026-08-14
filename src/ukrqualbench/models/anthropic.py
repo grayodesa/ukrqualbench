@@ -1,10 +1,12 @@
 """Anthropic model client.
 
-Supports Claude Opus 4.5/4.7, Claude Sonnet 4, Claude Haiku 4, and legacy Claude 3.5 models.
+Supports the Claude 5 family (Opus 5, Sonnet 5, Fable 5), the Claude 4.x family
+(Opus 4.6/4.7/4.8, Sonnet 4.5/4.6, Haiku 4.5, Opus 4.5) and legacy Claude 3.x models.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import TYPE_CHECKING, Any
 
@@ -18,12 +20,28 @@ from ukrqualbench.models.base import (
 if TYPE_CHECKING:
     import anthropic
 
+logger = logging.getLogger("ukrqualbench.models")
 
-# Anthropic deprecated `temperature` for thinking-by-default models starting
-# with claude-opus-4-7. Sending it returns HTTP 400 invalid_request_error.
-# Extend this tuple as Anthropic deprecates the parameter on more models.
-_TEMPERATURE_DEPRECATED_PREFIXES: tuple[str, ...] = (
-    "claude-opus-4-7",
+
+# Anthropic removed the sampling parameters (`temperature`, `top_p`, `top_k`)
+# starting with claude-opus-4-7: those models manage sampling internally via
+# adaptive thinking, and sending the parameter returns HTTP 400
+# invalid_request_error. Every model released since behaves the same way
+# (opus-4-8, opus-5, sonnet-5, fable-5, mythos-5), so the set of models that
+# still ACCEPT `temperature` is closed and will not grow.
+#
+# The check is therefore an allowlist, not a denylist: an unrecognised model id
+# gets no `temperature`, which is always accepted, instead of a 400. The prior
+# denylist form failed exactly once this way — it listed only opus-4-7 and every
+# newer model broke on first use.
+_TEMPERATURE_SUPPORTED_PREFIXES: tuple[str, ...] = (
+    "claude-3",  # Claude 3 / 3.5 / 3.7
+    "claude-haiku-4",  # haiku-4, haiku-4-5
+    "claude-opus-4-0",
+    "claude-opus-4-1",
+    "claude-opus-4-5",
+    "claude-opus-4-6",
+    "claude-sonnet-4",  # sonnet-4, sonnet-4-5, sonnet-4-6 (NOT sonnet-5)
 )
 
 
@@ -31,11 +49,14 @@ class AnthropicClient(BaseModelClient):
     """Anthropic API client.
 
     Supports all Claude models including:
-    - claude-opus-4-5-20251101 (flagship, most intelligent)
-    - claude-sonnet-4-20250514 (balanced performance)
-    - claude-haiku-4 (fast and efficient)
+    - claude-opus-5 (current flagship Opus)
+    - claude-sonnet-5 (balanced performance)
+    - claude-haiku-4-5 (fast and efficient)
+    - claude-opus-4-5-20251101 (previous flagship, still active)
     - claude-3-5-sonnet-20241022 (legacy)
-    - claude-3-5-haiku-20241022 (legacy)
+
+    Models from claude-opus-4-7 onward do not accept `temperature`; the client
+    omits it for them (see _TEMPERATURE_SUPPORTED_PREFIXES).
 
     Example:
         >>> client = AnthropicClient("claude-opus-4-5-20251101")
@@ -134,21 +155,39 @@ class AnthropicClient(BaseModelClient):
             messages = [{"role": "user", "content": actual_prompt}]
 
         # Build request kwargs.
-        # `temperature` is omitted for models that deprecated it (opus-4-7+);
-        # those models manage sampling internally via extended thinking.
+        # `temperature` is sent only for the models that still accept it
+        # (see _TEMPERATURE_SUPPORTED_PREFIXES); opus-4-7 and everything newer
+        # reject it with HTTP 400 and manage sampling internally.
         request_kwargs: dict[str, Any] = {
             "model": self._model_id,
             "messages": messages,
             "max_tokens": max_tokens,
         }
-        if not self._model_id.startswith(_TEMPERATURE_DEPRECATED_PREFIXES):
+        if self._model_id.startswith(_TEMPERATURE_SUPPORTED_PREFIXES):
             request_kwargs["temperature"] = temperature
+        else:
+            logger.debug(
+                "[REQ] model=%s: temperature omitted (not accepted by this model)",
+                self._model_id,
+            )
 
         # Add system prompt if provided
         if system_prompt:
             request_kwargs["system"] = system_prompt
 
         response = await client.messages.create(**request_kwargs)
+
+        # A safety-classifier decline is a successful HTTP 200 carrying
+        # `stop_reason: "refusal"` and empty or partial content (Claude Opus 5,
+        # Fable 5, Mythos 5, Sonnet 5). Reading `content` without this check
+        # would score an empty string as a genuine model answer, silently
+        # depressing that model's benchmark metrics. Fail loudly instead.
+        if getattr(response, "stop_reason", None) == "refusal":
+            details = getattr(response, "stop_details", None)
+            category = getattr(details, "category", None)
+            raise RuntimeError(
+                f"{self._model_id} declined the request (stop_reason=refusal, category={category})"
+            )
 
         # Extract response content
         text = ""
