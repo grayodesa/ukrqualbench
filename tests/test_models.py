@@ -243,6 +243,25 @@ class TestModelPricing:
             assert model_id in MODEL_PRICING, f"{model_id} would be cost-tracked at $0"
             assert calculate_cost(model_id, 1_000_000, 1_000_000) > 0.0
 
+    def test_benchmarked_gemini_models_are_priced(self) -> None:
+        """Same guard for the Gemini models on the leaderboard.
+
+        gemini-3.1-flash-lite is also the default judge, so it is billed on every
+        pairwise comparison — an unpriced judge understates the cost of a whole run.
+        Values are the text-tier prices from ai.google.dev, read 2026-08-15.
+        """
+        expected = {
+            "gemini-3.7-flash": (0.75, 3.75),
+            "gemini-3.5-flash": (1.50, 9.00),
+            "gemini-3.1-flash-lite": (0.25, 1.50),
+            "gemini-3.1-flash-lite-preview": (0.25, 1.50),
+            "gemini-3-flash-preview": (0.50, 3.00),
+        }
+        for model_id, prices in expected.items():
+            assert MODEL_PRICING.get(model_id) == prices, (
+                f"{model_id}: expected {prices}, got {MODEL_PRICING.get(model_id)}"
+            )
+
     def test_pricing_format(self) -> None:
         """Test pricing format is (input, output) tuple."""
         for model_id, pricing in MODEL_PRICING.items():

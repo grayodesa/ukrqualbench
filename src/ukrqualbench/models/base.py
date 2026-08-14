@@ -81,9 +81,14 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-3-5-sonnet-20241022": (3.00, 15.00),
     "claude-3-5-haiku-20241022": (0.80, 4.00),
     "claude-3-5-haiku-latest": (0.80, 4.00),  # retired model; kept for historical judge runs
-    # Google Gemini 3 family (latest)
+    # Google Gemini 3 family. Text-tier prices from ai.google.dev/gemini-api/docs/pricing,
+    # read 2026-08-15; audio input is billed higher and is not used by this benchmark.
+    "gemini-3.7-flash": (0.75, 3.75),  # rises to 1.50 / 7.50 on 2027-01-01
+    "gemini-3.5-flash": (1.50, 9.00),
+    "gemini-3.1-flash-lite": (0.25, 1.50),
+    "gemini-3.1-flash-lite-preview": (0.25, 1.50),  # same model as the id above
     "gemini-3-pro-preview": (2.00, 12.00),
-    "gemini-3-flash-preview": (0.15, 0.60),
+    "gemini-3-flash-preview": (0.50, 3.00),
     # Google Gemini 2.5 family
     "gemini-2.5-pro": (1.25, 10.00),
     "gemini-2.5-pro-preview": (1.25, 10.00),
