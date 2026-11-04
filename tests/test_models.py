@@ -262,6 +262,25 @@ class TestModelPricing:
                 f"{model_id}: expected {prices}, got {MODEL_PRICING.get(model_id)}"
             )
 
+    def test_current_lineup_prices(self) -> None:
+        """Current Claude lineup and gpt-6-astra, pinned to the provider model pages.
+
+        Values read 2026-09-25 from platform.claude.com/docs/en/models/overview and
+        developers.openai.com/api/docs/models/gpt-6-astra.
+        """
+        expected = {
+            "gpt-6-astra": (10.00, 50.00),
+            "claude-fable-5-1": (10.00, 50.00),
+            "claude-opus-5-5": (4.00, 20.00),
+            "claude-sonnet-5": (2.00, 10.00),
+            "claude-haiku-4-5-20251001": (1.00, 5.00),
+            "claude-haiku-4-5": (1.00, 5.00),
+        }
+        for model_id, prices in expected.items():
+            assert MODEL_PRICING.get(model_id) == prices, (
+                f"{model_id}: expected {prices}, got {MODEL_PRICING.get(model_id)}"
+            )
+
     def test_pricing_format(self) -> None:
         """Test pricing format is (input, output) tuple."""
         for model_id, pricing in MODEL_PRICING.items():
@@ -387,6 +406,74 @@ class TestOpenAIClient:
         """Test custom base URL."""
         client = OpenAIClient(api_key="test", base_url="https://custom.api.com")
         assert client._base_url == "https://custom.api.com"
+
+
+class TestOpenAIRequestParams:
+    """Regression tests for the request payload OpenAI receives.
+
+    Newer models reject `max_tokens` and `temperature` with HTTP 400. The client
+    always sends `max_completion_tokens` and sends `temperature` only for the
+    allowlisted pre-reasoning families (openai.py:_TEMPERATURE_SUPPORTED_PREFIXES).
+    """
+
+    async def _captured_kwargs(self, model_id: str) -> dict[str, object]:
+        """Call `_call_api` against a stubbed SDK and return the request kwargs."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        client = OpenAIClient(model_id=model_id, api_key="test")
+        response = MagicMock()
+        response.choices = [MagicMock(message=MagicMock(content="ok"))]
+        response.usage = MagicMock(prompt_tokens=1, completion_tokens=1)
+        mock_sdk = MagicMock()
+        mock_sdk.chat.completions.create = AsyncMock(return_value=response)
+        client._client = mock_sdk
+
+        await client._call_api(
+            prompt="hi",
+            system_prompt=None,
+            temperature=0.0,
+            max_tokens=100,
+            json_mode=False,
+        )
+
+        return dict(mock_sdk.chat.completions.create.call_args.kwargs)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "model_id",
+        ["gpt-4o", "gpt-4o-mini", "gpt-5.2", "gpt-6-astra", "o3-mini", "gpt-9-future"],
+        ids=lambda m: m,
+    )
+    async def test_max_completion_tokens_always_sent(self, model_id: str) -> None:
+        """`max_tokens` is deprecated and rejected by newer models."""
+        kwargs = await self._captured_kwargs(model_id)
+
+        assert kwargs["max_completion_tokens"] == 100
+        assert "max_tokens" not in kwargs
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "model_id",
+        ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-3.5-turbo"],
+        ids=lambda m: m,
+    )
+    async def test_temperature_sent_for_supported_models(self, model_id: str) -> None:
+        """Pre-reasoning models accept `temperature` and need it for reproducibility."""
+        kwargs = await self._captured_kwargs(model_id)
+
+        assert kwargs["temperature"] == 0.0
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "model_id",
+        ["gpt-5.2", "gpt-5-mini", "o1", "o3-mini", "gpt-6-astra", "gpt-9-future"],
+        ids=lambda m: m,
+    )
+    async def test_temperature_omitted_for_unsupported_models(self, model_id: str) -> None:
+        """Reasoning models — and unknown ids — must NOT receive `temperature`."""
+        kwargs = await self._captured_kwargs(model_id)
+
+        assert "temperature" not in kwargs
 
 
 class TestAzureOpenAIClient:

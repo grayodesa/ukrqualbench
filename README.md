@@ -10,67 +10,42 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 ---
 
-## Leaderboard (August 2026)
+## Leaderboard (November 2026)
 
 ### ELO Rating (Pairwise Comparisons)
 
-| Rank | Model | ELO |
-|:----:|-------|:---:|
-| 1 | claude-opus-5 | 1785.1 |
-| 2 | gemini-3.5-flash | 1712.2 |
-| 3 | gemini-3.1-flash-lite-preview | 1696.2 |
-| 4 | gemini-3.7-flash | 1683.6 |
-| 5 | gemini-3-flash-preview | 1680.5 |
-| 6 | gemini-3-pro-preview | 1593.0 |
-| 7 | openrouter:google/gemma-4-31b-it | 1582.9 |
-| 8 | gpt-5.2 | 1572.5 |
-| 9 | claude-opus-4-5 | 1565.7 |
-| 10 | claude-fable-5 | 1553.7 |
-| 11 | claude-sonnet-4-5 | 1553.3 |
-| 12 | openrouter:deepseek/deepseek-v4-flash | 1543.9 |
-| 13 | gpt-5.5 | 1518.7 |
-| 14 | gpt-5.6-sol | 1505.1 |
-| 15 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 |
-| 16 | google/gemma-4-26b-a4b | 1491.2 |
-| 17 | claude-opus-4-7 | 1470.9 |
-| 18 | google/gemma-3-27b-it-fast | 1421.8 |
-| 19 | openrouter:meta/muse-glimmer-30b | 1412.5 |
-| 20 | lapa-v0.1.2-instruct | 1392.7 |
-| 21 | gpt-5-nano | 1343.8 |
-| 22 | openai/gpt-oss-20b | 1304.6 |
-| 23 | claude-sonnet-5 | 1261.2 |
-| 24 | Qwen/Qwen3-32B-fast | 1236.3 |
-| 25 | claude-haiku-4-5 | 1115.5 |
-
-### Detailed Metrics
-
-| Model | MC Acc | GEC F1 | Fertility | Russisms | Markers |
-|-------|:------:|:------:|:---------:|:--------:|:-------:|
-| claude-opus-5 | 90.0% | 82.1% | 1.49 | 0.0 | 8.1 |
-| gemini-3.5-flash | 86.0% | 80.3% | 1.48 | 0.2 | 10.3 |
-| gemini-3.1-flash-lite-preview | 87.0% | 66.2% | 1.49 | 0.2 | 8.1 |
-| gemini-3.7-flash | 90.0% | 82.4% | 1.50 | 0.2 | 7.3 |
-| gemini-3-flash-preview | 90.0% | 77.2% | 1.44 | 2.3 | 13.0 |
-| gemini-3-pro-preview | 89.1% | 84.2% | 1.46 | 1.6 | 9.3 |
-| openrouter:google/gemma-4-31b-it | 78.0% | 69.7% | 1.49 | 0.2 | 11.2 |
-| gpt-5.2 | 93.0% | 76.7% | 1.43 | 6.0 | 6.9 |
-| claude-opus-4-5 | 90.0% | 73.0% | 1.49 | 0.0 | 6.0 |
-| claude-fable-5 | 89.0% | 86.2% | 1.47 | 0.3 | 8.7 |
-| claude-sonnet-4-5 | 67.0% | 75.0% | 1.41 | 1.8 | 6.3 |
-| openrouter:deepseek/deepseek-v4-flash | 87.9% | 80.6% | 1.52 | 0.0 | 8.8 |
-| gpt-5.5 | 82.0% | 73.7% | 1.48 | 0.0 | 8.3 |
-| gpt-5.6-sol | 82.0% | 78.7% | 1.47 | 0.0 | 8.0 |
-| mamaylm-gemma-3-12b-it-v1.0 | 74.0% | 64.3% | 1.40 | 1.6 | 7.3 |
-| google/gemma-4-26b-a4b | 83.1% | 74.3% | 1.48 | 0.2 | 10.1 |
-| claude-opus-4-7 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
-| google/gemma-3-27b-it-fast | 83.0% | 78.4% | 1.41 | 1.0 | 4.5 |
-| openrouter:meta/muse-glimmer-30b | 89.9% | 76.3% | 1.46 | 0.0 | 7.4 |
-| lapa-v0.1.2-instruct | 54.0% | 71.0% | 1.40 | 7.0 | 4.8 |
-| gpt-5-nano | 75.0% | 60.1% | 1.47 | 0.0 | 3.0 |
-| openai/gpt-oss-20b | 60.0% | 60.5% | 1.50 | 1.9 | 4.4 |
-| claude-sonnet-5 | 93.0% | 79.0% | 1.45 | 0.0 | 5.9 |
-| Qwen/Qwen3-32B-fast | 78.0% | 69.7% | 1.47 | 3.9 | 13.7 |
-| claude-haiku-4-5 | 62.0% | 74.0% | 1.43 | 1.7 | 9.9 |
+| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Russisms | Markers |
+|------|-------|-----|--------|--------|-----------|----------|---------|
+| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 1.49 | 0.0 | 8.1 |
+| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 1.49 | 0.0 | 10.0 |
+| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 1.48 | 0.2 | 10.3 |
+| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 1.49 | 0.2 | 8.1 |
+| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 1.50 | 0.2 | 7.3 |
+| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 1.50 | 0.0 | 11.1 |
+| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 1.44 | 2.3 | 13.0 |
+| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 1.46 | 1.6 | 9.3 |
+| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 1.43 | 6.0 | 6.9 |
+| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 1.49 | 0.0 | 12.2 |
+| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 1.49 | 0.0 | 6.0 |
+| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 1.47 | 0.3 | 8.7 |
+| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 1.41 | 1.8 | 6.3 |
+| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 1.52 | 0.0 | 8.8 |
+| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 1.45 | 0.0 | 6.7 |
+| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 1.48 | 0.0 | 8.3 |
+| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 1.40 | 1.6 | 7.3 |
+| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 1.48 | 0.2 | 10.1 |
+| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
+| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 1.45 | 0.0 | 7.4 |
+| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 1.41 | 1.0 | 4.5 |
+| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 1.46 | 0.0 | 7.4 |
+| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.40 | 7.0 | 4.8 |
+| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 1.47 | 0.0 | 8.0 |
+| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 1.47 | 0.0 | 3.0 |
+| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 1.45 | 0.0 | 5.9 |
+| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 1.49 | 0.2 | 11.2 |
+| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 1.50 | 1.9 | 4.4 |
+| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 1.47 | 3.9 | 13.7 |
+| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 1.43 | 1.7 | 9.9 |
 
 **Note:** mamaylm-gemma-3-12b-it-v1.0 and lapa-v0.1.2-instruct were used with quantization (Q4_K_S)
 

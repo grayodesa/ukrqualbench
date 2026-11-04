@@ -49,8 +49,12 @@ class ModelConfig:
     default_max_tokens: int = 8192
 
 
-# Pricing per 1M tokens (input, output); Anthropic entries verified 2026-08-14
+# Pricing per 1M tokens (input, output). Current Claude lineup and gpt-6-astra
+# verified 2026-09-25 against the provider model pages; other Anthropic entries 2026-08-14.
 MODEL_PRICING: dict[str, tuple[float, float]] = {
+    # OpenAI GPT-6 family (developers.openai.com/api/docs/models/gpt-6-astra);
+    # prompts over 272K input tokens bill 2x input / 1.5x output — not modelled here.
+    "gpt-6-astra": (10.00, 50.00),
     # OpenAI GPT-5 family
     "gpt-5.2": (5.00, 15.00),
     "gpt-5.2-pro": (10.00, 30.00),
@@ -60,11 +64,13 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     # OpenAI legacy (still available)
     "gpt-4o": (2.50, 10.00),
     "gpt-4o-mini": (0.15, 0.60),
-    # Anthropic Claude 5 family
+    # Anthropic Claude 5 family (platform.claude.com/docs/en/models/overview)
+    "claude-fable-5-1": (10.00, 50.00),
+    "claude-opus-5-5": (4.00, 20.00),
+    "claude-sonnet-5": (2.00, 10.00),  # was 3.00 / 15.00 until the 2026-09-25 check
     "claude-fable-5": (10.00, 50.00),
     "claude-mythos-5": (10.00, 50.00),
     "claude-opus-5": (5.00, 25.00),
-    "claude-sonnet-5": (3.00, 15.00),  # list price; intro price ran to 2026-08-31
     # Anthropic Claude 4 family
     "claude-opus-4-8": (5.00, 25.00),
     "claude-opus-4-7": (5.00, 25.00),
@@ -75,6 +81,7 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-5": (3.00, 15.00),
     "claude-sonnet-4-20250514": (3.00, 15.00),
     "claude-sonnet-4": (3.00, 15.00),
+    "claude-haiku-4-5-20251001": (1.00, 5.00),
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-haiku-4": (0.80, 4.00),
     # Anthropic legacy

@@ -5,6 +5,7 @@ Supports GPT-5.2, GPT-5-mini, GPT-4o and Azure OpenAI endpoints.
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import TYPE_CHECKING, Any
 
@@ -17,6 +18,19 @@ from ukrqualbench.models.base import (
 
 if TYPE_CHECKING:
     import openai
+
+logger = logging.getLogger("ukrqualbench.models")
+
+
+# Reasoning models (o-series, gpt-5 and newer) reject `temperature` with HTTP
+# 400. The check is an allowlist of the pre-reasoning families that accept it:
+# an unrecognised model id gets no `temperature`, which is always accepted,
+# instead of a 400. The prior denylist ("o1", "o3", "gpt-5") broke on gpt-6-*.
+_TEMPERATURE_SUPPORTED_PREFIXES: tuple[str, ...] = (
+    "gpt-3.5",
+    "gpt-4",  # gpt-4, gpt-4-turbo, gpt-4o, gpt-4o-mini, gpt-4.1
+    "chatgpt-4o",
+)
 
 
 class OpenAIClient(BaseModelClient):
@@ -121,16 +135,19 @@ class OpenAIClient(BaseModelClient):
             "messages": messages,
         }
 
-        model_lower = self._model_id.lower()
-        is_reasoning_model = model_lower.startswith(("o1", "o3", "gpt-5"))
-        if not is_reasoning_model:
-            request_kwargs["temperature"] = temperature
+        # `max_completion_tokens` replaces the deprecated `max_tokens` and is
+        # accepted by every chat model; newer models reject `max_tokens` with 400.
+        request_kwargs["max_completion_tokens"] = max_tokens
 
-        # GPT-5.x models require max_completion_tokens instead of max_tokens
-        if self._model_id.startswith("gpt-5"):
-            request_kwargs["max_completion_tokens"] = max_tokens
+        # `temperature` is sent only for the models that still accept it
+        # (see _TEMPERATURE_SUPPORTED_PREFIXES); reasoning models reject it.
+        if self._model_id.lower().startswith(_TEMPERATURE_SUPPORTED_PREFIXES):
+            request_kwargs["temperature"] = temperature
         else:
-            request_kwargs["max_tokens"] = max_tokens
+            logger.debug(
+                "[REQ] model=%s: temperature omitted (not accepted by this model)",
+                self._model_id,
+            )
 
         if json_mode:
             request_kwargs["response_format"] = {"type": "json_object"}
