@@ -321,10 +321,12 @@ class TestSplitProviderPrefix:
 
     def test_no_prefix(self):
         from ukrqualbench.models.routing import split_provider_prefix
+
         assert split_provider_prefix("gpt-5.2") == (None, "gpt-5.2")
 
     def test_openrouter_prefix_kept_intact(self):
         from ukrqualbench.models.routing import split_provider_prefix
+
         assert split_provider_prefix("openrouter:openai/gpt-5.2") == (
             "openrouter",
             "openai/gpt-5.2",
@@ -333,6 +335,7 @@ class TestSplitProviderPrefix:
     def test_slash_id_without_prefix(self):
         """vendor/model is ambiguous → no provider identified."""
         from ukrqualbench.models.routing import split_provider_prefix
+
         assert split_provider_prefix("google/gemma-3-27b-it") == (
             None,
             "google/gemma-3-27b-it",
@@ -340,10 +343,12 @@ class TestSplitProviderPrefix:
 
     def test_unknown_prefix_treated_as_id(self):
         from ukrqualbench.models.routing import split_provider_prefix
+
         assert split_provider_prefix("nebius:llama-3") == (None, "nebius:llama-3")
 
     def test_case_insensitive_provider(self):
         from ukrqualbench.models.routing import split_provider_prefix
+
         assert split_provider_prefix("OpenRouter:openai/gpt-5.2") == (
             "openrouter",
             "openai/gpt-5.2",
@@ -380,6 +385,38 @@ class TestCLIFormats:
         assert result.exit_code == 0
         md_file = tmp_path / "leaderboard.md"
         assert md_file.exists()
+
+    def test_leaderboard_hides_listed_models(self, tmp_path):
+        from ukrqualbench.cli import LEADERBOARD_HIDDEN
+        from ukrqualbench.core.elo_registry import ELORegistry
+
+        hidden_id = next(iter(LEADERBOARD_HIDDEN))
+        registry = ELORegistry(registry_path=tmp_path / "test_registry.json")
+        registry.register_model(hidden_id, 1700.0)
+        registry.register_model("test-model", 1600.0)
+        registry.save()
+        with open(tmp_path / "test-model.json", "w") as f:
+            json.dump(make_test_evaluation(), f)
+
+        result = runner.invoke(
+            app,
+            [
+                "leaderboard",
+                "--evaluations-dir",
+                str(tmp_path),
+                "--registry",
+                str(tmp_path / "test_registry.json"),
+                "--format",
+                "json",
+                "--output",
+                str(tmp_path / "leaderboard.json"),
+            ],
+        )
+
+        assert result.exit_code == 0
+        rows = json.loads((tmp_path / "leaderboard.json").read_text())["leaderboard"]
+        assert [r["model_id"] for r in rows] == ["test-model"]
+        assert rows[0]["rank"] == 1
 
     def test_leaderboard_csv_format(self, tmp_path):
         from ukrqualbench.core.elo_registry import ELORegistry

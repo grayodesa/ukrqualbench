@@ -738,7 +738,7 @@ def leaderboard(
     table.add_column("Markers", justify="right")
     table.add_column("Status", justify="center")
 
-    rankings = registry.get_rankings()
+    rankings = [(m, elo) for m, elo in registry.get_rankings() if m not in LEADERBOARD_HIDDEN]
     leaderboard_data: list[dict[str, Any]] = []
 
     corpus = load_reference_corpus()
@@ -785,7 +785,7 @@ def leaderboard(
         )
 
     console.print(table)
-    legend = _fertility_legend(corpus.words)
+    legend = _fertility_legend(corpus.words) + " " + _hidden_legend()
     console.print(legend, style="dim")
 
     if format_type == "json":
@@ -828,6 +828,23 @@ def _fertility_marker(method: str | None, note: str | None) -> str:
     if note and "routes to" in note:
         return "→"
     return ""
+
+
+# Registry entries kept for history but left out of the published leaderboard.
+LEADERBOARD_HIDDEN: dict[str, str] = {
+    "lapa-v0.1.2-instruct": (
+        "Q4_K_S GGUF in LM Studio, January 2026; BF16 run: vllm:lapa-v0.1.2-instruct"
+    ),
+    "mamaylm-gemma-3-12b-it-v1.0": (
+        "Q4_K_S GGUF in LM Studio, January 2026; BF16 run: vllm:mamaylm-gemma-3-12b-it-v1.0"
+    ),
+}
+
+
+def _hidden_legend() -> str:
+    return "Not shown: " + "; ".join(
+        f"{model_id} ({reason})" for model_id, reason in LEADERBOARD_HIDDEN.items()
+    )
 
 
 def _fertility_legend(corpus_words: int) -> str:
