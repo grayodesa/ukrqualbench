@@ -98,7 +98,10 @@ async def measure_model(
         if spec.fallback is None:
             raise
         logger.warning("%s: %s; using fallback %s", model_id, e, spec.fallback.ref)
+        await counter.aclose()
         counter = make_counter(spec.fallback, config, is_fallback=True)
         counts = await count_documents(counter, corpus.texts, concurrency)
         note = f"{note}; API reported model not found, counted with fallback".lstrip("; ")
+    finally:
+        await counter.aclose()
     return build_entry(model_id, counter, counts, corpus, note)

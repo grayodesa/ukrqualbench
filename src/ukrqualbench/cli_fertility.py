@@ -1,11 +1,11 @@
-"""``ukrqualbench fertility`` commands: measure, show, apply."""
+"""``ukrqualbench fertility`` commands: calibrate, measure, show, apply."""
 
 from __future__ import annotations
 
 import asyncio
 import json
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich import print as rprint
@@ -20,6 +20,12 @@ from ukrqualbench.tokenization.registry import (
     fertility_block_v_fields,
 )
 from ukrqualbench.tokenization.specs import MODEL_TOKENIZERS
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from ukrqualbench.tokenization.counters import TokenCounter
+    from ukrqualbench.tokenization.specs import TokenizerSpec
 
 fertility_app = typer.Typer(
     help="Native-tokenizer fertility rate on the UA-GEC reference corpus.",
@@ -64,6 +70,7 @@ def measure(
     registry_path: RegistryOption = None,
 ) -> None:
     """Count the reference corpus with each model's native tokenizer."""
+    from ukrqualbench.tokenization.counters import ModelNotFoundError
     from ukrqualbench.tokenization.measure import UnknownModelError, measure_model
 
     targets = sorted(MODEL_TOKENIZERS) if all_models else list(models or [])
@@ -89,6 +96,12 @@ def measure(
         except NotImplementedError as e:
             rprint(f"[yellow]{model_id}: skipped — {e}[/yellow]")
             continue
+        except ModelNotFoundError as e:
+            rprint(
+                f"[yellow]{model_id}: API does not know the model and there is no verified "
+                f"fallback; fertility stays empty — {e}[/yellow]"
+            )
+            continue
         except UnknownModelError as e:
             rprint(f"[red]{model_id}: {e}[/red]")
             failures += 1
@@ -105,6 +118,113 @@ def measure(
         )
 
     if failures:
+        raise typer.Exit(1)
+
+
+CALIBRATION_PROVIDERS = ("openai", "gemini", "anthropic")
+
+
+async def _calibrate(config: Config, providers: list[str], info: bool) -> bool:
+    """Run the calibration checks of plan phase 2; return True if all passed."""
+    from ukrqualbench.tokenization.counters import make_counter
+
+    opened: list[TokenCounter] = []
+
+    def make(spec: TokenizerSpec) -> TokenCounter:
+        counter = make_counter(spec, config)
+        opened.append(counter)
+        return counter
+
+    try:
+        return await _run_checks(make, providers, info)
+    finally:
+        for counter in opened:
+            await counter.aclose()
+
+
+async def _run_checks(
+    make: Callable[[TokenizerSpec], TokenCounter], providers: list[str], info: bool
+) -> bool:
+    from ukrqualbench.tokenization import calibrate as cal
+    from ukrqualbench.tokenization.specs import GEMMA3, GEMMA4_31B, O200K_BASE
+
+    texts = load_reference_corpus().texts
+    o200k = make(O200K_BASE)
+    passed = True
+
+    def api(model_id: str) -> TokenCounter:
+        return make(MODEL_TOKENIZERS[model_id])
+
+    def report_exact(result: cal.ExactMatchResult) -> None:
+        nonlocal passed
+        passed = passed and result.passed
+        verdict = "[green]PASS[/green]" if result.passed else "[red]FAIL[/red]"
+        detail = result.error or (
+            f"{result.docs} docs, {result.mismatches} mismatches, overhead O={result.overhead}, "
+            f"api-local diffs {result.diff_histogram or '{}'}"
+        )
+        rprint(f"{verdict} {result.label} vs {result.reference}: {detail}")
+
+    if "openai" in providers:
+        report_exact(await cal.exact_match("openai gpt-5-nano", api("gpt-5-nano"), o200k, texts))
+        if info:
+            for model_id in ("gpt-5.2", "gpt-5.5", "gpt-5.6-sol", "gpt-6-astra", "gpt-6.1-sol"):
+                share = await cal.agreement_share(api(model_id), o200k, texts)
+                rprint(f"[dim]info: {model_id} equals o200k_base on {share:.0%} of docs[/dim]")
+
+    if "gemini" in providers:
+        gemma3 = make(GEMMA3)
+        report_exact(
+            await cal.exact_match(
+                "gemini gemini-3-flash-preview", api("gemini-3-flash-preview"), gemma3, texts
+            )
+        )
+        if info:
+            gemma4 = make(GEMMA4_31B)
+            for model_id in ("gemini-3.5-flash", "gemini-3.8-flash"):
+                share = await cal.agreement_share(api(model_id), gemma4, texts)
+                rprint(f"[dim]info: {model_id} equals Gemma 4 on {share:.0%} of docs[/dim]")
+
+    if "anthropic" in providers:
+        for model_id in ("claude-opus-5", "claude-haiku-4-5"):
+            split = await cal.split_additivity(f"anthropic {model_id}", api(model_id), o200k, texts)
+            passed = passed and split.passed
+            verdict = "[green]PASS[/green]" if split.passed else "[red]FAIL[/red]"
+            detail = split.error or (
+                f"max |n(A)+n(B)-n(doc)| = {split.max_gap} (tolerance {split.tolerance}) on "
+                f"{len(split.gaps)} docs, overhead O={split.overhead}; gaps {split.gaps}; "
+                f"o200k gaps {split.reference_gaps}"
+            )
+            rprint(f"{verdict} {split.label} split additivity: {detail}")
+
+    return passed
+
+
+@fertility_app.command("calibrate")
+def calibrate(
+    providers: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--provider", "-p", help="openai, gemini, anthropic (repeatable; default all)"
+        ),
+    ] = None,
+    info: Annotated[
+        bool,
+        typer.Option("--info/--no-info", help="Also report agreement of other API models"),
+    ] = True,
+) -> None:
+    """Check the API count scheme against local tokenizers before measuring."""
+    selected = list(providers or CALIBRATION_PROVIDERS)
+    unknown = sorted(set(selected) - set(CALIBRATION_PROVIDERS))
+    if unknown:
+        rprint(f"[red]Unknown provider(s): {', '.join(unknown)}[/red]")
+        raise typer.Exit(2)
+    try:
+        passed = asyncio.run(_calibrate(Config(), selected, info))
+    except Exception as e:
+        rprint(f"[red]FAIL calibration aborted: {type(e).__name__}: {e}[/red]")
+        raise typer.Exit(1) from e
+    if not passed:
         raise typer.Exit(1)
 
 

@@ -5,8 +5,11 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock
 
+import httpx
 import pytest
 from typer.testing import CliRunner
 
@@ -21,6 +24,7 @@ from ukrqualbench.core.schemas import (
 from ukrqualbench.detectors import RussismDetector
 from ukrqualbench.reports.leaderboard import assign_badge
 from ukrqualbench.tokenization import measure as measure_module
+from ukrqualbench.tokenization.calibrate import exact_match, split_additivity, split_point
 from ukrqualbench.tokenization.corpus import (
     WORD_PATTERN,
     ReferenceCorpus,
@@ -29,8 +33,13 @@ from ukrqualbench.tokenization.corpus import (
     load_reference_corpus,
 )
 from ukrqualbench.tokenization.counters import (
+    AnthropicTokenCounter,
+    APITokenCounter,
+    CalibrationError,
+    GeminiTokenCounter,
     HFTokenCounter,
     ModelNotFoundError,
+    OpenAITokenCounter,
     TiktokenCounter,
     make_counter,
 )
@@ -126,6 +135,9 @@ class FixedCounter:
 
     async def count(self, text: str) -> int:
         return self._per_chunk * len(text.split())
+
+    async def aclose(self) -> None:
+        self.closed = True
 
 
 class NotFoundCounter(FixedCounter):
@@ -236,8 +248,167 @@ class TestCounters:
         assert fallback.method.startswith("hf-fallback:")
         with pytest.raises(ValueError, match="no pinned revision"):
             make_counter(TokenizerSpec("hf", "org/repo"), config)
-        with pytest.raises(NotImplementedError):
-            make_counter(TokenizerSpec("anthropic", "claude-opus-5"), config)
+
+    @pytest.mark.parametrize(
+        ("backend", "cls"),
+        [
+            ("anthropic", AnthropicTokenCounter),
+            ("openai", OpenAITokenCounter),
+            ("gemini", GeminiTokenCounter),
+        ],
+    )
+    def test_make_counter_api_backends(self, backend: str, cls: type) -> None:
+        keys = SimpleNamespace(
+            anthropic_api_key="k",
+            openai_api_key="k",
+            google_api_key="k",
+            max_retries=1,
+            request_timeout=5,
+            huggingface_token=None,
+        )
+        counter = make_counter(TokenizerSpec(backend, "model-x"), keys)  # type: ignore[arg-type]
+        assert isinstance(counter, cls)
+        assert counter.method == f"api:{backend}"
+
+    def test_make_counter_requires_api_key(self) -> None:
+        keys = SimpleNamespace(anthropic_api_key=None, max_retries=1, request_timeout=5)
+        with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+            make_counter(TokenizerSpec("anthropic", "claude-opus-5"), keys)  # type: ignore[arg-type]
+
+
+class FakeAPICounter(APITokenCounter):
+    """API counter whose request size is a fixed wrapper plus one token per character."""
+
+    provider = "fake"
+
+    def __init__(self, wrapper: int = 5, bump: str | None = None) -> None:
+        super().__init__("fake-model")
+        self._wrapper = wrapper
+        self._bump = bump
+        self.calls: list[str] = []
+
+    async def raw_count(self, text: str) -> int:
+        self.calls.append(text)
+        return self._wrapper + len(text) + (1 if text == self._bump else 0)
+
+
+def _status_error(cls: type, status: int) -> Exception:
+    request = httpx.Request("POST", "https://api.example/v1")
+    return cls(message="not found", response=httpx.Response(status, request=request), body=None)
+
+
+class TestAPICounters:
+    async def test_wrapper_overhead_is_subtracted(self) -> None:
+        counter = FakeAPICounter(wrapper=5)
+        assert await counter.count("абв") == 3
+        assert counter.baseline_overhead == 5
+        assert counter.calls[:3] == [".", "a", "1"]
+
+    async def test_overhead_measured_once(self) -> None:
+        counter = FakeAPICounter()
+        await counter.count("один")
+        await counter.count("два")
+        assert counter.calls.count(".") == 1
+
+    async def test_inconsistent_baselines_raise(self) -> None:
+        with pytest.raises(CalibrationError, match="not constant"):
+            await FakeAPICounter(bump="a").count("текст")
+
+    async def test_anthropic_requests_differ_only_by_text(self) -> None:
+        counter = AnthropicTokenCounter("claude-x", "k", max_retries=0, timeout=5)
+        mock = AsyncMock(
+            side_effect=lambda **kw: SimpleNamespace(
+                input_tokens=7 + len(kw["messages"][0]["content"])
+            )
+        )
+        counter._client = SimpleNamespace(messages=SimpleNamespace(count_tokens=mock))  # type: ignore[assignment]
+        assert await counter.count("абв") == 3
+        first, last = mock.call_args_list[0].kwargs, mock.call_args_list[-1].kwargs
+        assert first == {"model": "claude-x", "messages": [{"role": "user", "content": "."}]}
+        assert last == {"model": "claude-x", "messages": [{"role": "user", "content": "абв"}]}
+
+    async def test_anthropic_not_found(self) -> None:
+        import anthropic
+
+        counter = AnthropicTokenCounter("claude-x", "k", max_retries=0, timeout=5)
+        mock = AsyncMock(side_effect=_status_error(anthropic.NotFoundError, 404))
+        counter._client = SimpleNamespace(messages=SimpleNamespace(count_tokens=mock))  # type: ignore[assignment]
+        with pytest.raises(ModelNotFoundError):
+            await counter.count("абв")
+
+    async def test_openai_counts_and_not_found(self) -> None:
+        import openai
+
+        counter = OpenAITokenCounter("gpt-x", "k", max_retries=0, timeout=5)
+        mock = AsyncMock(
+            side_effect=lambda **kw: SimpleNamespace(input_tokens=4 + len(kw["input"]))
+        )
+        counter._client = SimpleNamespace(  # type: ignore[assignment]
+            responses=SimpleNamespace(input_tokens=SimpleNamespace(count=mock))
+        )
+        assert await counter.count("абвг") == 4
+        assert mock.call_args_list[-1].kwargs == {"model": "gpt-x", "input": "абвг"}
+
+        missing = OpenAITokenCounter("gpt-old", "k", max_retries=0, timeout=5)
+        missing._client = SimpleNamespace(  # type: ignore[assignment]
+            responses=SimpleNamespace(
+                input_tokens=SimpleNamespace(
+                    count=AsyncMock(side_effect=_status_error(openai.NotFoundError, 404))
+                )
+            )
+        )
+        with pytest.raises(ModelNotFoundError):
+            await missing.count("абв")
+
+    async def test_gemini_counts_and_not_found(self) -> None:
+        from google.genai import errors
+
+        counter = GeminiTokenCounter("gemini-x", "k", max_retries=1)
+        mock = AsyncMock(side_effect=lambda **kw: SimpleNamespace(total_tokens=len(kw["contents"])))
+        counter._client = SimpleNamespace(  # type: ignore[assignment]
+            aio=SimpleNamespace(models=SimpleNamespace(count_tokens=mock))
+        )
+        assert await counter.count("абв") == 3
+        assert counter.baseline_overhead == 0
+
+        missing = GeminiTokenCounter("gemini-old", "k", max_retries=1)
+        not_found = errors.ClientError(404, {"error": {"code": 404, "message": "not found"}})
+        missing._client = SimpleNamespace(  # type: ignore[assignment]
+            aio=SimpleNamespace(
+                models=SimpleNamespace(count_tokens=AsyncMock(side_effect=not_found))
+            )
+        )
+        with pytest.raises(ModelNotFoundError):
+            await missing.count("абв")
+
+
+class TestCalibration:
+    def test_split_point_prefers_nearest_space(self) -> None:
+        assert split_point("aaa bbb ccc") == 3
+        assert split_point("абвгд") == 2
+
+    async def test_exact_match(self) -> None:
+        texts = ["один два", "три"]
+        same = await exact_match("x", FixedCounter(), FixedCounter(method="ref"), texts)
+        assert same.passed
+        assert same.mismatches == 0
+
+        off = await exact_match("x", FixedCounter(per_chunk=3), FixedCounter(), texts)
+        assert not off.passed
+        assert off.mismatches == 2
+        assert off.diff_histogram == {2: 1, 1: 1}
+
+    async def test_exact_match_reports_calibration_error(self) -> None:
+        result = await exact_match("x", FakeAPICounter(bump="1"), FixedCounter(), ["текст"])
+        assert not result.passed
+        assert "not constant" in result.error
+
+    async def test_split_additivity(self) -> None:
+        texts = ["один два три", "чотири п'ять"]
+        result = await split_additivity("x", FakeAPICounter(), FixedCounter(), texts)
+        assert result.passed
+        assert result.gaps == [0, 0]
+        assert result.overhead == 5
 
 
 # ============================================================================
@@ -315,16 +486,17 @@ class TestMeasure:
         fallback = TokenizerSpec("hf", "org/repo", "0123456789abcdef")
         spec = TokenizerSpec("gemini", "retired", fallback=fallback, note="retired ID")
         monkeypatch.setattr(measure_module, "get_spec", lambda model_id: spec)
+        primary = NotFoundCounter()
+        secondary = FixedCounter(method="hf-fallback:org/repo@0123456")
 
         def fake_make_counter(s: TokenizerSpec, cfg: Config, *, is_fallback: bool = False):
-            if is_fallback:
-                return FixedCounter(method="hf-fallback:org/repo@0123456")
-            return NotFoundCounter()
+            return secondary if is_fallback else primary
 
         monkeypatch.setattr(measure_module, "make_counter", fake_make_counter)
         entry = await measure_model("retired", config, corpus=_small_corpus())
         assert entry.method == "hf-fallback:org/repo@0123456"
         assert entry.note.startswith("retired ID; API reported model not found")
+        assert getattr(primary, "closed", False) and getattr(secondary, "closed", False)
 
     async def test_not_found_without_fallback_raises(
         self, config: Config, monkeypatch: pytest.MonkeyPatch
