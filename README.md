@@ -16,40 +16,44 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 | Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Markers |
 |------|-------|-----|--------|--------|-----------|---------|
-| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 2.96 | 8.1 |
-| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 2.26 | 10.0 |
-| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 2.26→ | 10.3 |
-| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 2.26 | 8.1 |
-| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 2.26→ | 7.3 |
-| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 2.96 | 11.1 |
-| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 2.26 | 13.0 |
-| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 2.26* | 9.3 |
-| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 2.38 | 6.9 |
-| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 2.96 | 12.2 |
-| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 2.94 | 6.0 |
-| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 2.96 | 8.7 |
-| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 2.94 | 6.3 |
-| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 2.94 | 8.8 |
-| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 2.38 | 6.7 |
-| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 2.38 | 8.3 |
-| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 2.26 | 7.3 |
-| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 2.26 | 10.1 |
-| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 2.96 | 6.9 |
-| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 2.38 | 7.4 |
-| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 2.26 | 4.5 |
-| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 2.15 | 7.4 |
-| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.53 | 4.8 |
-| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 2.38 | 8.0 |
-| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 2.38 | 3.0 |
-| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 2.96 | 5.9 |
-| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 2.26 | 11.2 |
-| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 2.38 | 4.4 |
-| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 3.38 | 13.7 |
-| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 2.94 | 9.9 |
+| 1 | claude-opus-5-5 | 1882.0 | 94.0% | 75.9% | 2.96 | 11.1 |
+| 2 | gemini-3.8-flash | 1869.4 | 90.0% | 80.4% | 2.26 | 10.0 |
+| 3 | claude-opus-5 | 1825.7 | 90.0% | 82.1% | 2.96 | 8.1 |
+| 4 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 2.26→ | 10.3 |
+| 5 | gpt-6-astra | 1707.1 | 89.0% | 80.2% | 2.38 | 6.7 |
+| 6 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 2.26 | 8.1 |
+| 7 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 2.26→ | 7.3 |
+| 8 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 2.26 | 13.0 |
+| 9 | claude-sonnet-5-5 | 1638.3 | 84.0% | 82.0% | 2.96 | 12.2 |
+| 10 | claude-opus-4-7 | 1597.1 | 100.0% | 82.2% | 2.96 | 6.9 |
+| 11 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 2.26* | 9.3 |
+| 12 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 2.38 | 6.9 |
+| 13 | gpt-5.6-sol | 1572.1 | 82.0% | 78.7% | 2.38 | 8.0 |
+| 14 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 2.94 | 6.0 |
+| 15 | gpt-6.1-sol | 1560.6 | 89.0% | 82.2% | 2.38 | 7.4 |
+| 16 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 2.96 | 8.7 |
+| 17 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 2.94 | 6.3 |
+| 18 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 2.38 | 8.3 |
+| 19 | claude-haiku-5-5 | 1505.4 | 92.0% | 67.9% | 2.96 | 13.5 |
+| 20 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 2.26 | 10.1 |
+| 21 | openrouter:deepseek/deepseek-v4-flash | 1486.7 | 87.9% | 80.6% | 2.94 | 8.8 |
+| 22 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 2.26 | 4.5 |
+| 23 | openrouter:meta/muse-glimmer-30b | 1417.8 | 89.9% | 76.3% | 2.15 | 7.4 |
+| 24 | vllm:mamaylm-gemma-3-12b-it-v1.0 | 1404.1 | 66.0% | 78.3% | 2.26 | 15.7 |
+| 25 | openrouter:google/gemma-4-31b-it | 1371.2 | 78.0% | 69.7% | 2.26 | 11.2 |
+| 26 | vllm:mamaylm-gemma-3-27b-it-v2.0 | 1349.0 | 74.0% | 78.5% | 2.26 | 12.6 |
+| 27 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 2.38 | 3.0 |
+| 28 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 2.96 | 5.9 |
+| 29 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 2.38 | 4.4 |
+| 30 | vllm:mamaylm-gemma-3-12b-it-v2.0 | 1262.5 | 71.0% | 75.1% | 2.26 | 14.4 |
+| 31 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 3.38 | 13.7 |
+| 32 | claude-haiku-4-5 | 1172.2 | 62.0% | 74.0% | 2.94 | 9.9 |
+| 33 | vllm:lapa-v0.1.2-instruct | 1159.5 | 58.0% | 68.4% | 1.53 | 5.5 |
+| 34 | vllm:lapa-v0.1.3-instruct | 1066.6 | 61.0% | 68.4% | 1.53 | 5.2 |
 
-Fertility: native-tokenizer tokens per word on the UA-GEC test corpus (35,122 words); lower is cheaper. Claude, GPT and Gemini are counted with the providers' token-count APIs (Anthropic counts are provider estimates). \* proxy tokenizer for a retired model ID (google-genai LocalTokenizer map). → the provider routes this ID to a newer model; the count reflects that model.
+Fertility: native-tokenizer tokens per word on the UA-GEC test corpus (35,122 words); lower is cheaper. Claude, GPT and Gemini are counted with the providers' token-count APIs (Anthropic counts are provider estimates). \* proxy tokenizer for a retired model ID (google-genai LocalTokenizer map). → the provider routes this ID to a newer model; the count reflects that model. Not shown: lapa-v0.1.2-instruct (Q4_K_S GGUF in LM Studio, January 2026; BF16 run: vllm:lapa-v0.1.2-instruct); mamaylm-gemma-3-12b-it-v1.0 (Q4_K_S GGUF in LM Studio, January 2026; BF16 run: vllm:mamaylm-gemma-3-12b-it-v1.0)
 
-**Note:** mamaylm-gemma-3-12b-it-v1.0 and lapa-v0.1.2-instruct were used with quantization (Q4_K_S)
+**Note:** `vllm:` rows are BF16 checkpoints served with vLLM 0.31 on RunPod (November 2026). The January runs of lapa-v0.1.2-instruct and mamaylm-gemma-3-12b-it-v1.0 used Q4_K_S GGUF in LM Studio; they stay in the ELO registry but are not shown, since quantization and the serving stack make them incomparable with the BF16 runs. The calibration tournaments of November 5 also moved the ratings of their anchor models (anchors are not frozen while new models are rated); a fix to the ELO calibration is planned.
 
 <details>
 <summary><b>Metrics Explanation</b></summary>
@@ -195,7 +199,21 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 | **Ollama** | `UKRQUALBENCH_OLLAMA_BASE_URL` (default: http://localhost:11434) |
 | **vLLM** | `UKRQUALBENCH_VLLM_BASE_URL` (default: http://localhost:8000), `UKRQUALBENCH_VLLM_ENDPOINTS` (JSON map model → URL, for several vLLM servers at once), `UKRQUALBENCH_VLLM_API_KEY` (if the server runs with `--api-key`) |
 
-Any model id containing `gemma` (e.g. `google/gemma-4-26b-a4b`) is routed to the local OpenAI-compatible endpoint — load the model in LM Studio and run `ukrqualbench eval --model google/gemma-4-26b-a4b`.
+Any model id containing `gemma` (e.g. `google/gemma-4-26b-a4b`) is routed to the local OpenAI-compatible endpoint — load the model in LM Studio and run `ukrqualbench evaluate --model google/gemma-4-26b-a4b`.
+
+### Self-hosted models on RunPod
+
+`scripts/runpod_pods.py` serves open-weight models on RunPod GPU pods (one pod per model, image `vllm/vllm-openai:v0.31.0`, HF revision pinned) and wires them into the `vllm:` provider. It reads `UKRQUALBENCH_RUNPOD_API_KEY` from `.env` and never prints keys.
+
+```bash
+uv run python scripts/runpod_pods.py keygen   # once: UKRQUALBENCH_VLLM_API_KEY for the vLLM servers
+uv run python scripts/runpod_pods.py create   # pods for the models listed in the script; writes UKRQUALBENCH_VLLM_ENDPOINTS
+uv run python scripts/runpod_pods.py status   # pod state and a /v1/models probe per model
+uv run ukrqualbench evaluate -m vllm:lapa-v0.1.3-instruct -b lite
+uv run python scripts/runpod_pods.py delete   # terminate the pods (billing is per second until then)
+```
+
+`create`, `switch` and `delete` accept model names to act on a subset; `switch OLD NEW` restarts a pod with another model. `compare` generates answers of all its models in every round, so all their pods must be up at once. Pods are started with `--max-model-len 16384`, because the client requests up to 8192 new tokens. RunPod's HTTP proxy closes a request after 100 seconds (HTTP 524), which cuts off very long answers.
 
 ## Judge Calibration
 
