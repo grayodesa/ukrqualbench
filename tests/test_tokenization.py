@@ -68,6 +68,7 @@ O200K_TOKENS = 83593
 EVALUATED_MODELS = {
     "claude-fable-5",
     "claude-haiku-4-5",
+    "claude-haiku-5-5",
     "claude-opus-4-5",
     "claude-opus-4-7",
     "claude-opus-5",

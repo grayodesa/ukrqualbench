@@ -66,6 +66,9 @@ MODEL_TOKENIZERS: dict[str, TokenizerSpec] = {
         "anthropic", "claude-sonnet-4-5", "pre-4.7 tokenizer; EOL 2026-11-30"
     ),
     "claude-haiku-4-5": _api("anthropic", "claude-haiku-4-5", "pre-4.7 tokenizer"),
+    "claude-haiku-5-5": _api(
+        "anthropic", "claude-haiku-5-5", "tokenizer generation 4.7+ (count equals claude-opus-5)"
+    ),
     # Google Gemini: free countTokens endpoint.
     "gemini-3.8-flash": _api("gemini", "gemini-3.8-flash"),
     "gemini-3.7-flash": _api("gemini", "gemini-3.7-flash", "ID routes to gemini-3.8-flash"),
