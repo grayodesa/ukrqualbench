@@ -733,7 +733,8 @@ def leaderboard(
     table.add_column("MC Acc", justify="right")
     table.add_column("GEC F1", justify="right")
     table.add_column("Fertility", justify="right")
-    table.add_column("Russisms", justify="right")
+    # Russism rate is hidden: the dictionary detector misses most russisms in current
+    # model outputs (audit 2026-11-05), so its near-zero values do not rank models.
     table.add_column("Markers", justify="right")
     table.add_column("Status", justify="center")
 
@@ -761,15 +762,12 @@ def leaderboard(
         mc_acc = f"{eval_data.block_a.mc_accuracy:.1%}" if eval_data else "-"
         gec_f1 = f"{eval_data.block_a.gec_f1:.1%}" if eval_data else "-"
         fertility = _fmt_fertility(eval_data.block_v.fertility_rate, marker) if eval_data else "-"
-        russisms = f"{eval_data.block_v.russism_rate:.1f}" if eval_data else "-"
         markers = f"{eval_data.block_v.positive_markers:.1f}" if eval_data else "-"
         status = (
             "[dim]provisional[/dim]" if entry and entry.is_provisional else "[green]stable[/green]"
         )
 
-        table.add_row(
-            str(rank), model_id, f"{elo:.1f}", mc_acc, gec_f1, fertility, russisms, markers, status
-        )
+        table.add_row(str(rank), model_id, f"{elo:.1f}", mc_acc, gec_f1, fertility, markers, status)
         leaderboard_data.append(
             {
                 "rank": rank,
@@ -781,7 +779,6 @@ def leaderboard(
                 "fertility_method": fertility_method,
                 "fertility_note": fertility_note,
                 "fertility_marker": marker,
-                "russism_rate": eval_data.block_v.russism_rate if eval_data else None,
                 "positive_markers": eval_data.block_v.positive_markers if eval_data else None,
                 "provisional": entry.is_provisional if entry else True,
             }
@@ -854,7 +851,6 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]], legend: str = 
             <td>{entry["mc_accuracy"]:.1%}</td>
             <td>{entry["gec_f1"]:.1%}</td>
             <td>{_fmt_fertility(entry["fertility_rate"], entry.get("fertility_marker", ""))}</td>
-            <td>{entry["russism_rate"]:.1f}</td>
             <td>{entry["positive_markers"]:.1f}</td>
         </tr>"""
             if entry["mc_accuracy"]
@@ -862,7 +858,7 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]], legend: str = 
             <td>{entry["rank"]}</td>
             <td>{entry["model_id"]}</td>
             <td>{entry["elo_rating"]}</td>
-            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            <td>-</td><td>-</td><td>-</td><td>-</td>
         </tr>"""
         )
     return f"""<!DOCTYPE html>
@@ -870,24 +866,24 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]], legend: str = 
 <style>table {{border-collapse: collapse; width: 100%;}} th,td {{border: 1px solid #ddd; padding: 8px; text-align: left;}}</style>
 </head><body>
 <h1>UkrQualBench Leaderboard</h1>
-<table><tr><th>Rank</th><th>Model</th><th>ELO</th><th>MC Acc</th><th>GEC F1</th><th>Fertility</th><th>Russisms</th><th>Markers</th></tr>
+<table><tr><th>Rank</th><th>Model</th><th>ELO</th><th>MC Acc</th><th>GEC F1</th><th>Fertility</th><th>Markers</th></tr>
 {rows}</table>
 <p><small>{html.escape(legend)}</small></p></body></html>"""
 
 
 def _generate_markdown_table(data: list[dict[str, Any]]) -> str:
     lines = [
-        "| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Russisms | Markers |",
-        "|------|-------|-----|--------|--------|-----------|----------|---------|",
+        "| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Markers |",
+        "|------|-------|-----|--------|--------|-----------|---------|",
     ]
     for entry in data:
         if entry["mc_accuracy"]:
             lines.append(
-                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {_fmt_fertility(entry['fertility_rate'], entry.get('fertility_marker', ''))} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {_fmt_fertility(entry['fertility_rate'], entry.get('fertility_marker', ''))} | {entry['positive_markers']:.1f} |"
             )
         else:
             lines.append(
-                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | - | - | - | - | - |"
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | - | - | - | - |"
             )
     return "\n".join(lines)
 

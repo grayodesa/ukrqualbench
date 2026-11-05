@@ -14,38 +14,38 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 ### ELO Rating (Pairwise Comparisons)
 
-| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Russisms | Markers |
-|------|-------|-----|--------|--------|-----------|----------|---------|
-| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 2.96 | 0.0 | 8.1 |
-| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 2.26 | 0.0 | 10.0 |
-| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 2.26→ | 0.2 | 10.3 |
-| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 2.26 | 0.2 | 8.1 |
-| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 2.26→ | 0.2 | 7.3 |
-| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 2.96 | 0.0 | 11.1 |
-| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 2.26 | 2.3 | 13.0 |
-| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 2.26* | 1.6 | 9.3 |
-| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 2.38 | 6.0 | 6.9 |
-| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 2.96 | 0.0 | 12.2 |
-| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 2.94 | 0.0 | 6.0 |
-| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 2.96 | 0.3 | 8.7 |
-| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 2.94 | 1.8 | 6.3 |
-| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 2.94 | 0.0 | 8.8 |
-| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 2.38 | 0.0 | 6.7 |
-| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 2.38 | 0.0 | 8.3 |
-| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 2.26 | 1.6 | 7.3 |
-| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 2.26 | 0.2 | 10.1 |
-| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 2.96 | 0.0 | 6.9 |
-| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 2.38 | 0.0 | 7.4 |
-| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 2.26 | 1.0 | 4.5 |
-| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 2.15 | 0.0 | 7.4 |
-| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.53 | 7.0 | 4.8 |
-| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 2.38 | 0.0 | 8.0 |
-| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 2.38 | 0.0 | 3.0 |
-| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 2.96 | 0.0 | 5.9 |
-| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 2.26 | 0.2 | 11.2 |
-| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 2.38 | 1.9 | 4.4 |
-| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 3.38 | 3.9 | 13.7 |
-| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 2.94 | 1.7 | 9.9 |
+| Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Markers |
+|------|-------|-----|--------|--------|-----------|---------|
+| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 2.96 | 8.1 |
+| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 2.26 | 10.0 |
+| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 2.26→ | 10.3 |
+| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 2.26 | 8.1 |
+| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 2.26→ | 7.3 |
+| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 2.96 | 11.1 |
+| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 2.26 | 13.0 |
+| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 2.26* | 9.3 |
+| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 2.38 | 6.9 |
+| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 2.96 | 12.2 |
+| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 2.94 | 6.0 |
+| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 2.96 | 8.7 |
+| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 2.94 | 6.3 |
+| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 2.94 | 8.8 |
+| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 2.38 | 6.7 |
+| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 2.38 | 8.3 |
+| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 2.26 | 7.3 |
+| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 2.26 | 10.1 |
+| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 2.96 | 6.9 |
+| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 2.38 | 7.4 |
+| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 2.26 | 4.5 |
+| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 2.15 | 7.4 |
+| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.53 | 4.8 |
+| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 2.38 | 8.0 |
+| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 2.38 | 3.0 |
+| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 2.96 | 5.9 |
+| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 2.26 | 11.2 |
+| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 2.38 | 4.4 |
+| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 3.38 | 13.7 |
+| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 2.94 | 9.9 |
 
 Fertility: native-tokenizer tokens per word on the UA-GEC test corpus (35,122 words); lower is cheaper. Claude, GPT and Gemini are counted with the providers' token-count APIs (Anthropic counts are provider estimates). \* proxy tokenizer for a retired model ID (google-genai LocalTokenizer map). → the provider routes this ID to a newer model; the count reflects that model.
 
@@ -58,7 +58,7 @@ Fertility: native-tokenizer tokens per word on the UA-GEC test corpus (35,122 wo
 - **MC Acc**: Multiple choice accuracy (orthography, punctuation, russisms)
 - **GEC F1**: Grammar error correction quality
 - **Fertility**: Tokens per word that the model's own tokenizer spends on a fixed Ukrainian reference corpus (lower = cheaper, more text per context window). Describes the tokenizer, not the quality of the model's Ukrainian; see *Fertility Methodology*
-- **Russisms**: Russian calques per 1000 pseudo-tokens (words × 1.3, the same unit for every model) detected by LLM judge (lower = better)
+- **Russisms** (column hidden): `evaluate` counts matches of a 28-pattern regex dictionary (`data/dictionaries/russisms.json`) in 10 generated answers. A manual audit of current model outputs (November 2026) found that it misses nearly all russisms these models actually produce, so the near-zero values do not rank models. The column returns after the dictionary is expanded and all models are re-measured.
 - **Markers**: Native positive markers per 1000 pseudo-tokens (higher = more natural)
 
 </details>
