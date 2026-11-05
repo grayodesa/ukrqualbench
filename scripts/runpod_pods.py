@@ -10,9 +10,12 @@ printed:
 Usage (from the repository root):
 
     uv run python scripts/runpod_pods.py keygen   # once: create the vLLM key in .env
-    uv run python scripts/runpod_pods.py create   # create pods, write UKRQUALBENCH_VLLM_ENDPOINTS
-    uv run python scripts/runpod_pods.py status   # pod state and a /v1/models probe per model
-    uv run python scripts/runpod_pods.py delete   # terminate every pod in the state file
+    uv run python scripts/runpod_pods.py create [MODEL ...]  # create pods, sync ENDPOINTS
+    uv run python scripts/runpod_pods.py status              # pod state, /v1/models probe
+    uv run python scripts/runpod_pods.py delete [MODEL ...]  # terminate pods, sync ENDPOINTS
+
+Without MODEL names ``create`` covers every model not yet in the state file and ``delete``
+every pod in it. UKRQUALBENCH_VLLM_ENDPOINTS always mirrors the state file.
 
 Pods bill per second from creation until ``delete``; stopping is not enough.
 """
@@ -81,7 +84,24 @@ MODELS = [
         GPU_80GB,
         120,
     ),
+    # Previous versions in BF16: the registry entries without the vllm: prefix are Q4 GGUF
+    # runs in LM Studio, so a version comparison needs these on the same stack.
+    ServedModel(
+        "lapa-v0.1.2-instruct",
+        "lapa-llm/lapa-v0.1.2-instruct",
+        "10116908ee519a816cfcb4b4e90668ba8e0710a8",
+        GPU_48GB,
+        80,
+    ),
+    ServedModel(
+        "mamaylm-gemma-3-12b-it-v1.0",
+        "INSAIT-Institute/MamayLM-Gemma-3-12B-IT-v1.0",
+        "2d4fd7a65bef3534463a2abddeefff2c70fa0e83",
+        GPU_48GB,
+        80,
+    ),
 ]
+MODEL_NAMES = [m.served for m in MODELS]
 
 
 # ---------------------------------------------------------------------------
@@ -219,10 +239,19 @@ def pod_body(model: ServedModel, vllm_key: str) -> dict[str, Any]:
     }
 
 
-def cmd_create() -> None:
+def sync_endpoints(state: dict[str, str]) -> None:
+    endpoints = {served: endpoint(pod_id) for served, pod_id in state.items()}
+    write_env_var(ENDPOINTS_VAR, f"'{json.dumps(endpoints)}'")
+    print(f"{ENDPOINTS_VAR} written to .env: {json.dumps(endpoints)}")
+
+
+def cmd_create(names: list[str]) -> None:
+    """Create pods for ``names`` (all models when empty) that are not in the state file."""
     keys = require_keys(need_vllm=True)
     state = load_state()
     for model in MODELS:
+        if names and model.served not in names:
+            continue
         if model.served in state:
             print(f"{model.served}: already in state as pod {state[model.served]}, skipped")
             continue
@@ -239,10 +268,7 @@ def cmd_create() -> None:
             f"{model.served}: pod {resp['id']} {resp.get('desiredStatus')} "
             f"${resp.get('costPerHr')}/hr"
         )
-    endpoints = {served: endpoint(pod_id) for served, pod_id in state.items()}
-    if endpoints:
-        write_env_var(ENDPOINTS_VAR, f"'{json.dumps(endpoints)}'")
-        print(f"{ENDPOINTS_VAR} written to .env: {json.dumps(endpoints)}")
+    sync_endpoints(state)
 
 
 def cmd_status() -> None:
@@ -264,14 +290,16 @@ def cmd_status() -> None:
         )
 
 
-def cmd_delete() -> None:
+def cmd_delete(names: list[str]) -> None:
+    """Terminate pods of ``names`` (every pod in the state file when empty)."""
     keys = require_keys(need_vllm=False)
     state = load_state()
-    if not state:
-        print("No pods in state file.")
+    targets = {s: p for s, p in state.items() if not names or s in names}
+    if not targets:
+        print("No matching pods in state file.")
         return
     remaining = dict(state)
-    for served, pod_id in state.items():
+    for served, pod_id in targets.items():
         status, resp = request("DELETE", f"{API}/pods/{pod_id}", keys.runpod)
         check, _ = request("GET", f"{API}/pods/{pod_id}", keys.runpod)
         gone = check == 404
@@ -281,21 +309,37 @@ def cmd_delete() -> None:
             f"{served}: DELETE HTTP {status}, GET after delete HTTP {check}"
             f" -> {'terminated' if gone else 'STILL PRESENT: ' + keys.redact(str(resp))[:200]}"
         )
+    still_present = [s for s in targets if s in remaining]
+    if still_present:
+        print(f"Still present: {', '.join(still_present)}; run `delete` again or use the console.")
     if remaining:
         save_state(remaining)
-        print("Some pods are still present; run `delete` again or remove them in the console.")
     else:
         STATE_FILE.unlink()
-        print("All pods terminated; state file removed.")
+        print("No pods left; state file removed.")
+    sync_endpoints(remaining)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage the RunPod vLLM pods for UkrQualBench.")
     parser.add_argument("command", choices=["keygen", "create", "status", "delete"])
-    command = parser.parse_args().command
-    {"keygen": cmd_keygen, "create": cmd_create, "status": cmd_status, "delete": cmd_delete}[
-        command
-    ]()
+    parser.add_argument(
+        "models", nargs="*", help=f"create/delete only these: {', '.join(MODEL_NAMES)}"
+    )
+    args = parser.parse_args()
+    unknown = [m for m in args.models if m not in MODEL_NAMES]
+    if unknown:
+        parser.error(f"unknown model(s): {', '.join(unknown)}")
+    if args.models and args.command not in ("create", "delete"):
+        parser.error("model names apply only to create and delete")
+    if args.command == "keygen":
+        cmd_keygen()
+    elif args.command == "create":
+        cmd_create(args.models)
+    elif args.command == "status":
+        cmd_status()
+    else:
+        cmd_delete(args.models)
 
 
 if __name__ == "__main__":

@@ -103,6 +103,8 @@ EVALUATED_MODELS = {
     "vllm:lapa-v0.1.3-instruct",
     "vllm:mamaylm-gemma-3-12b-it-v2.0",
     "vllm:mamaylm-gemma-3-27b-it-v2.0",
+    "vllm:lapa-v0.1.2-instruct",
+    "vllm:mamaylm-gemma-3-12b-it-v1.0",
 }
 
 
