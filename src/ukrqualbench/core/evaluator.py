@@ -224,7 +224,8 @@ class Evaluator:
         """Add a detector for Block V metrics.
 
         Args:
-            name: Detector name (russism, anglicism, markers, fertility).
+            name: Detector name (russism, anglicism, markers). Fertility is not
+                a detector; it comes from the fertility registry.
             detector: Detector instance.
         """
         self._detectors[name] = detector

@@ -93,9 +93,6 @@ def measure(
             continue
         try:
             entry = asyncio.run(measure_model(model_id, config, corpus=corpus))
-        except NotImplementedError as e:
-            rprint(f"[yellow]{model_id}: skipped — {e}[/yellow]")
-            continue
         except ModelNotFoundError as e:
             rprint(
                 f"[yellow]{model_id}: API does not know the model and there is no verified "

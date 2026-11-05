@@ -82,8 +82,8 @@ async def measure_model(
 
     Raises:
         UnknownModelError: No tokenizer spec for ``model_id``.
-        NotImplementedError: API backend not available yet.
         ModelNotFoundError: API does not know the model and there is no fallback.
+        CalibrationError: API wrapper overhead is not constant for this model.
     """
     spec = get_spec(model_id)
     if spec is None:

@@ -370,6 +370,9 @@ class TestAPICounters:
         )
         assert await counter.count("абв") == 3
         assert counter.baseline_overhead == 0
+        first, last = mock.call_args_list[0].kwargs, mock.call_args_list[-1].kwargs
+        assert first == {"model": "gemini-x", "contents": "."}
+        assert last == {"model": "gemini-x", "contents": "абв"}
 
         missing = GeminiTokenCounter("gemini-old", "k", max_retries=1)
         not_found = errors.ClientError(404, {"error": {"code": 404, "message": "not found"}})

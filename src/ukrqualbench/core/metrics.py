@@ -186,7 +186,7 @@ class MetricsCollector:
         """Record detector performance.
 
         Args:
-            detector: Detector name (russism, anglicism, markers, fertility).
+            detector: Detector name (russism, anglicism, markers).
             latency_seconds: Processing time.
             tokens_processed: Number of tokens processed.
         """

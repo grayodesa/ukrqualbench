@@ -741,9 +741,14 @@ def leaderboard(
     leaderboard_data: list[dict[str, Any]] = []
 
     corpus = load_reference_corpus()
-    fertility_entries = FertilityRegistry.load(
+    fertility_registry = FertilityRegistry.load(
         default_registry_path(Config()), expected_corpus_sha256=corpus.sha256
-    ).all_entries()
+    )
+    fertility_entries = {
+        model_id: fertility_entry
+        for model_id, fertility_entry in fertility_registry.all_entries().items()
+        if fertility_registry.is_valid(fertility_entry)
+    }
 
     for rank, (model_id, elo) in enumerate(rankings[:limit] if limit else rankings, start=1):
         entry = registry.get_model(model_id)
