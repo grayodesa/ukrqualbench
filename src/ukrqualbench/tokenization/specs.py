@@ -116,6 +116,11 @@ MODEL_TOKENIZERS: dict[str, TokenizerSpec] = {
         "BF16 on vLLM; lapa-v0.1.2-instruct is the Q4 GGUF run",
     ),
     "vllm:mamaylm-gemma-3-12b-it-v1.0": GEMMA3,
+    "vllm:mamaylm-gemma-3-27b-it-v2.0-fp8": _hf(
+        "INSAIT-Institute/MamayLM-Gemma-3-27B-IT-v2.0-FP8-dynamic",
+        "7ef42c6e4991864f0f47bfd524c1e77c9bdb11a9",
+        "official FP8 build of the 27B; same tokenizer.json",
+    ),
     "google/gemma-3-27b-it-fast": TokenizerSpec(
         backend="hf",
         ref=GEMMA3.ref,

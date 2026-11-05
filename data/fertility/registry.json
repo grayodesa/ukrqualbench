@@ -464,6 +464,18 @@
       "baseline_overhead": null,
       "measured_at": "2026-11-05T14:27:22+02:00",
       "note": ""
+    },
+    "vllm:mamaylm-gemma-3-27b-it-v2.0-fp8": {
+      "tokens": 79234,
+      "fertility_rate": 2.255965,
+      "chars_per_token": 3.004973,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:INSAIT-Institute/MamayLM-Gemma-3-27B-IT-v2.0-FP8-dynamic@7ef42c6",
+      "tokenizer_sha256": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T16:15:46+02:00",
+      "note": "official FP8 build of the 27B; same tokenizer.json"
     }
   }
 }

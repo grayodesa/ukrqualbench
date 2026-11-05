@@ -12,6 +12,7 @@ Usage (from the repository root):
     uv run python scripts/runpod_pods.py keygen   # once: create the vLLM key in .env
     uv run python scripts/runpod_pods.py create [MODEL ...]  # create pods, sync ENDPOINTS
     uv run python scripts/runpod_pods.py status              # pod state, /v1/models probe
+    uv run python scripts/runpod_pods.py switch OLD NEW      # restart OLD's pod with NEW
     uv run python scripts/runpod_pods.py delete [MODEL ...]  # terminate pods, sync ENDPOINTS
 
 Without MODEL names ``create`` covers every model not yet in the state file and ``delete``
@@ -99,6 +100,15 @@ MODELS = [
         "2d4fd7a65bef3534463a2abddeefff2c70fa0e83",
         GPU_48GB,
         80,
+    ),
+    # Official FP8 (compressed-tensors, E4M3 weights) build of the 27B; on Ampere vLLM runs
+    # it weight-only. Meant for `switch` on the BF16 pod: same machine, BF16 vs 8-bit.
+    ServedModel(
+        "mamaylm-gemma-3-27b-it-v2.0-fp8",
+        "INSAIT-Institute/MamayLM-Gemma-3-27B-IT-v2.0-FP8-dynamic",
+        "7ef42c6e4991864f0f47bfd524c1e77c9bdb11a9",
+        GPU_80GB,
+        120,
     ),
 ]
 MODEL_NAMES = [m.served for m in MODELS]
@@ -290,6 +300,33 @@ def cmd_status() -> None:
         )
 
 
+def cmd_switch(old: str, new: str) -> None:
+    """Restart the pod serving ``old`` with ``new`` (PATCH /pods/{id}: the pod is reset)."""
+    keys = require_keys(need_vllm=True)
+    state = load_state()
+    if old not in state:
+        sys.exit(f"{old} is not in the state file")
+    if new in state:
+        sys.exit(f"{new} already has pod {state[new]}")
+    pod_id = state[old]
+    model = next(m for m in MODELS if m.served == new)
+    _, before = request("GET", f"{API}/pods/{pod_id}", keys.runpod)
+    body = pod_body(model, keys.vllm)
+    patch = {k: body[k] for k in ("dockerEntrypoint", "dockerStartCmd", "containerDiskInGb")}
+    status, resp = request("PATCH", f"{API}/pods/{pod_id}", keys.runpod, patch)
+    if status != 200 or not isinstance(resp, dict):
+        sys.exit(f"switch failed, HTTP {status}: {keys.redact(str(resp))[:500]}")
+    del state[old]
+    state[new] = pod_id
+    save_state(state)
+    machine_before = before.get("machineId") if isinstance(before, dict) else None
+    print(
+        f"pod {pod_id}: {old} -> {new}, {resp.get('desiredStatus')}, "
+        f"machineId {machine_before} -> {resp.get('machineId')}"
+    )
+    sync_endpoints(state)
+
+
 def cmd_delete(names: list[str]) -> None:
     """Terminate pods of ``names`` (every pod in the state file when empty)."""
     keys = require_keys(need_vllm=False)
@@ -322,22 +359,28 @@ def cmd_delete(names: list[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Manage the RunPod vLLM pods for UkrQualBench.")
-    parser.add_argument("command", choices=["keygen", "create", "status", "delete"])
+    parser.add_argument("command", choices=["keygen", "create", "status", "switch", "delete"])
     parser.add_argument(
-        "models", nargs="*", help=f"create/delete only these: {', '.join(MODEL_NAMES)}"
+        "models",
+        nargs="*",
+        help=f"create/delete: only these; switch: OLD NEW. Known: {', '.join(MODEL_NAMES)}",
     )
     args = parser.parse_args()
     unknown = [m for m in args.models if m not in MODEL_NAMES]
     if unknown:
         parser.error(f"unknown model(s): {', '.join(unknown)}")
-    if args.models and args.command not in ("create", "delete"):
-        parser.error("model names apply only to create and delete")
+    if args.models and args.command not in ("create", "delete", "switch"):
+        parser.error("model names apply only to create, switch and delete")
+    if args.command == "switch" and len(args.models) != 2:
+        parser.error("switch needs exactly two names: OLD NEW")
     if args.command == "keygen":
         cmd_keygen()
     elif args.command == "create":
         cmd_create(args.models)
     elif args.command == "status":
         cmd_status()
+    elif args.command == "switch":
+        cmd_switch(*args.models)
     else:
         cmd_delete(args.models)
 
