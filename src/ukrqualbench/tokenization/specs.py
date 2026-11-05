@@ -96,6 +96,19 @@ MODEL_TOKENIZERS: dict[str, TokenizerSpec] = {
         "Gemma 3 vocabulary with Cyrillic tokens replaced",
     ),
     "mamaylm-gemma-3-12b-it-v1.0": GEMMA3,
+    # Self-hosted on vLLM. tokenizer.json sha256 matches lapa-v0.1.2 (8332e5fa...)
+    # and the Gemma 3 file above (4667f208...) respectively.
+    "vllm:lapa-v0.1.3-instruct": _hf(
+        "lapa-llm/lapa-v0.1.3-instruct",
+        "66ba3ebfa6baa17bc2b3222f3908c30152ae104f",
+        "lapa-v0.1.2 + merged DPO adapter; same tokenizer",
+    ),
+    "vllm:mamaylm-gemma-3-12b-it-v2.0": _hf(
+        "INSAIT-Institute/MamayLM-Gemma-3-12B-IT-v2.0", "3cb02013b6b37cfe10f4b3da0fcddc1acef7f244"
+    ),
+    "vllm:mamaylm-gemma-3-27b-it-v2.0": _hf(
+        "INSAIT-Institute/MamayLM-Gemma-3-27B-IT-v2.0", "ad1bdfed9646939358adfcba9c88bb4031b50ed7"
+    ),
     "google/gemma-3-27b-it-fast": TokenizerSpec(
         backend="hf",
         ref=GEMMA3.ref,

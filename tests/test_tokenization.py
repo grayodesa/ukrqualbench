@@ -99,6 +99,10 @@ EVALUATED_MODELS = {
     "openrouter:meta/muse-glimmer-30b",
     "openrouter:qwen/qwen3.6-27b",
     "Qwen/Qwen3-32B-fast",
+    # Self-hosted on vLLM; FR measured before their first evaluation run.
+    "vllm:lapa-v0.1.3-instruct",
+    "vllm:mamaylm-gemma-3-12b-it-v2.0",
+    "vllm:mamaylm-gemma-3-27b-it-v2.0",
 }
 
 
