@@ -27,30 +27,28 @@ if TYPE_CHECKING:
 # ============================================================================
 
 # Based on Section 3.3 of Technical Specification
+# Fertility is not a criterion: it describes the tokenizer (cost per word),
+# not the quality of the model's Ukrainian.
 BADGE_THRESHOLDS = {
     Badge.GOLD: {
         "min_elo": 1650,
         "max_russism_rate": 1.0,
         "min_positive_markers": 5.0,
-        "max_fertility": 1.5,
     },
     Badge.SILVER: {
         "min_elo": 1550,
         "max_russism_rate": 3.0,
         "min_positive_markers": 3.0,
-        "max_fertility": 1.8,
     },
     Badge.BRONZE: {
         "min_elo": 1450,
         "max_russism_rate": 5.0,
         "min_positive_markers": 1.0,
-        "max_fertility": 2.0,
     },
     Badge.CAUTION: {
         "min_elo": 1350,
         "max_russism_rate": 10.0,
         "min_positive_markers": 0.0,
-        "max_fertility": 2.5,
     },
 }
 
@@ -67,7 +65,6 @@ def assign_badge(scores: ModelScoreData) -> Badge:
     elo = scores.elo_rating
     russism_rate = scores.block_v.russism_rate
     positive_markers = scores.block_v.positive_markers
-    fertility = scores.block_v.fertility_rate
 
     # Check badges in order of prestige
     for badge in [Badge.GOLD, Badge.SILVER, Badge.BRONZE, Badge.CAUTION]:
@@ -76,7 +73,6 @@ def assign_badge(scores: ModelScoreData) -> Badge:
             elo >= thresholds["min_elo"]
             and russism_rate <= thresholds["max_russism_rate"]
             and positive_markers >= thresholds["min_positive_markers"]
-            and fertility <= thresholds["max_fertility"]
         ):
             return badge
 

@@ -14,6 +14,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from ukrqualbench import __version__
+from ukrqualbench.cli_fertility import fertility_app
 from ukrqualbench.core.config import BenchmarkVersion, Config
 
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ app = typer.Typer(
     add_completion=False,
     no_args_is_help=True,
 )
+app.add_typer(fertility_app, name="fertility")
 console = Console()
 
 
@@ -468,7 +470,7 @@ def _display_model_evaluation(result: Any) -> None:
     table.add_row("  False Positive Rate", f"{result.block_a.false_positive_rate:.1%}")
 
     table.add_row("[bold]Block V (Automatic Metrics)[/bold]", "")
-    table.add_row("  Fertility Rate", f"{result.block_v.fertility_rate:.2f}")
+    table.add_row("  Fertility Rate", _fmt_fertility(result.block_v.fertility_rate))
     table.add_row("  Positive Markers", f"{result.block_v.positive_markers:.1f}/1K")
     table.add_row("  Russism Rate", f"{result.block_v.russism_rate:.2f}/1K")
     table.add_row("  Anglicism Rate", f"{result.block_v.anglicism_rate:.2f}/1K")
@@ -741,7 +743,7 @@ def leaderboard(
 
         mc_acc = f"{eval_data.block_a.mc_accuracy:.1%}" if eval_data else "-"
         gec_f1 = f"{eval_data.block_a.gec_f1:.1%}" if eval_data else "-"
-        fertility = f"{eval_data.block_v.fertility_rate:.2f}" if eval_data else "-"
+        fertility = _fmt_fertility(eval_data.block_v.fertility_rate) if eval_data else "-"
         russisms = f"{eval_data.block_v.russism_rate:.1f}" if eval_data else "-"
         markers = f"{eval_data.block_v.positive_markers:.1f}" if eval_data else "-"
         status = (
@@ -795,6 +797,11 @@ def leaderboard(
     rprint(f"\n[green]Leaderboard saved to: {output}[/green]")
 
 
+def _fmt_fertility(rate: float | None) -> str:
+    """Fertility for display; a model without a registry entry shows an em dash."""
+    return "—" if rate is None else f"{rate:.2f}"
+
+
 def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
     rows = ""
     for entry in data:
@@ -805,7 +812,7 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
             <td>{entry["elo_rating"]}</td>
             <td>{entry["mc_accuracy"]:.1%}</td>
             <td>{entry["gec_f1"]:.1%}</td>
-            <td>{entry["fertility_rate"]:.2f}</td>
+            <td>{_fmt_fertility(entry["fertility_rate"])}</td>
             <td>{entry["russism_rate"]:.1f}</td>
             <td>{entry["positive_markers"]:.1f}</td>
         </tr>"""
@@ -834,7 +841,7 @@ def _generate_markdown_table(data: list[dict[str, Any]]) -> str:
     for entry in data:
         if entry["mc_accuracy"]:
             lines.append(
-                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {entry['fertility_rate']:.2f} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {_fmt_fertility(entry['fertility_rate'])} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
             )
         else:
             lines.append(
@@ -1144,8 +1151,15 @@ def recalculate(
     """Recalculate Block A metrics from existing checkpoints (no new API calls)."""
     import re
 
+    from ukrqualbench.tokenization.registry import (
+        FertilityRegistry,
+        default_registry_path,
+        fertility_block_v_fields,
+    )
+
     config = Config()
     output.mkdir(parents=True, exist_ok=True)
+    fertility_registry = FertilityRegistry.load(default_registry_path(config))
 
     checkpoint_dir = config.data_dir / "checkpoints" / "block_a"
     benchmark_file = config.data_dir / "benchmarks" / f"{benchmark.value}.json"
@@ -1338,7 +1352,7 @@ def recalculate(
                 "model_id": model_id,
                 "block_a": new_block_a,
                 "block_v": {
-                    "fertility_rate": 1.5,
+                    **fertility_block_v_fields(fertility_registry, model_id),
                     "positive_markers": 0.0,
                     "russism_rate": 0.0,
                     "anglicism_rate": 0.0,
@@ -1382,14 +1396,19 @@ def metrics(
 
     from ukrqualbench.detectors import (
         AnglicismDetector,
-        FertilityCalculator,
         JudgeBasedCalqueDetector,
         PositiveMarkerDetector,
         RussismDetector,
     )
+    from ukrqualbench.tokenization.registry import (
+        FertilityRegistry,
+        default_registry_path,
+        fertility_block_v_fields,
+    )
 
     config = Config()
     output.mkdir(parents=True, exist_ok=True)
+    fertility_registry = FertilityRegistry.load(default_registry_path(config))
 
     # Validate detector option
     if detector not in ("judge", "dict"):
@@ -1452,9 +1471,8 @@ def metrics(
 
     anglicism_detector = AnglicismDetector()
     markers_detector = PositiveMarkerDetector()
-    fertility_calc = FertilityCalculator()
 
-    async def run_metrics(model_id: str, client: Any) -> dict[str, float]:
+    async def run_metrics(model_id: str, client: Any) -> dict[str, Any]:
         all_texts: list[str] = []
         for prompt in sample_prompts:
             try:
@@ -1468,18 +1486,14 @@ def metrics(
 
         combined_text = " ".join(all_texts)
 
-        results: dict[str, float] = {
-            "fertility_rate": 1.5,
+        # Fertility is a tokenizer property measured on the reference corpus,
+        # not on these responses: it comes from the fertility registry.
+        results: dict[str, Any] = {
+            **fertility_block_v_fields(fertility_registry, model_id),
             "positive_markers": 0.0,
             "russism_rate": 0.0,
             "anglicism_rate": 0.0,
         }
-
-        try:
-            fertility_result = fertility_calc.calculate(combined_text)
-            results["fertility_rate"] = fertility_result.fertility_rate
-        except Exception:
-            pass
 
         # Use judge-based or dictionary-based detection
         if calque_detector is not None:
@@ -1555,7 +1569,7 @@ def metrics(
         eval_data["block_v"] = new_metrics
 
         rprint(
-            f"  [green]New:[/green] fertility={new_metrics['fertility_rate']:.2f}, "
+            f"  [green]New:[/green] fertility={_fmt_fertility(new_metrics['fertility_rate'])}, "
             f"russisms={new_metrics['russism_rate']:.2f}, "
             f"anglicisms={new_metrics['anglicism_rate']:.2f}, "
             f"markers={new_metrics['positive_markers']:.2f}"

@@ -1,27 +1,46 @@
 """Fertility rate calculator for Ukrainian text.
 
-Fertility rate measures the ratio of tokens (subword units) to words.
-Lower fertility rates indicate:
-- More efficient tokenization
-- Better language representation in the model
-- Native-like vocabulary usage
+Fertility rate is the ratio of tokens (subword units) to words. It describes a
+tokenizer: how many tokens it spends on a Ukrainian word. Lower is cheaper and
+leaves more context for the same text.
 
-Ukrainian text typically has higher fertility rates than English
-due to rich morphology and Cyrillic script considerations.
+Token counts must come from a real tokenizer — a ``tokenizer`` with
+``encode``, a ``token_counter`` callable, or precomputed counts. There is no
+heuristic estimate: an invented token count is indistinguishable from a
+measured one. The benchmark's per-model fertility is measured on a fixed
+reference corpus by :mod:`ukrqualbench.tokenization`.
 """
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
+
+from ukrqualbench.tokenization.corpus import WORD_PATTERN
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+__all__ = [
+    "WORD_PATTERN",
+    "FertilityCalculator",
+    "FertilityResult",
+    "Tokenizer",
+    "calculate_fertility",
+    "evaluate_fertility_quality",
+]
 
-# Word splitting pattern for Ukrainian text
-WORD_PATTERN = re.compile(r"[\w''-]+", re.UNICODE)
+NO_TOKEN_SOURCE = "FertilityCalculator requires a tokenizer, token_counter or precomputed_tokens"
+
+# Quality bands for native-tokenizer fertility on Ukrainian text. Measured on
+# the UA-GEC reference corpus: Lapa 1.53 (Ukrainian vocabulary), Muse-Glimmer,
+# Gemma and o200k 2.15-2.38, DeepSeek V4 2.94, Qwen3 3.38.
+QUALITY_BANDS: tuple[tuple[float, str], ...] = (
+    (1.8, "excellent"),
+    (2.4, "good"),
+    (3.0, "acceptable"),
+    (3.5, "poor"),
+)
 
 
 class Tokenizer(Protocol):
@@ -30,6 +49,21 @@ class Tokenizer(Protocol):
     def encode(self, text: str) -> list[int]:
         """Encode text to token IDs."""
         ...
+
+
+def evaluate_fertility_quality(fertility_rate: float) -> str:
+    """Quality band of a native-tokenizer fertility rate.
+
+    Args:
+        fertility_rate: Tokens per word.
+
+    Returns:
+        One of excellent, good, acceptable, poor, very_poor.
+    """
+    for upper, label in QUALITY_BANDS:
+        if fertility_rate < upper:
+            return label
+    return "very_poor"
 
 
 @dataclass
@@ -44,54 +78,23 @@ class FertilityResult:
 
     @property
     def is_efficient(self) -> bool:
-        """Check if fertility rate indicates efficient tokenization.
-
-        For Ukrainian, rates below 2.0 are considered efficient.
-        """
-        return self.fertility_rate < 2.0
+        """Whether the rate is in the excellent or good band (< 2.4)."""
+        return self.quality_level in ("excellent", "good")
 
     @property
     def quality_level(self) -> str:
-        """Get quality level based on fertility rate.
-
-        Returns:
-            Quality level string.
-        """
-        if self.fertility_rate < 1.5:
-            return "excellent"
-        if self.fertility_rate < 2.0:
-            return "good"
-        if self.fertility_rate < 2.5:
-            return "acceptable"
-        if self.fertility_rate < 3.0:
-            return "poor"
-        return "very_poor"
+        """Quality band, see :func:`evaluate_fertility_quality`."""
+        return evaluate_fertility_quality(self.fertility_rate)
 
 
 class FertilityCalculator:
-    """Calculator for text fertility rate.
-
-    Fertility rate = tokens / words
-
-    A lower rate indicates better tokenization efficiency.
-    For Ukrainian text:
-    - Excellent: < 1.5
-    - Good: 1.5 - 2.0
-    - Acceptable: 2.0 - 2.5
-    - Poor: 2.5 - 3.0
-    - Very poor: > 3.0
+    """Calculator for text fertility rate (tokens / words).
 
     Example:
-        >>> calc = FertilityCalculator()
-        >>> # Using simple estimation
-        >>> result = calc.calculate("Це простий текст.")
-        >>> result.fertility_rate
-        1.3
+        >>> calc = FertilityCalculator(token_counter=lambda t: 6)
+        >>> calc.calculate("Це простий текст.").fertility_rate
+        2.0
     """
-
-    # Default estimation factor for Ukrainian text
-    # Based on typical tokenizer behavior
-    DEFAULT_TOKEN_FACTOR = 1.3
 
     def __init__(
         self,
@@ -101,8 +104,8 @@ class FertilityCalculator:
         """Initialize calculator.
 
         Args:
-            tokenizer: Optional tokenizer with encode method.
-            token_counter: Optional custom function to count tokens.
+            tokenizer: Optional tokenizer with an ``encode`` method.
+            token_counter: Optional function returning the token count of a text.
         """
         self._tokenizer = tokenizer
         self._token_counter = token_counter
@@ -116,22 +119,23 @@ class FertilityCalculator:
 
         Args:
             text: Text to analyze.
-            precomputed_tokens: Pre-computed token count (optional).
+            precomputed_tokens: Token count computed elsewhere (optional).
 
         Returns:
             Fertility result with rate and metadata.
-        """
-        # Count words
-        words = WORD_PATTERN.findall(text)
-        word_count = len(words)
 
-        # Count tokens
+        Raises:
+            ValueError: No tokenizer, counter or precomputed count is available.
+        """
+        word_count = len(WORD_PATTERN.findall(text))
+
         if precomputed_tokens is not None:
             token_count = precomputed_tokens
+            method = "precomputed"
         else:
             token_count = self._count_tokens(text)
+            method = self._get_estimation_method()
 
-        # Calculate rate
         fertility_rate = 0.0 if word_count == 0 else token_count / word_count
 
         return FertilityResult(
@@ -139,9 +143,7 @@ class FertilityCalculator:
             word_count=word_count,
             token_count=token_count,
             fertility_rate=fertility_rate,
-            metadata={
-                "estimation_method": self._get_estimation_method(),
-            },
+            metadata={"estimation_method": method},
         )
 
     def calculate_batch(
@@ -153,14 +155,13 @@ class FertilityCalculator:
 
         Args:
             texts: List of texts to analyze.
-            precomputed_tokens: Pre-computed token counts (optional).
+            precomputed_tokens: Token counts aligned with ``texts`` (optional).
 
         Returns:
             List of fertility results.
         """
         if precomputed_tokens is None:
-            precomputed_tokens = [None] * len(texts)  # type: ignore[list-item]
-
+            return [self.calculate(text) for text in texts]
         return [
             self.calculate(text, tokens)
             for text, tokens in zip(texts, precomputed_tokens, strict=True)
@@ -226,56 +227,16 @@ class FertilityCalculator:
         }
 
     def _count_tokens(self, text: str) -> int:
-        """Count tokens in text.
+        """Count tokens with the configured counter or tokenizer.
 
-        Uses tokenizer if available, otherwise estimates.
-
-        Args:
-            text: Text to tokenize.
-
-        Returns:
-            Token count.
+        Raises:
+            ValueError: Neither a counter nor a tokenizer is configured.
         """
-        # Use custom counter if provided
         if self._token_counter is not None:
             return self._token_counter(text)
-
-        # Use tokenizer if provided
         if self._tokenizer is not None:
             return len(self._tokenizer.encode(text))
-
-        # Fall back to estimation
-        return self._estimate_tokens(text)
-
-    def _estimate_tokens(self, text: str) -> int:
-        """Estimate token count using heuristics.
-
-        Approximation based on:
-        - Ukrainian typically tokenizes at ~1.3x words
-        - Punctuation adds tokens
-        - Numbers often split into multiple tokens
-
-        Args:
-            text: Text to estimate tokens for.
-
-        Returns:
-            Estimated token count.
-        """
-        words = WORD_PATTERN.findall(text)
-        word_count = len(words)
-
-        # Base estimation
-        base_tokens = int(word_count * self.DEFAULT_TOKEN_FACTOR)
-
-        # Add for punctuation
-        punctuation_count = len(re.findall(r"[.,!?;:()\"«»—–-]", text))
-        punct_tokens = punctuation_count // 2  # Not all punct is separate token
-
-        # Add for numbers (often split)
-        numbers = re.findall(r"\d+", text)
-        number_tokens = sum(len(n) // 2 for n in numbers)  # Rough estimate
-
-        return max(1, base_tokens + punct_tokens + number_tokens)
+        raise ValueError(NO_TOKEN_SOURCE)
 
     def _get_estimation_method(self) -> str:
         """Get the method used for token counting."""
@@ -283,44 +244,17 @@ class FertilityCalculator:
             return "custom_counter"
         if self._tokenizer is not None:
             return "tokenizer"
-        return "estimation"
+        raise ValueError(NO_TOKEN_SOURCE)
 
 
-def calculate_fertility(
-    text: str,
-    token_count: int | None = None,
-) -> float:
-    """Calculate fertility rate for text.
-
-    Convenience function for simple usage.
+def calculate_fertility(text: str, token_count: int) -> float:
+    """Fertility rate of ``text`` given its token count.
 
     Args:
         text: Text to analyze.
-        token_count: Pre-computed token count.
+        token_count: Token count from a real tokenizer.
 
     Returns:
         Fertility rate (tokens / words).
     """
-    calculator = FertilityCalculator()
-    result = calculator.calculate(text, token_count)
-    return result.fertility_rate
-
-
-def evaluate_fertility_quality(fertility_rate: float) -> str:
-    """Evaluate quality based on fertility rate.
-
-    Args:
-        fertility_rate: Calculated fertility rate.
-
-    Returns:
-        Quality level string.
-    """
-    if fertility_rate < 1.5:
-        return "excellent"
-    if fertility_rate < 2.0:
-        return "good"
-    if fertility_rate < 2.5:
-        return "acceptable"
-    if fertility_rate < 3.0:
-        return "poor"
-    return "very_poor"
+    return FertilityCalculator().calculate(text, token_count).fertility_rate

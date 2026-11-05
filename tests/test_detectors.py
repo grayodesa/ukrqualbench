@@ -412,98 +412,109 @@ class TestFertilityCalculator:
 
     @pytest.fixture
     def calculator(self) -> FertilityCalculator:
-        """Create calculator instance."""
-        return FertilityCalculator()
+        """Calculator counting two tokens per whitespace-separated chunk."""
+        return FertilityCalculator(token_counter=lambda t: 2 * len(t.split()))
 
     def test_basic_calculation(self, calculator: FertilityCalculator) -> None:
-        """Test basic fertility calculation."""
+        """Tokens come from the counter, words from WORD_PATTERN."""
         text = "Це простий текст українською мовою."
         result = calculator.calculate(text)
         assert result.word_count == 5
-        assert result.token_count > 0
-        assert result.fertility_rate > 0
+        assert result.token_count == 10
+        assert result.fertility_rate == 2.0
+        assert result.metadata["estimation_method"] == "custom_counter"
 
-    def test_precomputed_tokens(self, calculator: FertilityCalculator) -> None:
-        """Test with precomputed token count."""
-        text = "Це текст."
-        result = calculator.calculate(text, precomputed_tokens=4)
+    def test_tokenizer_encode_is_used(self) -> None:
+        """A tokenizer's encode() output length is the token count."""
+
+        class ThreePerWord:
+            def encode(self, text: str) -> list[int]:
+                return [0, 1, 2] * len(text.split())
+
+        result = FertilityCalculator(tokenizer=ThreePerWord()).calculate("Це текст")
+        assert result.token_count == 6
+        assert result.metadata["estimation_method"] == "tokenizer"
+
+    def test_no_token_source_raises(self) -> None:
+        """Without a counter, tokenizer or precomputed count there is no estimate."""
+        with pytest.raises(ValueError, match="requires a tokenizer"):
+            FertilityCalculator().calculate("Це текст.")
+
+    def test_precomputed_tokens(self) -> None:
+        """Precomputed counts need no counter."""
+        result = FertilityCalculator().calculate("Це текст.", precomputed_tokens=4)
         assert result.token_count == 4
         assert result.fertility_rate == 2.0  # 4 tokens / 2 words
+        assert result.metadata["estimation_method"] == "precomputed"
 
-    def test_empty_text(self, calculator: FertilityCalculator) -> None:
-        """Test empty text handling."""
-        result = calculator.calculate("")
+    def test_empty_text(self) -> None:
+        """Empty text has zero words and zero rate."""
+        result = FertilityCalculator().calculate("", precomputed_tokens=0)
         assert result.word_count == 0
         assert result.fertility_rate == 0.0
 
-    def test_quality_level(self, calculator: FertilityCalculator) -> None:
-        """Test quality level determination."""
-        # Simulate different fertility rates
+    def test_apostrophes_and_hyphens_join_words(self) -> None:
+        """Apostrophe and hyphen inside a word do not split it; a lone dash is no word."""
+        for text in ("м'ята", "м’ята", "мʼята", "по-українськи", "2026"):
+            assert FertilityCalculator().calculate(text, 1).word_count == 1
+        assert FertilityCalculator().calculate("так - ні", 3).word_count == 2
+
+    def test_quality_level(self) -> None:
+        """Quality bands of native-tokenizer fertility."""
+        calculator = FertilityCalculator()
         text = "Текст"
-
-        # Excellent (< 1.5)
-        result = calculator.calculate(text, precomputed_tokens=1)
-        assert result.quality_level == "excellent"
-
-        # Good (1.5 - 2.0, exclusive)
-        # 2 tokens / 1 word = 2.0, which is "acceptable" at boundary
-        result = calculator.calculate(text, precomputed_tokens=2)
-        assert result.quality_level == "acceptable"
-
-        # Very poor (> 3.0)
-        result = calculator.calculate(text, precomputed_tokens=3)
-        assert result.quality_level == "very_poor"
+        assert calculator.calculate(text, precomputed_tokens=1).quality_level == "excellent"
+        assert calculator.calculate(text, precomputed_tokens=2).quality_level == "good"
+        assert calculator.calculate(text, precomputed_tokens=3).quality_level == "poor"
+        assert calculator.calculate(text, precomputed_tokens=4).quality_level == "very_poor"
 
     def test_batch_calculation(self, calculator: FertilityCalculator) -> None:
         """Test batch calculation."""
         texts = ["Перший текст.", "Другий текст тут.", "Третій."]
         results = calculator.calculate_batch(texts)
         assert len(results) == 3
-        assert all(r.word_count > 0 for r in results)
+        assert [r.word_count for r in results] == [2, 3, 1]
+
+    def test_batch_with_precomputed_tokens(self) -> None:
+        """Precomputed counts are aligned with texts."""
+        results = FertilityCalculator().calculate_batch(["Один.", "Два слова."], [3, 4])
+        assert [r.token_count for r in results] == [3, 4]
 
     def test_aggregate_calculation(self, calculator: FertilityCalculator) -> None:
         """Test aggregate statistics."""
         texts = ["Перший текст.", "Другий текст тут.", "Третій тексточок."]
         aggregate = calculator.calculate_aggregate(texts)
-        assert "total_texts" in aggregate
         assert aggregate["total_texts"] == 3
-        assert "aggregate_fertility_rate" in aggregate
+        assert aggregate["total_words"] == 7
+        assert aggregate["aggregate_fertility_rate"] == 2.0
         assert "mean_fertility_rate" in aggregate
 
     def test_compare_texts(self, calculator: FertilityCalculator) -> None:
         """Test text comparison."""
-        text_a = "Короткий."
-        text_b = "Довший текст тут."
-        comparison = calculator.compare_texts(text_a, text_b)
-        assert "text_a_fertility" in comparison
-        assert "text_b_fertility" in comparison
-        assert "more_efficient" in comparison
+        comparison = calculator.compare_texts("Короткий.", "Довший текст тут.", 1, 9)
+        assert comparison["text_a_fertility"] == 1.0
+        assert comparison["text_b_fertility"] == 3.0
+        assert comparison["more_efficient"] == "A"
 
-    def test_is_efficient_property(self, calculator: FertilityCalculator) -> None:
-        """Test is_efficient property."""
-        # Efficient (< 2.0)
-        result = calculator.calculate("Текст", precomputed_tokens=1)
-        assert result.is_efficient
-
-        # Not efficient (>= 2.0)
-        result = calculator.calculate("Слово", precomputed_tokens=5)
-        assert not result.is_efficient
+    def test_is_efficient_property(self) -> None:
+        """Efficient means the excellent or good band (< 2.4)."""
+        assert FertilityCalculator().calculate("Текст", precomputed_tokens=2).is_efficient
+        assert not FertilityCalculator().calculate("Слово", precomputed_tokens=3).is_efficient
 
 
 class TestFertilityConvenienceFunctions:
     """Tests for fertility convenience functions."""
 
     def test_calculate_fertility_function(self) -> None:
-        """Test calculate_fertility convenience function."""
-        rate = calculate_fertility("Це простий текст.")
-        assert rate > 0
+        """calculate_fertility divides the given token count by words."""
+        assert calculate_fertility("Це простий текст.", 6) == 2.0
 
     def test_evaluate_fertility_quality(self) -> None:
-        """Test evaluate_fertility_quality function."""
-        assert evaluate_fertility_quality(1.2) == "excellent"
-        assert evaluate_fertility_quality(1.7) == "good"
-        assert evaluate_fertility_quality(2.2) == "acceptable"
-        assert evaluate_fertility_quality(2.7) == "poor"
+        """Bands: <1.8 excellent, <2.4 good, <3.0 acceptable, <3.5 poor."""
+        assert evaluate_fertility_quality(1.53) == "excellent"
+        assert evaluate_fertility_quality(2.26) == "good"
+        assert evaluate_fertility_quality(2.94) == "acceptable"
+        assert evaluate_fertility_quality(3.38) == "poor"
         assert evaluate_fertility_quality(3.5) == "very_poor"
 
 
@@ -535,7 +546,7 @@ class TestDetectorIntegration:
         russism = create_russism_detector()
         anglicism = create_anglicism_detector()
         positive = create_positive_marker_detector()
-        fertility = FertilityCalculator()
+        fertility = FertilityCalculator(token_counter=lambda t: 2 * len(t.split()))
 
         russism_result = russism.detect(text)
         anglicism_result = anglicism.detect(text)

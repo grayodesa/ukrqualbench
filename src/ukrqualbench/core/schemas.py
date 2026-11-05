@@ -271,10 +271,24 @@ class BlockBScores(BaseModel):
 class BlockVScores(BaseModel):
     """Block V (automatic metrics) scores."""
 
-    fertility_rate: float = Field(..., ge=1.0, description="Tokens per word (lower=better)")
-    positive_markers: float = Field(..., ge=0, description="Markers per 1K tokens")
-    russism_rate: float = Field(..., ge=0, description="Russisms per 1K tokens")
-    anglicism_rate: float = Field(..., ge=0, description="Anglicisms per 1K tokens")
+    fertility_rate: float | None = Field(
+        None,
+        ge=1.0,
+        description="Native-tokenizer tokens per word on UA-GEC test (lower=better); "
+        "None when the model has no fertility registry entry",
+    )
+    fertility_method: str | None = Field(
+        None, description="How tokens were counted, e.g. hf:<repo>@<sha7> or api:anthropic"
+    )
+    positive_markers: float = Field(
+        ..., ge=0, description="Markers per 1K pseudo-tokens (words x 1.3), model-independent"
+    )
+    russism_rate: float = Field(
+        ..., ge=0, description="Russisms per 1K pseudo-tokens (words x 1.3), model-independent"
+    )
+    anglicism_rate: float = Field(
+        ..., ge=0, description="Anglicisms per 1K pseudo-tokens (words x 1.3), model-independent"
+    )
 
 
 class ModelScoreData(BaseModel):

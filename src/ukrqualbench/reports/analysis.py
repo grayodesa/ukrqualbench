@@ -23,9 +23,15 @@ from ukrqualbench.core.schemas import (
     BlockVScores,
     EvaluationResultData,
 )
+from ukrqualbench.detectors.fertility import evaluate_fertility_quality
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+# Native-tokenizer fertility bands (see detectors.fertility.QUALITY_BANDS):
+# below 1.8 is "excellent", from 3.0 on is "poor" or worse.
+FERTILITY_EFFICIENT = 1.8
+FERTILITY_POOR = 3.0
 
 
 # ============================================================================
@@ -356,7 +362,11 @@ class AnalysisGenerator:
         # Quality metric averages
         russism_rates = [r.scores.block_v.russism_rate for r in results]
         marker_rates = [r.scores.block_v.positive_markers for r in results]
-        fertility_rates = [r.scores.block_v.fertility_rate for r in results]
+        fertility_rates = [
+            r.scores.block_v.fertility_rate
+            for r in results
+            if r.scores.block_v.fertility_rate is not None
+        ]
 
         # Aggregate metadata
         total_prompts = sum(r.metadata.total_prompts for r in results)
@@ -383,7 +393,7 @@ class AnalysisGenerator:
             not_recommended_count=not_recommended_count,
             avg_russism_rate=sum(russism_rates) / len(russism_rates),
             avg_positive_markers=sum(marker_rates) / len(marker_rates),
-            avg_fertility=sum(fertility_rates) / len(fertility_rates),
+            avg_fertility=sum(fertility_rates) / len(fertility_rates) if fertility_rates else 0.0,
         )
 
         return self._summary
@@ -499,9 +509,10 @@ class AnalysisGenerator:
         elif scores.block_v.positive_markers < 1.0:
             weaknesses.append("Lacks native Ukrainian markers")
 
-        if scores.block_v.fertility_rate < 1.5:
+        fertility = scores.block_v.fertility_rate
+        if fertility is not None and fertility < FERTILITY_EFFICIENT:
             strengths.append("Efficient tokenization")
-        elif scores.block_v.fertility_rate > 2.0:
+        elif fertility is not None and fertility >= FERTILITY_POOR:
             weaknesses.append("Poor tokenization efficiency")
 
         return strengths, weaknesses
@@ -520,7 +531,8 @@ class AnalysisGenerator:
                 "Train on authentic Ukrainian texts to improve native marker usage"
             )
 
-        if scores.block_v.fertility_rate > 2.0:
+        fertility = scores.block_v.fertility_rate
+        if fertility is not None and fertility >= FERTILITY_POOR:
             recommendations.append("Review tokenizer for Ukrainian language optimization")
 
         if scores.block_a.gec_f1 < 0.70:
@@ -592,16 +604,12 @@ class AnalysisGenerator:
         else:
             return f"Low: {rate:.2f} native markers per 1K tokens (needs improvement)"
 
-    def _analyze_fertility(self, rate: float) -> str:
-        """Analyze fertility rate."""
-        if rate < 1.3:
-            return f"Excellent: {rate:.2f} tokens per word (efficient tokenization)"
-        elif rate < 1.5:
-            return f"Good: {rate:.2f} tokens per word"
-        elif rate < 2.0:
-            return f"Acceptable: {rate:.2f} tokens per word"
-        else:
-            return f"Poor: {rate:.2f} tokens per word (inefficient tokenization)"
+    def _analyze_fertility(self, rate: float | None) -> str:
+        """Describe a native-tokenizer fertility rate by its quality band."""
+        if rate is None:
+            return "n/a"
+        band = evaluate_fertility_quality(rate).replace("_", " ").capitalize()
+        return f"{band}: {rate:.2f} tokens per word (native tokenizer, UA-GEC reference corpus)"
 
     def _analyze_category_wins(
         self,

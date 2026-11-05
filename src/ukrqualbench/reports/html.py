@@ -371,7 +371,7 @@ LEADERBOARD_TEMPLATE = """<!DOCTYPE html>
                         <td class="metric {{ 'metric-good' if entry.positive_markers and entry.positive_markers > 3 else 'metric-warning' if entry.positive_markers and entry.positive_markers > 1 else 'metric-bad' }}">
                             {{ entry.positive_markers|round(2) if entry.positive_markers is not none else 'N/A' }}
                         </td>
-                        <td class="metric {{ 'metric-good' if entry.fertility_rate and entry.fertility_rate < 1.5 else 'metric-warning' if entry.fertility_rate and entry.fertility_rate < 2.0 else 'metric-bad' }}">
+                        <td class="metric {{ '' if entry.fertility_rate is none else 'metric-good' if entry.fertility_rate < 1.8 else 'metric-warning' if entry.fertility_rate < 3.0 else 'metric-bad' }}">
                             {{ entry.fertility_rate|round(2) if entry.fertility_rate is not none else 'N/A' }}
                         </td>
                         <td>
@@ -867,7 +867,9 @@ class HTMLReportGenerator:
                         "data": [
                             10 - min(result.scores.block_v.russism_rate, 10),
                             result.scores.block_v.positive_markers,
-                            3 - min(result.scores.block_v.fertility_rate, 3),
+                            4 - min(result.scores.block_v.fertility_rate, 4)
+                            if result.scores.block_v.fertility_rate is not None
+                            else None,
                         ],
                     }
                     for model, result in zip(models, results, strict=True)

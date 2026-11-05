@@ -336,8 +336,11 @@ class ModelScore(Protocol):
 
     # Block V (automatic metrics)
     @property
-    def fertility_rate(self) -> float:
-        """Tokens per word ratio (lower is better, target <1.6)."""
+    def fertility_rate(self) -> float | None:
+        """Native-tokenizer tokens per word on the reference corpus (lower is better).
+
+        ``None`` when the model has no fertility registry entry.
+        """
         ...
 
     @property

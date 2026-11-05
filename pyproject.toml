@@ -48,8 +48,13 @@ local = [
 comet = [
     "unbabel-comet>=2.2.0",
 ]
+fertility = [
+    "huggingface-hub>=0.36.0",
+    "tiktoken>=0.14.0",
+    "tokenizers>=0.22.2",
+]
 all = [
-    "ukrqualbench[dev,local,comet]",
+    "ukrqualbench[dev,local,comet,fertility]",
 ]
 
 [project.scripts]
@@ -115,6 +120,7 @@ module = [
     "unbabel_comet.*",
     "datasets.*",
     "ua_gec.*",
+    "tokenizers.*",
 ]
 ignore_missing_imports = true
 

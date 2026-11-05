@@ -36,6 +36,11 @@ from ukrqualbench.core.schemas import (
     ModelEvaluationData,
     ModelScoreData,
 )
+from ukrqualbench.tokenization.registry import (
+    FertilityRegistry,
+    default_registry_path,
+    fertility_block_v_fields,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -175,7 +180,8 @@ class Evaluator:
 
         # Results storage
         self._block_a_results: dict[str, dict[str, float]] = {}
-        self._block_v_results: dict[str, dict[str, float]] = {}
+        self._block_v_results: dict[str, dict[str, Any]] = {}
+        self._fertility_registry: FertilityRegistry | None = None
 
         # Callbacks
         self._on_progress: Callable[[EvaluationProgress], None] | None = None
@@ -892,20 +898,14 @@ class Evaluator:
                 len(combined_text),
             )
 
-            # Run detectors
-            results: dict[str, float] = {
-                "fertility_rate": 1.5,  # Default
+            # Run detectors. Fertility is a tokenizer property measured once on
+            # the reference corpus; it comes from the registry, not from these texts.
+            results: dict[str, Any] = {
+                **self._fertility_fields(model_id),
                 "positive_markers": 0.0,
                 "russism_rate": 0.0,
                 "anglicism_rate": 0.0,
             }
-
-            if "fertility" in self._detectors:
-                try:
-                    fertility_result = self._detectors["fertility"].calculate(combined_text)
-                    results["fertility_rate"] = fertility_result.fertility_rate
-                except Exception as e:
-                    logger.warning("[BLOCK_V] %s fertility calculation failed: %s", model_id, e)
 
             if "russism" in self._detectors:
                 try:
@@ -976,7 +976,7 @@ class Evaluator:
             # Get Block V scores
             block_v = self._block_v_results.get(model_id, {})
             block_v_scores = BlockVScores(
-                fertility_rate=block_v.get("fertility_rate", 1.5),
+                **self._fertility_fields(model_id),
                 positive_markers=block_v.get("positive_markers", 0.0),
                 russism_rate=block_v.get("russism_rate", 0.0),
                 anglicism_rate=block_v.get("anglicism_rate", 0.0),
@@ -1257,7 +1257,7 @@ class Evaluator:
                 positive_markers_score=block_a.get("positive_markers_score", 0.0),
             ),
             block_v=BlockVScores(
-                fertility_rate=block_v.get("fertility_rate", 1.5),
+                **self._fertility_fields(model_id),
                 positive_markers=block_v.get("positive_markers", 0.0),
                 russism_rate=block_v.get("russism_rate", 0.0),
                 anglicism_rate=block_v.get("anglicism_rate", 0.0),
@@ -1369,10 +1369,12 @@ class Evaluator:
         return create_model_client(model_id, self._config)
 
     def _setup_detectors(self) -> None:
-        """Setup default detectors for Block V."""
+        """Setup default detectors for Block V.
+
+        Fertility is not a detector: see :meth:`_fertility_fields`.
+        """
         from ukrqualbench.detectors import (
             AnglicismDetector,
-            FertilityCalculator,
             PositiveMarkerDetector,
             RussismDetector,
         )
@@ -1383,8 +1385,16 @@ class Evaluator:
             self.add_detector("anglicism", AnglicismDetector())
         if "markers" not in self._detectors:
             self.add_detector("markers", PositiveMarkerDetector())
-        if "fertility" not in self._detectors:
-            self.add_detector("fertility", FertilityCalculator())
+
+    def _fertility_fields(self, model_id: str) -> dict[str, Any]:
+        """Fertility fields for ``model_id`` from the fertility registry.
+
+        Always read from the registry, never from ``_block_v_results``: a
+        checkpoint written before the registry existed holds heuristic values.
+        """
+        if self._fertility_registry is None:
+            self._fertility_registry = FertilityRegistry.load(default_registry_path(self._config))
+        return fertility_block_v_fields(self._fertility_registry, model_id)
 
     def _load_default_tasks(self) -> None:
         """Load benchmark tasks using BenchmarkAssembler."""
@@ -1498,7 +1508,7 @@ class Evaluator:
                     long_context_elo=1500.0,
                 ),
                 block_v=BlockVScores(
-                    fertility_rate=1.5,
+                    fertility_rate=None,
                     positive_markers=0.0,
                     russism_rate=0.0,
                     anglicism_rate=0.0,
