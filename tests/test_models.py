@@ -935,6 +935,74 @@ class TestVLLMApiKeyWiring:
         assert client._api_key == "explicit"
 
 
+class TestVLLMEndpointsRouting:
+    """UKRQUALBENCH_VLLM_ENDPOINTS maps each vllm: model to its own base URL."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        for name in (
+            "UKRQUALBENCH_VLLM_ENDPOINTS",
+            "UKRQUALBENCH_VLLM_BASE_URL",
+            "UKRQUALBENCH_VLLM_API_KEY",
+            "VLLM_API_KEY",
+        ):
+            monkeypatch.delenv(name, raising=False)
+
+    def test_mapped_model_uses_its_endpoint_unmapped_falls_back(self) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        config = Config(
+            _env_file=None,
+            vllm_base_url="http://default:8000",
+            vllm_endpoints={"a": "https://pod-a.example"},
+        )
+        client_a = create_model_client("vllm:a", config)
+        client_b = create_model_client("vllm:b", config)
+
+        assert isinstance(client_a, VLLMClient)
+        assert isinstance(client_b, VLLMClient)
+        assert str(client_a._get_client().base_url).startswith("https://pod-a.example")
+        assert str(client_b._get_client().base_url).startswith("http://default:8000")
+
+    def test_env_json_parsed_and_routed(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        monkeypatch.setenv(
+            "UKRQUALBENCH_VLLM_ENDPOINTS",
+            '{"lapa-v0.1.3-instruct": "https://abc-8000.proxy.runpod.net"}',
+        )
+        config = Config(_env_file=None)
+
+        assert config.vllm_endpoints == {
+            "lapa-v0.1.3-instruct": "https://abc-8000.proxy.runpod.net"
+        }
+        client = create_model_client("vllm:lapa-v0.1.3-instruct", config)
+        assert isinstance(client, VLLMClient)
+        assert str(client._get_client().base_url).startswith("https://abc-8000.proxy.runpod.net")
+
+    def test_default_is_empty(self) -> None:
+        from ukrqualbench.core.config import Config
+
+        assert Config(_env_file=None).vllm_endpoints == {}
+
+    def test_api_key_reaches_mapped_client(self) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        config = Config(
+            _env_file=None,
+            vllm_api_key="shared-key",
+            vllm_endpoints={"a": "https://pod-a.example"},
+        )
+        client = create_model_client("vllm:a", config)
+
+        assert isinstance(client, VLLMClient)
+        assert client._api_key == "shared-key"
+        assert client._get_client().headers["Authorization"] == "Bearer shared-key"
+
+
 # ============================================================================
 # Protocol Conformance Tests
 # ============================================================================

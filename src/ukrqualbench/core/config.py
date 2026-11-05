@@ -133,6 +133,14 @@ class Config(BaseSettings):
         default="http://localhost:8000",
         description="vLLM API base URL",
     )
+    vllm_endpoints: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Map of served model name (the part after 'vllm:') to vLLM base URL "
+            "without /v1; models not listed fall back to vllm_base_url. "
+            "Env: JSON object in UKRQUALBENCH_VLLM_ENDPOINTS"
+        ),
+    )
 
     # Benchmark settings
     benchmark_version: BenchmarkVersion = Field(

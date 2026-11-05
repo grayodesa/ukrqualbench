@@ -152,7 +152,7 @@ def create_model_client(model_id: str, config: Config) -> BaseModelClient:
     if provider == "vllm":
         return _m.create_vllm_client(
             model_id=upstream,
-            base_url=config.vllm_base_url,
+            base_url=config.vllm_endpoints.get(upstream, config.vllm_base_url),
             temperature=config.temperature,
             api_key=config.vllm_api_key,
         )

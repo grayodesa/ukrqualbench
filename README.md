@@ -193,7 +193,7 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 |----------|---------------|
 | **LM Studio** (and any OpenAI-compatible server) | `UKRQUALBENCH_LOCAL_BASE_URL` (default: http://localhost:1234/v1) |
 | **Ollama** | `UKRQUALBENCH_OLLAMA_BASE_URL` (default: http://localhost:11434) |
-| **vLLM** | `UKRQUALBENCH_VLLM_BASE_URL` (default: http://localhost:8000), `UKRQUALBENCH_VLLM_API_KEY` (if the server runs with `--api-key`) |
+| **vLLM** | `UKRQUALBENCH_VLLM_BASE_URL` (default: http://localhost:8000), `UKRQUALBENCH_VLLM_ENDPOINTS` (JSON map model → URL, for several vLLM servers at once), `UKRQUALBENCH_VLLM_API_KEY` (if the server runs with `--api-key`) |
 
 Any model id containing `gemma` (e.g. `google/gemma-4-26b-a4b`) is routed to the local OpenAI-compatible endpoint — load the model in LM Studio and run `ukrqualbench eval --model google/gemma-4-26b-a4b`.
 
