@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "corpus": {
+    "id": "ua-gec-2.1.3/gec-only/test/target/min-annotator",
+    "sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+    "docs": 166,
+    "words": 35122,
+    "chars": 238096
+  },
+  "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+  "entries": {
+    "Qwen/Qwen3-32B-fast": {
+      "tokens": 118834,
+      "fertility_rate": 3.383463,
+      "chars_per_token": 2.003602,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:Qwen/Qwen3-32B@9216db5",
+      "tokenizer_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:22+02:00",
+      "note": ""
+    },
+    "google/gemma-3-27b-it-fast": {
+      "tokens": 79234,
+      "fertility_rate": 2.255965,
+      "chars_per_token": 3.004973,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:INSAIT-Institute/MamayLM-Gemma-3-12B-IT-v1.0@2d4fd7a",
+      "tokenizer_sha256": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:23+02:00",
+      "note": "google/gemma-3-27b-it is gated; identical tokenizer.json from the MamayLM repo"
+    },
+    "google/gemma-4-26b-a4b": {
+      "tokens": 79234,
+      "fertility_rate": 2.255965,
+      "chars_per_token": 3.004973,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:google/gemma-4-26B-A4B-it@4d7ae49",
+      "tokenizer_sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:23+02:00",
+      "note": ""
+    },
+    "lapa-v0.1.2-instruct": {
+      "tokens": 53591,
+      "fertility_rate": 1.525853,
+      "chars_per_token": 4.442836,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:lapa-llm/lapa-v0.1.2-instruct@1011690",
+      "tokenizer_sha256": "8332e5faa6f7b459e807033e1be87ec09697b04524bc01f5961a98ce8224d5d1",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:23+02:00",
+      "note": "Gemma 3 vocabulary with Cyrillic tokens replaced"
+    },
+    "mamaylm-gemma-3-12b-it-v1.0": {
+      "tokens": 79234,
+      "fertility_rate": 2.255965,
+      "chars_per_token": 3.004973,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:INSAIT-Institute/MamayLM-Gemma-3-12B-IT-v1.0@2d4fd7a",
+      "tokenizer_sha256": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:24+02:00",
+      "note": ""
+    },
+    "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": {
+      "tokens": 86706,
+      "fertility_rate": 2.468709,
+      "chars_per_token": 2.746015,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16@bf77c31",
+      "tokenizer_sha256": "c6021eb6847e682f89aa52d5eb6e8c7d902a23acfc8137e25211cf84828f1592",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:24+02:00",
+      "note": ""
+    },
+    "openai/gpt-oss-120b": {
+      "tokens": 83593,
+      "fertility_rate": 2.380075,
+      "chars_per_token": 2.848277,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:openai/gpt-oss-120b@b5c939d",
+      "tokenizer_sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:24+02:00",
+      "note": ""
+    },
+    "openai/gpt-oss-20b": {
+      "tokens": 83593,
+      "fertility_rate": 2.380075,
+      "chars_per_token": 2.848277,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:openai/gpt-oss-20b@6cee5e8",
+      "tokenizer_sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:25+02:00",
+      "note": ""
+    },
+    "openrouter:deepseek/deepseek-v4-flash": {
+      "tokens": 103191,
+      "fertility_rate": 2.938073,
+      "chars_per_token": 2.307333,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:deepseek-ai/DeepSeek-V4-Flash@60d8d70",
+      "tokenizer_sha256": "8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:25+02:00",
+      "note": ""
+    },
+    "openrouter:google/gemma-4-31b-it": {
+      "tokens": 79234,
+      "fertility_rate": 2.255965,
+      "chars_per_token": 3.004973,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:google/gemma-4-31B-it@842da37",
+      "tokenizer_sha256": "cc8d3a0ce36466ccc1278bf987df5f71db1719b9ca6b4118264f45cb627bfe0f",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:25+02:00",
+      "note": ""
+    },
+    "openrouter:meta/muse-glimmer-30b": {
+      "tokens": 75633,
+      "fertility_rate": 2.153437,
+      "chars_per_token": 3.148044,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:meta-models/Muse-Glimmer-30B@cec94fc",
+      "tokenizer_sha256": "c9dbee66967b58f31a7c27f723c3760da3526ccd0427578e8905b0abb0031c4d",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:26+02:00",
+      "note": ""
+    },
+    "openrouter:qwen/qwen3.6-27b": {
+      "tokens": 85575,
+      "fertility_rate": 2.436507,
+      "chars_per_token": 2.782308,
+      "corpus_sha256": "d9a80d3a4e9cd76f9d7a1724109cd826b786a3aa84296f9d703928c2c11e20d0",
+      "word_pattern": "\\w+(?:['’ʼ-]\\w+)*",
+      "method": "hf:Qwen/Qwen3.6-27B@6a9e13b",
+      "tokenizer_sha256": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
+      "baseline_overhead": null,
+      "measured_at": "2026-11-05T12:38:26+02:00",
+      "note": ""
+    }
+  }
+}
