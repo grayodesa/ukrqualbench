@@ -16,36 +16,38 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 
 | Rank | Model | ELO | MC Acc | GEC F1 | Fertility | Russisms | Markers |
 |------|-------|-----|--------|--------|-----------|----------|---------|
-| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 1.49 | 0.0 | 8.1 |
-| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 1.49 | 0.0 | 10.0 |
-| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 1.48 | 0.2 | 10.3 |
-| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 1.49 | 0.2 | 8.1 |
-| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 1.50 | 0.2 | 7.3 |
-| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 1.50 | 0.0 | 11.1 |
-| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 1.44 | 2.3 | 13.0 |
-| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 1.46 | 1.6 | 9.3 |
-| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 1.43 | 6.0 | 6.9 |
-| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 1.49 | 0.0 | 12.2 |
-| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 1.49 | 0.0 | 6.0 |
-| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 1.47 | 0.3 | 8.7 |
-| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 1.41 | 1.8 | 6.3 |
-| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 1.52 | 0.0 | 8.8 |
-| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 1.45 | 0.0 | 6.7 |
-| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 1.48 | 0.0 | 8.3 |
-| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 1.40 | 1.6 | 7.3 |
-| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 1.48 | 0.2 | 10.1 |
-| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 1.47 | 0.0 | 6.9 |
-| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 1.45 | 0.0 | 7.4 |
-| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 1.41 | 1.0 | 4.5 |
-| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 1.46 | 0.0 | 7.4 |
-| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.40 | 7.0 | 4.8 |
-| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 1.47 | 0.0 | 8.0 |
-| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 1.47 | 0.0 | 3.0 |
-| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 1.45 | 0.0 | 5.9 |
-| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 1.49 | 0.2 | 11.2 |
-| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 1.50 | 1.9 | 4.4 |
-| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 1.47 | 3.9 | 13.7 |
-| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 1.43 | 1.7 | 9.9 |
+| 1 | claude-opus-5 | 1822.1 | 90.0% | 82.1% | 2.96 | 0.0 | 8.1 |
+| 2 | gemini-3.8-flash | 1722.3 | 90.0% | 80.4% | 2.26 | 0.0 | 10.0 |
+| 3 | gemini-3.5-flash | 1712.2 | 86.0% | 80.3% | 2.26→ | 0.2 | 10.3 |
+| 4 | gemini-3.1-flash-lite-preview | 1696.2 | 87.0% | 66.2% | 2.26 | 0.2 | 8.1 |
+| 5 | gemini-3.7-flash | 1683.6 | 90.0% | 82.4% | 2.26→ | 0.2 | 7.3 |
+| 6 | claude-opus-5-5 | 1682.3 | 94.0% | 75.9% | 2.96 | 0.0 | 11.1 |
+| 7 | gemini-3-flash-preview | 1680.5 | 90.0% | 77.2% | 2.26 | 2.3 | 13.0 |
+| 8 | gemini-3-pro-preview | 1593.0 | 89.1% | 84.2% | 2.26* | 1.6 | 9.3 |
+| 9 | gpt-5.2 | 1572.5 | 93.0% | 76.7% | 2.38 | 6.0 | 6.9 |
+| 10 | claude-sonnet-5-5 | 1570.8 | 84.0% | 82.0% | 2.96 | 0.0 | 12.2 |
+| 11 | claude-opus-4-5 | 1565.7 | 90.0% | 73.0% | 2.94 | 0.0 | 6.0 |
+| 12 | claude-fable-5 | 1553.7 | 89.0% | 86.2% | 2.96 | 0.3 | 8.7 |
+| 13 | claude-sonnet-4-5 | 1553.3 | 67.0% | 75.0% | 2.94 | 1.8 | 6.3 |
+| 14 | openrouter:deepseek/deepseek-v4-flash | 1543.9 | 87.9% | 80.6% | 2.94 | 0.0 | 8.8 |
+| 15 | gpt-6-astra | 1535.0 | 89.0% | 80.2% | 2.38 | 0.0 | 6.7 |
+| 16 | gpt-5.5 | 1518.7 | 82.0% | 73.7% | 2.38 | 0.0 | 8.3 |
+| 17 | mamaylm-gemma-3-12b-it-v1.0 | 1503.1 | 74.0% | 64.3% | 2.26 | 1.6 | 7.3 |
+| 18 | google/gemma-4-26b-a4b | 1491.2 | 83.1% | 74.3% | 2.26 | 0.2 | 10.1 |
+| 19 | claude-opus-4-7 | 1470.9 | 100.0% | 82.2% | 2.96 | 0.0 | 6.9 |
+| 20 | gpt-6.1-sol | 1437.9 | 89.0% | 82.2% | 2.38 | 0.0 | 7.4 |
+| 21 | google/gemma-3-27b-it-fast | 1421.8 | 83.0% | 78.4% | 2.26 | 1.0 | 4.5 |
+| 22 | openrouter:meta/muse-glimmer-30b | 1412.5 | 89.9% | 76.3% | 2.15 | 0.0 | 7.4 |
+| 23 | lapa-v0.1.2-instruct | 1392.7 | 54.0% | 71.0% | 1.53 | 7.0 | 4.8 |
+| 24 | gpt-5.6-sol | 1362.4 | 82.0% | 78.7% | 2.38 | 0.0 | 8.0 |
+| 25 | gpt-5-nano | 1343.8 | 75.0% | 60.1% | 2.38 | 0.0 | 3.0 |
+| 26 | claude-sonnet-5 | 1329.8 | 93.0% | 79.0% | 2.96 | 0.0 | 5.9 |
+| 27 | openrouter:google/gemma-4-31b-it | 1309.9 | 78.0% | 69.7% | 2.26 | 0.2 | 11.2 |
+| 28 | openai/gpt-oss-20b | 1304.6 | 60.0% | 60.5% | 2.38 | 1.9 | 4.4 |
+| 29 | Qwen/Qwen3-32B-fast | 1236.3 | 78.0% | 69.7% | 3.38 | 3.9 | 13.7 |
+| 30 | claude-haiku-4-5 | 977.2 | 62.0% | 74.0% | 2.94 | 1.7 | 9.9 |
+
+Fertility: native-tokenizer tokens per word on the UA-GEC test corpus (35,122 words); lower is cheaper. Claude, GPT and Gemini are counted with the providers' token-count APIs (Anthropic counts are provider estimates). \* proxy tokenizer for a retired model ID (google-genai LocalTokenizer map). → the provider routes this ID to a newer model; the count reflects that model.
 
 **Note:** mamaylm-gemma-3-12b-it-v1.0 and lapa-v0.1.2-instruct were used with quantization (Q4_K_S)
 
@@ -55,9 +57,24 @@ UkrQualBench evaluates **linguistic quality** (nativeness) of Ukrainian language
 - **ELO Rating**: Swiss-system tournament rating (baseline 1500, K=32)
 - **MC Acc**: Multiple choice accuracy (orthography, punctuation, russisms)
 - **GEC F1**: Grammar error correction quality
-- **Fertility**: Tokens per word ratio (optimal ~1.4-1.5 for Ukrainian)
-- **Russisms**: Russian calques per 1000 tokens detected by LLM judge (lower = better)
-- **Markers**: Native positive markers per 1000 tokens (higher = more natural)
+- **Fertility**: Tokens per word that the model's own tokenizer spends on a fixed Ukrainian reference corpus (lower = cheaper, more text per context window). Describes the tokenizer, not the quality of the model's Ukrainian; see *Fertility Methodology*
+- **Russisms**: Russian calques per 1000 pseudo-tokens (words × 1.3, the same unit for every model) detected by LLM judge (lower = better)
+- **Markers**: Native positive markers per 1000 pseudo-tokens (higher = more natural)
+
+</details>
+
+<details>
+<summary><b>Fertility Methodology</b></summary>
+
+- **Corpus**: the corrected (`target`) side of the UA-GEC 2.1.3 `gec-only` test split, shipped in the `ua-gec` package — 166 essays by native speakers, 35,122 words, 238,096 characters (SHA-256 `d9a80d3a…`). Every model is measured on the same text, so differences come from tokenizers only.
+- **Words**: `\w+(?:['’ʼ-]\w+)*` — apostrophes (`'`, U+2019, U+02BC) and hyphens inside a word do not split it; a lone dash is not a word. Deviation from UA-GEC's gold tokenization: +0.07%.
+- **Tokens**: native tokenizer of each model, no BOS/EOS or chat template, summed over documents. `FR = tokens / words`; `chars/token` is stored too.
+- **Backends**:
+  - open-weight models — official `tokenizer.json` from Hugging Face, pinned to a commit;
+  - GPT — OpenAI `responses/input_tokens`; Gemini — `countTokens`; Claude — Anthropic `count_tokens`. These endpoints count a whole message, so the wrapper is measured from one-token texts (`.`, `a`, `x`) and subtracted.
+- **Calibration** (`ukrqualbench fertility calibrate`): API counts match local tokenizers exactly where one exists (gpt-5-nano = o200k_base, gemini-3-flash-preview = Gemma 3, all 166 documents). For Claude there is no local tokenizer; splitting a document in two changes its count by at most one token. Anthropic documents its count as an estimate.
+- **Markers**: `*` — the API no longer serves the model ID, counted with the tokenizer `google-genai` maps it to; `→` — the provider routes the ID to a newer model, so the count reflects that model.
+- **Commands**: `ukrqualbench fertility measure --all`, `fertility show`, `fertility apply` (writes registry values into `results/evaluations/`). Values live in `data/fertility/registry.json`; install the tokenizers with `uv sync --extra fertility`.
 
 </details>
 
@@ -148,7 +165,7 @@ uv run ukrqualbench leaderboard --results-dir results/ --format json  # or csv, 
 - **B3**: Long context (50 prompts) — check language degradation over long contexts
 
 ### Block V: Objective Metrics (automatic)
-- Fertility rate (tokens/word ratio)
+- Fertility rate (native tokenizer, fixed reference corpus)
 - Positive markers detection (regex-based)
 - Calque detection (LLM judge-based for lexical, syntactic, morphological calques)
 - Anglicism auto-detection (regex-based)
@@ -196,13 +213,15 @@ Before using a judge model, it must pass calibration:
 
 ## Quality Badges
 
-| Badge | ELO | Russism Rate | Positive Markers | Fertility |
-|-------|-----|--------------|------------------|-----------|
-| 🥇 **Gold** | ≥ 1650 | < 1.0 | ≥ 5.0 | < 1.5 |
-| 🥈 **Silver** | ≥ 1550 | < 3.0 | ≥ 3.0 | < 1.8 |
-| 🥉 **Bronze** | ≥ 1450 | < 5.0 | ≥ 1.0 | < 2.0 |
-| ⚠️ **Caution** | ≥ 1350 | < 10.0 | ≥ 0.0 | < 2.5 |
-| 🚫 **Not Recommended** | < 1350 | ≥ 10.0 | — | — |
+| Badge | ELO | Russism Rate | Positive Markers |
+|-------|-----|--------------|------------------|
+| 🥇 **Gold** | ≥ 1650 | < 1.0 | ≥ 5.0 |
+| 🥈 **Silver** | ≥ 1550 | < 3.0 | ≥ 3.0 |
+| 🥉 **Bronze** | ≥ 1450 | < 5.0 | ≥ 1.0 |
+| ⚠️ **Caution** | ≥ 1350 | < 10.0 | ≥ 0.0 |
+| 🚫 **Not Recommended** | < 1350 | ≥ 10.0 | — |
+
+Fertility is not a badge criterion: it measures the tokenizer's cost per word, not the quality of the model's Ukrainian.
 
 ## Configuration
 
@@ -377,7 +396,7 @@ Positive Markers inversely correlate with model size (smaller models use more na
 
 - **Claude Opus 4.5** is the only model with **0.0 calque rate** — cleanest Ukrainian among tested models
 - **GPT-5.2** and **Lapa** show highest calque rates (6.0-7.0 per 1K tokens), indicating more Russian influence
-- **Fertility rate** is consistent across models (~1.4-1.5), indicating similar tokenization efficiency
+- **Fertility rate** (native tokenizers, same corpus) spans 1.53–3.38 tokens per word: Lapa 1.53 (its vocabulary replaces Gemma's Cyrillic tokens with Ukrainian ones), Muse-Glimmer 2.15, Gemma 3/4 and Gemini 2.26, GPT (o200k) 2.38, Claude 2.94–2.96, DeepSeek V4 2.94, Qwen3 3.38. Models sharing a tokenizer share the value; the Claude 4.7+ tokenizer costs only ~1% more than the 4.5 one on Ukrainian
 - **Qwen3** has most positive markers (13.7/1K) but also elevated calque rate (3.9), suggesting mixed quality
 - **Claude models** have lower positive markers than Gemini, suggesting more "formal" language style
 
