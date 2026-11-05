@@ -63,6 +63,7 @@ leaderboard.html
 leaderboard.md
 data/elo_registry*.json
 data/checkpoints/
+data/_merge_backup_*/
 logs/
 
 # OS
