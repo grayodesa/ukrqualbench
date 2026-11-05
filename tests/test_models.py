@@ -879,6 +879,62 @@ class TestCreateVLLMClient:
         assert client._vllm_model == "mistral"
 
 
+class TestVLLMApiKeyWiring:
+    """UKRQUALBENCH_VLLM_API_KEY must reach the vLLM client via routing."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("UKRQUALBENCH_VLLM_API_KEY", raising=False)
+        monkeypatch.delenv("VLLM_API_KEY", raising=False)
+
+    def test_config_key_reaches_client(self) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        client = create_model_client("vllm:some-model", Config(vllm_api_key="test-key"))
+
+        assert isinstance(client, VLLMClient)
+        assert client._api_key == "test-key"
+        headers = client._get_client().headers
+        assert headers["Authorization"] == "Bearer test-key"
+
+    def test_prefixed_env_var_reaches_client(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        monkeypatch.setenv("UKRQUALBENCH_VLLM_API_KEY", "env-key")
+        client = create_model_client("vllm:some-model", Config())
+
+        assert isinstance(client, VLLMClient)
+        assert client._api_key == "env-key"
+
+    def test_legacy_env_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        monkeypatch.setenv("VLLM_API_KEY", "legacy-key")
+        client = create_model_client("vllm:some-model", Config(vllm_api_key=None))
+
+        assert isinstance(client, VLLMClient)
+        assert client._api_key == "legacy-key"
+
+    def test_no_key_sends_no_authorization_header(self) -> None:
+        from ukrqualbench.core.config import Config
+        from ukrqualbench.models.routing import create_model_client
+
+        client = create_model_client("vllm:some-model", Config(vllm_api_key=None))
+
+        assert isinstance(client, VLLMClient)
+        assert client._api_key == ""
+        assert "authorization" not in client._get_client().headers
+
+    def test_factory_explicit_arg_wins_over_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("VLLM_API_KEY", "legacy-key")
+        client = create_vllm_client(model_id="m", api_key="explicit")
+
+        assert client._api_key == "explicit"
+
+
 # ============================================================================
 # Protocol Conformance Tests
 # ============================================================================

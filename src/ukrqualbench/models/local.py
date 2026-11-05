@@ -558,6 +558,7 @@ def create_vllm_client(
     model_id: str,
     base_url: str = "http://localhost:8000",
     temperature: float = 0.0,
+    api_key: str | None = None,
 ) -> VLLMClient:
     """Factory function to create a vLLM client.
 
@@ -565,6 +566,8 @@ def create_vllm_client(
         model_id: Model identifier.
         base_url: vLLM server URL.
         temperature: Default sampling temperature.
+        api_key: Optional API key for a server started with ``--api-key``.
+            Falls back to the ``VLLM_API_KEY`` environment variable.
 
     Returns:
         Configured VLLMClient instance.
@@ -573,7 +576,7 @@ def create_vllm_client(
         base_url=base_url,
         default_temperature=temperature,
     )
-    return VLLMClient(model_id=model_id, base_url=base_url, config=config)
+    return VLLMClient(model_id=model_id, base_url=base_url, config=config, api_key=api_key)
 
 
 def create_local_client(

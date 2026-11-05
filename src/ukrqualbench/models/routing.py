@@ -154,6 +154,7 @@ def create_model_client(model_id: str, config: Config) -> BaseModelClient:
             model_id=upstream,
             base_url=config.vllm_base_url,
             temperature=config.temperature,
+            api_key=config.vllm_api_key,
         )
 
     # No explicit prefix → fall back to legacy heuristic.
