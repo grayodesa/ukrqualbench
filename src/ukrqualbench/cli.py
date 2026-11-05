@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated, Any
@@ -703,6 +704,8 @@ def leaderboard(
     """Generate leaderboard from model evaluations and ELO registry."""
     from ukrqualbench.core.elo_registry import ELORegistry
     from ukrqualbench.core.schemas import ModelEvaluationData
+    from ukrqualbench.tokenization.corpus import load_reference_corpus
+    from ukrqualbench.tokenization.registry import FertilityRegistry, default_registry_path
 
     rprint(f"[yellow]Loading evaluations from:[/yellow] {evaluations_dir}")
 
@@ -737,13 +740,22 @@ def leaderboard(
     rankings = registry.get_rankings()
     leaderboard_data: list[dict[str, Any]] = []
 
+    corpus = load_reference_corpus()
+    fertility_entries = FertilityRegistry.load(
+        default_registry_path(Config()), expected_corpus_sha256=corpus.sha256
+    ).all_entries()
+
     for rank, (model_id, elo) in enumerate(rankings[:limit] if limit else rankings, start=1):
         entry = registry.get_model(model_id)
         eval_data = evaluations.get(model_id)
+        fertility_entry = fertility_entries.get(model_id)
+        fertility_method = eval_data.block_v.fertility_method if eval_data else None
+        fertility_note = fertility_entry.note if fertility_entry else None
+        marker = _fertility_marker(fertility_method, fertility_note)
 
         mc_acc = f"{eval_data.block_a.mc_accuracy:.1%}" if eval_data else "-"
         gec_f1 = f"{eval_data.block_a.gec_f1:.1%}" if eval_data else "-"
-        fertility = _fmt_fertility(eval_data.block_v.fertility_rate) if eval_data else "-"
+        fertility = _fmt_fertility(eval_data.block_v.fertility_rate, marker) if eval_data else "-"
         russisms = f"{eval_data.block_v.russism_rate:.1f}" if eval_data else "-"
         markers = f"{eval_data.block_v.positive_markers:.1f}" if eval_data else "-"
         status = (
@@ -761,6 +773,9 @@ def leaderboard(
                 "mc_accuracy": eval_data.block_a.mc_accuracy if eval_data else None,
                 "gec_f1": eval_data.block_a.gec_f1 if eval_data else None,
                 "fertility_rate": eval_data.block_v.fertility_rate if eval_data else None,
+                "fertility_method": fertility_method,
+                "fertility_note": fertility_note,
+                "fertility_marker": marker,
                 "russism_rate": eval_data.block_v.russism_rate if eval_data else None,
                 "positive_markers": eval_data.block_v.positive_markers if eval_data else None,
                 "provisional": entry.is_provisional if entry else True,
@@ -768,6 +783,8 @@ def leaderboard(
         )
 
     console.print(table)
+    legend = _fertility_legend(corpus.words)
+    console.print(legend, style="dim")
 
     if format_type == "json":
         content = json.dumps({"leaderboard": leaderboard_data}, indent=2)
@@ -784,10 +801,10 @@ def leaderboard(
         content = buf.getvalue()
         output = output.with_suffix(".csv")
     elif format_type == "html":
-        content = _generate_simple_html_leaderboard(leaderboard_data)
+        content = _generate_simple_html_leaderboard(leaderboard_data, legend)
         output = output.with_suffix(".html")
     else:
-        content = _generate_markdown_table(leaderboard_data)
+        content = _generate_markdown_table(leaderboard_data) + f"\n\n{legend}\n"
         output = output.with_suffix(".md")
 
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -797,12 +814,31 @@ def leaderboard(
     rprint(f"\n[green]Leaderboard saved to: {output}[/green]")
 
 
-def _fmt_fertility(rate: float | None) -> str:
+def _fmt_fertility(rate: float | None, marker: str = "") -> str:
     """Fertility for display; a model without a registry entry shows an em dash."""
-    return "—" if rate is None else f"{rate:.2f}"
+    return "—" if rate is None else f"{rate:.2f}{marker}"
 
 
-def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
+def _fertility_marker(method: str | None, note: str | None) -> str:
+    """``*`` for a proxy tokenizer, ``→`` for an ID the provider routes elsewhere."""
+    if method and method.startswith("hf-fallback:"):
+        return "*"
+    if note and "routes to" in note:
+        return "→"
+    return ""
+
+
+def _fertility_legend(corpus_words: int) -> str:
+    return (
+        f"Fertility: native-tokenizer tokens per word on the UA-GEC test corpus "
+        f"({corpus_words:,} words); lower is cheaper. Claude, GPT and Gemini are counted "
+        f"with the providers' token-count APIs (Anthropic counts are provider estimates). "
+        f"* proxy tokenizer for a retired model ID (google-genai LocalTokenizer map). "
+        f"→ the provider routes this ID to a newer model; the count reflects that model."
+    )
+
+
+def _generate_simple_html_leaderboard(data: list[dict[str, Any]], legend: str = "") -> str:
     rows = ""
     for entry in data:
         rows += (
@@ -812,7 +848,7 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
             <td>{entry["elo_rating"]}</td>
             <td>{entry["mc_accuracy"]:.1%}</td>
             <td>{entry["gec_f1"]:.1%}</td>
-            <td>{_fmt_fertility(entry["fertility_rate"])}</td>
+            <td>{_fmt_fertility(entry["fertility_rate"], entry.get("fertility_marker", ""))}</td>
             <td>{entry["russism_rate"]:.1f}</td>
             <td>{entry["positive_markers"]:.1f}</td>
         </tr>"""
@@ -830,7 +866,8 @@ def _generate_simple_html_leaderboard(data: list[dict[str, Any]]) -> str:
 </head><body>
 <h1>UkrQualBench Leaderboard</h1>
 <table><tr><th>Rank</th><th>Model</th><th>ELO</th><th>MC Acc</th><th>GEC F1</th><th>Fertility</th><th>Russisms</th><th>Markers</th></tr>
-{rows}</table></body></html>"""
+{rows}</table>
+<p><small>{html.escape(legend)}</small></p></body></html>"""
 
 
 def _generate_markdown_table(data: list[dict[str, Any]]) -> str:
@@ -841,7 +878,7 @@ def _generate_markdown_table(data: list[dict[str, Any]]) -> str:
     for entry in data:
         if entry["mc_accuracy"]:
             lines.append(
-                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {_fmt_fertility(entry['fertility_rate'])} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
+                f"| {entry['rank']} | {entry['model_id']} | {entry['elo_rating']} | {entry['mc_accuracy']:.1%} | {entry['gec_f1']:.1%} | {_fmt_fertility(entry['fertility_rate'], entry.get('fertility_marker', ''))} | {entry['russism_rate']:.1f} | {entry['positive_markers']:.1f} |"
             )
         else:
             lines.append(

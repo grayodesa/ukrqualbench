@@ -186,7 +186,8 @@ async def _run_checks(
                 rprint(f"[dim]info: {model_id} equals Gemma 4 on {share:.0%} of docs[/dim]")
 
     if "anthropic" in providers:
-        for model_id in ("claude-opus-5", "claude-haiku-4-5"):
+        # One model per measured Claude tokenizer variant.
+        for model_id in ("claude-opus-5", "claude-opus-4-7", "claude-haiku-4-5"):
             split = await cal.split_additivity(f"anthropic {model_id}", api(model_id), o200k, texts)
             passed = passed and split.passed
             verdict = "[green]PASS[/green]" if split.passed else "[red]FAIL[/red]"

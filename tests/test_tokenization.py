@@ -302,7 +302,7 @@ class TestAPICounters:
         counter = FakeAPICounter(wrapper=5)
         assert await counter.count("абв") == 3
         assert counter.baseline_overhead == 5
-        assert counter.calls[:3] == [".", "a", "1"]
+        assert counter.calls[:3] == [".", "a", "x"]
 
     async def test_overhead_measured_once(self) -> None:
         counter = FakeAPICounter()
@@ -399,7 +399,7 @@ class TestCalibration:
         assert off.diff_histogram == {2: 1, 1: 1}
 
     async def test_exact_match_reports_calibration_error(self) -> None:
-        result = await exact_match("x", FakeAPICounter(bump="1"), FixedCounter(), ["текст"])
+        result = await exact_match("x", FakeAPICounter(bump="x"), FixedCounter(), ["текст"])
         assert not result.passed
         assert "not constant" in result.error
 
@@ -559,6 +559,42 @@ class TestIntegrationPoints:
         text = "Пане Іване, треба прийняти участь у мітингу. Бо ж дедлайн завтра!"
         result = RussismDetector().detect(text)
         assert result.total_tokens == max(1, int(len(text.split()) * 1.3))
+
+
+class TestLeaderboardOutput:
+    def test_markers(self) -> None:
+        from ukrqualbench.cli import _fertility_marker, _fmt_fertility
+
+        assert _fertility_marker("hf-fallback:org/repo@0123456", "") == "*"
+        assert _fertility_marker("api:gemini", "ID routes to gemini-3.8-flash") == "→"
+        assert _fertility_marker("api:anthropic", "pre-4.7 tokenizer") == ""
+        assert _fmt_fertility(2.2560, "*") == "2.26*"
+        assert _fmt_fertility(None, "*") == "—"
+
+    def test_markdown_and_html_carry_marker_and_legend(self) -> None:
+        from ukrqualbench.cli import (
+            _fertility_legend,
+            _generate_markdown_table,
+            _generate_simple_html_leaderboard,
+        )
+
+        row = {
+            "rank": 1,
+            "model_id": "gemini-3-pro-preview",
+            "elo_rating": 1593.0,
+            "mc_accuracy": 0.891,
+            "gec_f1": 0.842,
+            "fertility_rate": 2.255965,
+            "fertility_marker": "*",
+            "russism_rate": 1.6,
+            "positive_markers": 9.3,
+        }
+        legend = _fertility_legend(35122)
+        assert "35,122 words" in legend
+        assert "| 2.26* |" in _generate_markdown_table([row])
+        page = _generate_simple_html_leaderboard([row], legend)
+        assert "<td>2.26*</td>" in page
+        assert "35,122 words" in page
 
 
 class TestApplyCommand:

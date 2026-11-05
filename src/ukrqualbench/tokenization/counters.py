@@ -158,14 +158,19 @@ class APITokenCounter:
     Provider count endpoints measure a whole request: role markers and message
     boundaries are included. The wrapper overhead ``O`` is measured once from
     one-token texts (``count(".") - 1``) and subtracted from every count. The
-    same overhead must come out of ``"."``, ``"a"`` and ``"1"``; otherwise the
+    same overhead must come out of ``"."``, ``"a"`` and ``"x"``; otherwise the
     scheme does not hold for this model and :class:`CalibrationError` is raised.
     Baseline and document requests carry identical parameters (no system,
     thinking, reasoning or tools), so the wrapper is the same for both.
+
+    Lone characters are not equally cheap in every tokenizer (count_tokens,
+    2026-11-05): pre-4.7 Claude spends two tokens on a digit, Claude Opus 4.7
+    on ``,`` ``;`` digits and capitals, Claude 5 on a capital. ``.``, ``a`` and
+    ``x`` are one token in all of them, in o200k and in Gemma.
     """
 
     provider = "api"
-    BASELINES: tuple[str, ...] = (".", "a", "1")
+    BASELINES: tuple[str, ...] = (".", "a", "x")
 
     def __init__(self, model: str) -> None:
         self.model = model
